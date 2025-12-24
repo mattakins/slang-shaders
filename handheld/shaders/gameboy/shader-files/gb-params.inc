@@ -26,6 +26,7 @@
 #pragma parameter pixel_softness "     ↳ Pixel softness (higher = less distortion)" 1.0 0.20 5.0 0.05
 #pragma parameter pixel_shape "     ↳ Pixel shape [Sharp mode only] (Circle/Rectangle)" 1.0 0.0 1.30 0.05
 #pragma parameter sharpening_amount "     ↳ Sharpening amount" 1.0 0.0 1.0 0.05
+#pragma parameter adaptive_sharpness "     ↳ Adaptive anti-aliasing (OFF/ON)" 0.0 0.0 1.0 1.0
 #pragma parameter pixel_size "     ↳ Pixel size" 0.80 0.2 1.10 0.05
 
 // LCD effects

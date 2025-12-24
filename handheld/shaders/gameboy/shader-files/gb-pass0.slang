@@ -150,6 +150,7 @@ layout(push_constant) uniform Push
 	float pixel_size;
 	float pixel_softness;
 	float sharpening_amount;
+	float adaptive_sharpness;
 	float integer_mode;
 	float video_scale;
 	float baseline_alpha;
@@ -362,6 +363,19 @@ void main()
         float x_coverage = intersect_line_segment(pixel_rect.x, pixel_rect.z, dot_rect.x, dot_rect.z) / tx_to_px.x;
         float y_coverage = intersect_line_segment(pixel_rect.y, pixel_rect.w, dot_rect.y, dot_rect.w) / tx_to_px.y;
 
+        // ADAPTIVE ANTI-ALIASING: Calculate fwidth-based adaptive softness
+        float effective_softness = registers.pixel_softness;
+        if (registers.adaptive_sharpness > 0.5) {
+            // Calculate rate of change of coverage across screen space
+            vec2 coverage_gradient = fwidth(vec2(x_coverage, y_coverage));
+            float gradient_magnitude = length(coverage_gradient);
+
+            // Modulate softness based on gradient: faster changes need more softness
+            // Scale factor tuned to work well across typical scaling ranges
+            float adaptive_factor = 1.0 + (gradient_magnitude * 8.0);
+            effective_softness = registers.pixel_softness * adaptive_factor;
+        }
+
         // Linear coverage (no sharpening)
         float rect_linear = x_coverage * y_coverage;
 
@@ -369,12 +383,12 @@ void main()
         float rect_sharpened;
         if (registers.sharp_mode < 0.5) {
             // Mode 0: Power curve
-            float sharp_factor = 1.0 / max(registers.pixel_softness, 0.001);
+            float sharp_factor = 1.0 / max(effective_softness, 0.001);
             rect_sharpened = pow(x_coverage, sharp_factor) * pow(y_coverage, sharp_factor);
         } else {
             // Mode 1: Sigmoid
             // Base steepness of 10.0 provides moderate sharpness, scaled by pixel_softness
-            float sigmoid_strength = 10.0 / max(registers.pixel_softness, 0.001);
+            float sigmoid_strength = 10.0 / max(effective_softness, 0.001);
             float x_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (x_coverage - 0.5)));
             float y_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (y_coverage - 0.5)));
             rect_sharpened = x_sharp * y_sharp;
@@ -389,9 +403,9 @@ void main()
         // Apply sharpening to 2D coverage (creates circular gradients)
         float circ_sharpened;
         if (registers.sharp_mode < 0.5) {
-            circ_sharpened = pow(circ_linear, 1.0 / max(registers.pixel_softness, 0.001));
+            circ_sharpened = pow(circ_linear, 1.0 / max(effective_softness, 0.001));
         } else {
-            float sigmoid_strength = 10.0 / max(registers.pixel_softness, 0.001);
+            float sigmoid_strength = 10.0 / max(effective_softness, 0.001);
             circ_sharpened = 1.0 / (1.0 + exp(-sigmoid_strength * (circ_linear - 0.5)));
         }
 
