@@ -52,6 +52,7 @@
 
 // Grid
 #pragma parameter PT_GRID_ENABLE "== Transparent grid == (OFF/ON)" 1.0 0.0 1.0 1.0
+#pragma parameter PT_GRID_MODE "     ↳ Grid mode (0=Partial, 1=Full transparency)" 0.0 0.0 1.0 1.0
 #pragma parameter PT_GRID_SCANLINES "     ↳ Horizontal grid strength" 16.0 1.0 32.0 0.5
 #pragma parameter PT_GRID_LCD "     ↳ Vertical grid strength" 4.0 1.0 12.0 0.1
 
@@ -77,6 +78,7 @@ layout(push_constant) uniform Push {
     float PT_DARK_FILTER_ENABLE;
     float PT_DARK_FILTER_LEVEL;
     float PT_GRID_ENABLE;
+    float PT_GRID_MODE;
     float PT_GRID_SCANLINES;
     float PT_GRID_LCD;
     float PT_SHADOW_ENABLE;
@@ -320,10 +322,27 @@ void main() {
         float yfactor = (param.PT_GRID_SCANLINES + sin(angle.y)) / (param.PT_GRID_SCANLINES + 1.0);
         float xfactor = (param.PT_GRID_LCD + sin(angle.x)) / (param.PT_GRID_LCD + 1.0);
 
-        // Calculate grid transparency: where grid lines exist, make transparent
-        // At grid lines (factor ~0): transparency ~1.0 (full background shows)
-        // Between grid lines (factor ~1.0): transparency ~0.0 (LCD color shows)
-        float grid_transparency = 1.0 - (yfactor * xfactor);
+        float grid_transparency;
+
+        if (param.PT_GRID_MODE < 0.5) {
+            // MODE 0: Partial transparency (inverted lcd1x formula)
+            // At grid lines: ~47% transparent
+            // Between lines: ~0% transparent
+            grid_transparency = 1.0 - (yfactor * xfactor);
+        } else {
+            // MODE 1: Full transparency at grid lines
+            // Detect grid lines: where factor is low, we're on a grid line
+            // Use smoothstep for anti-aliased edges
+            float line_threshold = 0.85; // Grid lines where factor < this value
+            float line_width = 0.05; // Smoothstep width for anti-aliasing
+
+            // Calculate how much we're on a grid line (0.0 = not on line, 1.0 = on line)
+            float on_line_x = 1.0 - smoothstep(line_threshold - line_width, line_threshold, xfactor);
+            float on_line_y = 1.0 - smoothstep(line_threshold - line_width, line_threshold, yfactor);
+
+            // If on either horizontal or vertical line, make transparent
+            grid_transparency = max(on_line_x, on_line_y);
+        }
 
         // Apply grid to LCD color, mixing with background at grid line locations
         output_color.rgb = mix(lcd_color.rgb, background.rgb, grid_transparency);
