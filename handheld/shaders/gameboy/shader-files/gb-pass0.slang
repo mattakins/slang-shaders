@@ -6,7 +6,7 @@
 //  / / __/ /| | / /|_/ / __/    / __  / / / /\  /                       //
 // / /_/ / ___ |/ /  / / /___   / /_/ / /_/ / / /                        //
 // \____/_/  |_/_/  /_/_____/  /_____/\____/ /_/                         //
-//  ==================== DOT MATRIX SHADER v1.1                          //
+//  ==================== DOT MATRIX SHADER v1.2                          //
 //                                                                       //
 // Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
 // Copyright (C) 2024-2025 Matt Akins                                    //
@@ -24,6 +24,10 @@
 // 10/25/25 - v1.1 by mattakins                                          //
 //   • Fixed fullscreen mode right and bottom border bug                 //
 //   • Improved brightness compensation for fullscreen pixel parameters  //
+// 12/25/25 - v1.2 by Claude                                             //
+//   • Added fwidth-based anti-aliasing to prevent moire patterns        //
+//   • Screen-space derivative smoothing adapts to any scale factor      //
+//   • New aa_strength parameter for user control                        //
 //                                                                       //
 // This program is free software: you can redistribute it and/or modify  //
 // it under the terms of the GNU General Public License as published by  //
@@ -44,7 +48,7 @@
  // gb-pass0 - Core dot matrix generation & response time simulation    //
 /////////////////////////////////////////////////////////////////////////
 
-#pragma parameter GAMEBOY_SHADER "=== GAME BOY DOT MATRIX SHADER v1.1 ===" 0.0 0.0 1.0 1.0
+#pragma parameter GAMEBOY_SHADER "=== GAME BOY DOT MATRIX SHADER v1.2 ===" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE1 " *  TIPS: Turn OFF Integer Scale in Settings > Video > Scaling" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE2 " *  GBC: Turn OFF Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE3 " *  GBA: Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
@@ -159,6 +163,7 @@ layout(push_constant) uniform Push
 	float sharp_mode;
 	float pixel_shape;
 	float palette;
+	float aa_strength;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -351,6 +356,17 @@ void main()
         vec2 tx_coord_i;
         const vec2 tx_coord_f = modf(tx_coord, tx_coord_i);
 
+        // fwidth-based anti-aliasing: Get screen-space derivatives for adaptive smoothing
+        // This measures how fast the texel coordinate changes per screen pixel
+        // Large values indicate potential moire zones (non-integer scales)
+        vec2 fw = fwidth(tx_coord);
+
+        // Calculate the anti-aliasing blend factor based on screen-space derivatives
+        // At integer scales, fwidth approaches 1/scale which is small and consistent
+        // At fractional scales, fwidth varies and can indicate aliasing zones
+        // We smooth edges proportionally to how "non-integer" the scale is
+        float aa_blend = clamp(max(fw.x, fw.y) * registers.aa_strength, 0.0, 1.0);
+
         // Calculate pixel rectangle in output space
         vec2 pixel_center = (tx_coord_f - 0.5) * tx_to_px;
         vec4 pixel_rect = vec4(pixel_center - tx_to_px * 0.5, pixel_center + tx_to_px * 0.5);
@@ -362,21 +378,38 @@ void main()
         float x_coverage = intersect_line_segment(pixel_rect.x, pixel_rect.z, dot_rect.x, dot_rect.z) / tx_to_px.x;
         float y_coverage = intersect_line_segment(pixel_rect.y, pixel_rect.w, dot_rect.y, dot_rect.w) / tx_to_px.y;
 
+        // Apply fwidth-based smoothing to coverage before sharpening
+        // This uses smoothstep to create bandlimited transitions at dot edges
+        // The smoothing width adapts based on screen-space derivatives
+        float aa_width = max(fw.x, fw.y) * 0.5;
+        float x_coverage_aa = mix(x_coverage,
+            smoothstep(0.0, aa_width, x_coverage) * smoothstep(0.0, aa_width, 1.0 - x_coverage) * 2.0 +
+            smoothstep(aa_width, 1.0 - aa_width, x_coverage),
+            aa_blend);
+        float y_coverage_aa = mix(y_coverage,
+            smoothstep(0.0, aa_width, y_coverage) * smoothstep(0.0, aa_width, 1.0 - y_coverage) * 2.0 +
+            smoothstep(aa_width, 1.0 - aa_width, y_coverage),
+            aa_blend);
+
+        // Use AA-smoothed coverage for calculations when enabled
+        float x_cov = mix(x_coverage, x_coverage_aa, aa_blend);
+        float y_cov = mix(y_coverage, y_coverage_aa, aa_blend);
+
         // Linear coverage (no sharpening)
-        float rect_linear = x_coverage * y_coverage;
+        float rect_linear = x_cov * y_cov;
 
         // Apply sharpening to X and Y separately (preserves rectangular shape)
         float rect_sharpened;
         if (registers.sharp_mode < 0.5) {
             // Mode 0: Power curve
             float sharp_factor = 1.0 / max(registers.pixel_softness, 0.001);
-            rect_sharpened = pow(x_coverage, sharp_factor) * pow(y_coverage, sharp_factor);
+            rect_sharpened = pow(x_cov, sharp_factor) * pow(y_cov, sharp_factor);
         } else {
             // Mode 1: Sigmoid
             // Base steepness of 10.0 provides moderate sharpness, scaled by pixel_softness
             float sigmoid_strength = 10.0 / max(registers.pixel_softness, 0.001);
-            float x_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (x_coverage - 0.5)));
-            float y_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (y_coverage - 0.5)));
+            float x_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (x_cov - 0.5)));
+            float y_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (y_cov - 0.5)));
             rect_sharpened = x_sharp * y_sharp;
         }
 
@@ -386,17 +419,25 @@ void main()
         // CIRCULAR METHOD: 2D area intersection with sharpening applied after
         float circ_linear = intersect_rect_area(pixel_rect, dot_rect) / (tx_to_px.x * tx_to_px.y);
 
+        // Apply fwidth-based smoothing to circular coverage
+        float circ_linear_aa = mix(circ_linear,
+            smoothstep(0.0, aa_width * aa_width, circ_linear) *
+            smoothstep(0.0, aa_width * aa_width, 1.0 - circ_linear) * 2.0 +
+            smoothstep(aa_width * aa_width, 1.0 - aa_width * aa_width, circ_linear),
+            aa_blend);
+        float circ_cov = mix(circ_linear, circ_linear_aa, aa_blend);
+
         // Apply sharpening to 2D coverage (creates circular gradients)
         float circ_sharpened;
         if (registers.sharp_mode < 0.5) {
-            circ_sharpened = pow(circ_linear, 1.0 / max(registers.pixel_softness, 0.001));
+            circ_sharpened = pow(circ_cov, 1.0 / max(registers.pixel_softness, 0.001));
         } else {
             float sigmoid_strength = 10.0 / max(registers.pixel_softness, 0.001);
-            circ_sharpened = 1.0 / (1.0 + exp(-sigmoid_strength * (circ_linear - 0.5)));
+            circ_sharpened = 1.0 / (1.0 + exp(-sigmoid_strength * (circ_cov - 0.5)));
         }
 
         // Blend between linear and sharpened coverage
-        float circ_coverage = mix(circ_linear, circ_sharpened, registers.sharpening_amount);
+        float circ_coverage = mix(circ_cov, circ_sharpened, registers.sharpening_amount);
 
         // Blend between circular and rectangular based on pixel_shape parameter
         is_on_dot = mix(circ_coverage, rect_coverage, registers.pixel_shape);

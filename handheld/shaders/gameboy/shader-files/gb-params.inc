@@ -1,4 +1,4 @@
-// GAME BOY DOT MATRIX SHADER v1.1 - Shared Parameters
+// GAME BOY DOT MATRIX SHADER v1.2 - Shared Parameters
 
 // Display mode
 #pragma parameter integer_mode "== Display mode == (0=Full, 1=Pixel Perfect, 2=Scale factor)" 0.0 0.0 2.0 1.0
@@ -27,6 +27,7 @@
 #pragma parameter pixel_shape "     ↳ Pixel shape [Sharp mode only] (Circle/Rectangle)" 1.0 0.0 1.30 0.05
 #pragma parameter sharpening_amount "     ↳ Sharpening amount" 1.0 0.0 1.0 0.05
 #pragma parameter pixel_size "     ↳ Pixel size" 0.80 0.2 1.10 0.05
+#pragma parameter aa_strength "     ↳ Anti-aliasing (moire prevention)" 0.5 0.0 2.0 0.1
 
 // LCD effects
 #pragma parameter LCD_EFFECTS "== LCD effects ==" 0.0 0.0 1.0 1.0
