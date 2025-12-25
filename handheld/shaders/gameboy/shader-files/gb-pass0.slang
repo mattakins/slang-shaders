@@ -25,9 +25,9 @@
 //   • Fixed fullscreen mode right and bottom border bug                 //
 //   • Improved brightness compensation for fullscreen pixel parameters  //
 // 12/25/25 - v1.2 by Claude                                             //
-//   • Added fwidth-based anti-aliasing to prevent moire patterns        //
-//   • Screen-space derivative smoothing adapts to any scale factor      //
-//   • New aa_strength parameter for user control                        //
+//   • Added anti-aliasing modes to prevent moire patterns (fullscreen)  //
+//   • Mode 0: Off (original), Mode 1: fwidth, Mode 2: Slopestep         //
+//   • fwidth uses screen-space derivatives, slopestep uses scale factor //
 //                                                                       //
 // This program is free software: you can redistribute it and/or modify  //
 // it under the terms of the GNU General Public License as published by  //
@@ -163,7 +163,7 @@ layout(push_constant) uniform Push
 	float sharp_mode;
 	float pixel_shape;
 	float palette;
-	float aa_strength;
+	float aa_mode;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -356,17 +356,6 @@ void main()
         vec2 tx_coord_i;
         const vec2 tx_coord_f = modf(tx_coord, tx_coord_i);
 
-        // fwidth-based anti-aliasing: Get screen-space derivatives for adaptive smoothing
-        // This measures how fast the texel coordinate changes per screen pixel
-        // Large values indicate potential moire zones (non-integer scales)
-        vec2 fw = fwidth(tx_coord);
-
-        // Calculate the anti-aliasing blend factor based on screen-space derivatives
-        // At integer scales, fwidth approaches 1/scale which is small and consistent
-        // At fractional scales, fwidth varies and can indicate aliasing zones
-        // We smooth edges proportionally to how "non-integer" the scale is
-        float aa_blend = clamp(max(fw.x, fw.y) * registers.aa_strength, 0.0, 1.0);
-
         // Calculate pixel rectangle in output space
         vec2 pixel_center = (tx_coord_f - 0.5) * tx_to_px;
         vec4 pixel_rect = vec4(pixel_center - tx_to_px * 0.5, pixel_center + tx_to_px * 0.5);
@@ -378,22 +367,57 @@ void main()
         float x_coverage = intersect_line_segment(pixel_rect.x, pixel_rect.z, dot_rect.x, dot_rect.z) / tx_to_px.x;
         float y_coverage = intersect_line_segment(pixel_rect.y, pixel_rect.w, dot_rect.y, dot_rect.w) / tx_to_px.y;
 
-        // Apply fwidth-based smoothing to coverage before sharpening
-        // This uses smoothstep to create bandlimited transitions at dot edges
-        // The smoothing width adapts based on screen-space derivatives
-        float aa_width = max(fw.x, fw.y) * 0.5;
-        float x_coverage_aa = mix(x_coverage,
-            smoothstep(0.0, aa_width, x_coverage) * smoothstep(0.0, aa_width, 1.0 - x_coverage) * 2.0 +
-            smoothstep(aa_width, 1.0 - aa_width, x_coverage),
-            aa_blend);
-        float y_coverage_aa = mix(y_coverage,
-            smoothstep(0.0, aa_width, y_coverage) * smoothstep(0.0, aa_width, 1.0 - y_coverage) * 2.0 +
-            smoothstep(aa_width, 1.0 - aa_width, y_coverage),
-            aa_blend);
+        // Apply anti-aliasing based on selected mode
+        float x_cov = x_coverage;
+        float y_cov = y_coverage;
 
-        // Use AA-smoothed coverage for calculations when enabled
-        float x_cov = mix(x_coverage, x_coverage_aa, aa_blend);
-        float y_cov = mix(y_coverage, y_coverage_aa, aa_blend);
+        if (registers.aa_mode > 0.5 && registers.aa_mode < 1.5) {
+            // MODE 1: fwidth-based anti-aliasing
+            // Uses screen-space derivatives for adaptive smoothing
+            vec2 fw = fwidth(tx_coord);
+            float aa_blend = clamp(max(fw.x, fw.y) * 0.5, 0.0, 1.0);
+            float aa_width = max(fw.x, fw.y) * 0.5;
+
+            float x_coverage_aa = smoothstep(0.0, aa_width, x_coverage) *
+                                  smoothstep(0.0, aa_width, 1.0 - x_coverage) * 2.0 +
+                                  smoothstep(aa_width, 1.0 - aa_width, x_coverage);
+            float y_coverage_aa = smoothstep(0.0, aa_width, y_coverage) *
+                                  smoothstep(0.0, aa_width, 1.0 - y_coverage) * 2.0 +
+                                  smoothstep(aa_width, 1.0 - aa_width, y_coverage);
+
+            x_cov = mix(x_coverage, x_coverage_aa, aa_blend);
+            y_cov = mix(y_coverage, y_coverage_aa, aa_blend);
+
+        } else if (registers.aa_mode > 1.5) {
+            // MODE 2: Slopestep-based anti-aliasing (pixel_aa approach)
+            // Uses known scale factor directly - more consistent than fwidth
+            vec2 tx_per_px = 1.0 / tx_to_px;  // texels per output pixel
+
+            // Calculate transition bounds based on texel-to-pixel ratio
+            // This creates smooth transitions at dot boundaries
+            vec2 trans_lb = 0.5 - 0.5 * tx_per_px;
+            vec2 trans_ub = 0.5 + 0.5 * tx_per_px;
+
+            // Slopestep function: like smoothstep but with configurable slope at midpoint
+            // slope > 1.5 = sharper than smoothstep, slope < 1.5 = softer
+            float slope = 1.5;  // Standard smoothstep slope
+
+            // Apply slopestep to coverage values
+            // Clamp coverage to transition range, then apply smooth curve
+            float x_t = clamp((x_coverage - trans_lb.x) / (trans_ub.x - trans_lb.x), 0.0, 1.0);
+            float y_t = clamp((y_coverage - trans_lb.y) / (trans_ub.y - trans_lb.y), 0.0, 1.0);
+
+            // Attempt slopestep: o - 0.5 * s * pow(2.0 * (o - s * t), slope)
+            // where s = sign(t - 0.5), o = (1 + s) * 0.5
+            float x_s = sign(x_t - 0.5);
+            float x_o = (1.0 + x_s) * 0.5;
+            x_cov = x_o - 0.5 * x_s * pow(2.0 * (x_o - x_s * x_t), slope);
+
+            float y_s = sign(y_t - 0.5);
+            float y_o = (1.0 + y_s) * 0.5;
+            y_cov = y_o - 0.5 * y_s * pow(2.0 * (y_o - y_s * y_t), slope);
+        }
+        // MODE 0: No AA - x_cov/y_cov remain as raw coverage values
 
         // Linear coverage (no sharpening)
         float rect_linear = x_cov * y_cov;
@@ -419,13 +443,31 @@ void main()
         // CIRCULAR METHOD: 2D area intersection with sharpening applied after
         float circ_linear = intersect_rect_area(pixel_rect, dot_rect) / (tx_to_px.x * tx_to_px.y);
 
-        // Apply fwidth-based smoothing to circular coverage
-        float circ_linear_aa = mix(circ_linear,
-            smoothstep(0.0, aa_width * aa_width, circ_linear) *
-            smoothstep(0.0, aa_width * aa_width, 1.0 - circ_linear) * 2.0 +
-            smoothstep(aa_width * aa_width, 1.0 - aa_width * aa_width, circ_linear),
-            aa_blend);
-        float circ_cov = mix(circ_linear, circ_linear_aa, aa_blend);
+        // Apply AA to circular coverage based on mode
+        float circ_cov = circ_linear;
+        if (registers.aa_mode > 0.5 && registers.aa_mode < 1.5) {
+            // MODE 1: fwidth-based
+            vec2 fw = fwidth(tx_coord);
+            float aa_blend = clamp(max(fw.x, fw.y) * 0.5, 0.0, 1.0);
+            float aa_width = max(fw.x, fw.y) * 0.5;
+
+            float circ_aa = smoothstep(0.0, aa_width * aa_width, circ_linear) *
+                           smoothstep(0.0, aa_width * aa_width, 1.0 - circ_linear) * 2.0 +
+                           smoothstep(aa_width * aa_width, 1.0 - aa_width * aa_width, circ_linear);
+            circ_cov = mix(circ_linear, circ_aa, aa_blend);
+
+        } else if (registers.aa_mode > 1.5) {
+            // MODE 2: Slopestep-based
+            vec2 tx_per_px = 1.0 / tx_to_px;
+            float trans_lb = 0.5 - 0.5 * min(tx_per_px.x, tx_per_px.y);
+            float trans_ub = 0.5 + 0.5 * min(tx_per_px.x, tx_per_px.y);
+            float slope = 1.5;
+
+            float c_t = clamp((circ_linear - trans_lb) / (trans_ub - trans_lb), 0.0, 1.0);
+            float c_s = sign(c_t - 0.5);
+            float c_o = (1.0 + c_s) * 0.5;
+            circ_cov = c_o - 0.5 * c_s * pow(2.0 * (c_o - c_s * c_t), slope);
+        }
 
         // Apply sharpening to 2D coverage (creates circular gradients)
         float circ_sharpened;
