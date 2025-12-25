@@ -164,6 +164,7 @@ layout(push_constant) uniform Push
 	float pixel_shape;
 	float palette;
 	float aa_mode;
+	float aa_strength;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -374,9 +375,10 @@ void main()
         if (registers.aa_mode > 0.5 && registers.aa_mode < 1.5) {
             // MODE 1: fwidth-based anti-aliasing
             // Uses screen-space derivatives for adaptive smoothing
+            // aa_strength controls blend intensity (higher = more smoothing)
             vec2 fw = fwidth(tx_coord);
-            float aa_blend = clamp(max(fw.x, fw.y) * 0.5, 0.0, 1.0);
-            float aa_width = max(fw.x, fw.y) * 0.5;
+            float aa_blend = clamp(max(fw.x, fw.y) * registers.aa_strength, 0.0, 1.0);
+            float aa_width = max(fw.x, fw.y) * registers.aa_strength;
 
             float x_coverage_aa = smoothstep(0.0, aa_width, x_coverage) *
                                   smoothstep(0.0, aa_width, 1.0 - x_coverage) * 2.0 +
@@ -391,6 +393,7 @@ void main()
         } else if (registers.aa_mode > 1.5) {
             // MODE 2: Slopestep-based anti-aliasing (pixel_aa approach)
             // Uses known scale factor directly - more consistent than fwidth
+            // aa_strength controls slope (higher = sharper transitions)
             vec2 tx_per_px = 1.0 / tx_to_px;  // texels per output pixel
 
             // Calculate transition bounds based on texel-to-pixel ratio
@@ -400,14 +403,14 @@ void main()
 
             // Slopestep function: like smoothstep but with configurable slope at midpoint
             // slope > 1.5 = sharper than smoothstep, slope < 1.5 = softer
-            float slope = 1.5;  // Standard smoothstep slope
+            float slope = registers.aa_strength;
 
             // Apply slopestep to coverage values
             // Clamp coverage to transition range, then apply smooth curve
             float x_t = clamp((x_coverage - trans_lb.x) / (trans_ub.x - trans_lb.x), 0.0, 1.0);
             float y_t = clamp((y_coverage - trans_lb.y) / (trans_ub.y - trans_lb.y), 0.0, 1.0);
 
-            // Attempt slopestep: o - 0.5 * s * pow(2.0 * (o - s * t), slope)
+            // Slopestep: o - 0.5 * s * pow(2.0 * (o - s * t), slope)
             // where s = sign(t - 0.5), o = (1 + s) * 0.5
             float x_s = sign(x_t - 0.5);
             float x_o = (1.0 + x_s) * 0.5;
@@ -448,8 +451,8 @@ void main()
         if (registers.aa_mode > 0.5 && registers.aa_mode < 1.5) {
             // MODE 1: fwidth-based
             vec2 fw = fwidth(tx_coord);
-            float aa_blend = clamp(max(fw.x, fw.y) * 0.5, 0.0, 1.0);
-            float aa_width = max(fw.x, fw.y) * 0.5;
+            float aa_blend = clamp(max(fw.x, fw.y) * registers.aa_strength, 0.0, 1.0);
+            float aa_width = max(fw.x, fw.y) * registers.aa_strength;
 
             float circ_aa = smoothstep(0.0, aa_width * aa_width, circ_linear) *
                            smoothstep(0.0, aa_width * aa_width, 1.0 - circ_linear) * 2.0 +
@@ -461,7 +464,7 @@ void main()
             vec2 tx_per_px = 1.0 / tx_to_px;
             float trans_lb = 0.5 - 0.5 * min(tx_per_px.x, tx_per_px.y);
             float trans_ub = 0.5 + 0.5 * min(tx_per_px.x, tx_per_px.y);
-            float slope = 1.5;
+            float slope = registers.aa_strength;
 
             float c_t = clamp((circ_linear - trans_lb) / (trans_ub - trans_lb), 0.0, 1.0);
             float c_s = sign(c_t - 0.5);

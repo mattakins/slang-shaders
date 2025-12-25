@@ -28,6 +28,7 @@
 #pragma parameter sharpening_amount "     ↳ Sharpening amount" 1.0 0.0 1.0 0.05
 #pragma parameter pixel_size "     ↳ Pixel size" 0.80 0.2 1.10 0.05
 #pragma parameter aa_mode "     ↳ Anti-aliasing (0=Off, 1=fwidth, 2=Slopestep)" 0.0 0.0 2.0 1.0
+#pragma parameter aa_strength "     ↳ AA strength" 1.5 0.5 3.0 0.1
 
 // LCD effects
 #pragma parameter LCD_EFFECTS "== LCD effects ==" 0.0 0.0 1.0 1.0
