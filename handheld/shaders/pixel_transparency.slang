@@ -29,9 +29,10 @@
 #pragma parameter NOTE1 " *  Append to any LCD shader as last pass. Try with GBC & GBA." 0.0 0.0 1.0 1.0
 #pragma parameter NOTE2 " *  Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 
-// Background tint
-#pragma parameter PT_PALETTE "== Background tint == (0=OFF, 1=Pocket, 2=Gray, 3=White)" 1.0 0.0 3.0 1.0
-#pragma parameter PT_PALETTE_INTENSITY "     ↳ Tint intensity" 1.0 0.0 2.0 0.05
+// Color mode & Palette
+#pragma parameter PT_COLOR_TOGGLE "== Color mode == (0=Grayscale, 1=Color)" 1.0 0.0 1.0 1.0
+#pragma parameter PT_PALETTE "== Palette == (0=OFF,1/2=Pocket,3=B&W,4=DMG,5=Light)" 1.0 0.0 5.0 1.0
+#pragma parameter PT_PALETTE_INTENSITY "     ↳ Tint intensity" 1.0 0.0 10.0 0.05
 
 // Transparency
 #pragma parameter PT_PIXEL_MODE "== 1. Transparent pixels == (0=White only, 1=Bright, 2=All)" 1.0 0.0 2.0 1.0
@@ -52,11 +53,13 @@
 #pragma parameter PT_SHADOW_OFFSET_Y "     ↳ Shadow Y offset" 3.0 -30.0 30.0 0.5
 #pragma parameter PT_SHADOW_OPACITY "     ↳ Shadow opacity" 0.5 0.0 1.0 0.01
 #pragma parameter PT_SHADOW_BLUR "     ↳ Shadow blur amount" 1.0 0.0 5.0 0.1
+#pragma parameter PT_SHADOW_BLUR_QUALITY "     ↳ Blur quality (0=Fast/5, 1=High/9)" 0.0 0.0 1.0 1.0
 
 layout(push_constant) uniform Push {
     vec4 SourceSize;
     vec4 OutputSize;
     float PT_ENABLE;
+    float PT_COLOR_TOGGLE;
     float PT_BRIGHTNESS_GRID;
     float PT_PIXEL_MODE;
     float PT_BRIGHTNESS_MODE;
@@ -73,6 +76,7 @@ layout(push_constant) uniform Push {
     float PT_SHADOW_OFFSET_Y;
     float PT_SHADOW_OPACITY;
     float PT_SHADOW_BLUR;
+    float PT_SHADOW_BLUR_QUALITY;
 } param;
 
 layout(std140, set = 0, binding = 0) uniform UBO {
@@ -208,6 +212,23 @@ void main() {
         lcd_color.rgb = darkenRgb(lcd_color.rgb, param.PT_DARK_FILTER_LEVEL);
     }
 
+    // Apply grayscale recoloring when color toggle is OFF
+    if (param.PT_COLOR_TOGGLE < 0.5 && param.PT_PALETTE > 0.5) {
+        vec3 foreground_color;
+        if (param.PT_PALETTE < 1.5) {
+            foreground_color = vec3(0.067, 0.098, 0.133); // 1: Pocket #111922
+        } else if (param.PT_PALETTE < 2.5) {
+            foreground_color = vec3(0.125, 0.125, 0.125); // 2: Gray #202020
+        } else if (param.PT_PALETTE < 3.5) {
+            foreground_color = vec3(0.0, 0.0, 0.0); // 3: White/B&W #000000
+        } else if (param.PT_PALETTE < 4.5) {
+            foreground_color = vec3(0.114, 0.416, 0.420); // 4: DMG #1D6A6B
+        } else {
+            foreground_color = vec3(0.0, 0.325, 0.314); // 5: GB Light #005350
+        }
+        lcd_color.rgb = foreground_color;
+    }
+
     // Default output is the LCD-processed color (with dark filter applied)
     vec4 output_color = lcd_color;
 
@@ -242,31 +263,50 @@ void main() {
 
             // Apply optimized blur to shadow strength if enabled
             if (param.PT_SHADOW_BLUR > 0.1) {
-                // Fixed 9-sample pattern for consistent performance
-                // Blur distance also normalized to reference resolution
+                // Blur distance normalized to reference resolution
                 float blur_distance = param.PT_SHADOW_BLUR * shadow_scale_factor * texel.x;
-                vec2 sample_offsets[9] = vec2[](
-                    vec2( 0.0,  0.0),  // Center
-                    vec2(-1.0,  0.0),  // Left
-                    vec2( 1.0,  0.0),  // Right
-                    vec2( 0.0, -1.0),  // Up
-                    vec2( 0.0,  1.0),  // Down
-                    vec2(-1.0, -1.0),  // Top-left
-                    vec2( 1.0, -1.0),  // Top-right
-                    vec2(-1.0,  1.0),  // Bottom-left
-                    vec2( 1.0,  1.0)   // Bottom-right
-                );
-
                 float blurred_shadow = 0.0;
+                float sample_count;
 
-                for (int i = 0; i < 9; i++) {
-                    vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_distance);
-                    vec3 blur_sample = texture(Original, sample_pos).rgb;
-                    float blur_brightness = getBrightness(blur_sample);
-                    blurred_shadow += (1.0 - blur_brightness);
+                if (param.PT_SHADOW_BLUR_QUALITY > 0.5) {
+                    // High quality: 9-sample pattern (3x3 grid)
+                    vec2 sample_offsets[9] = vec2[](
+                        vec2( 0.0,  0.0),  // Center
+                        vec2(-1.0,  0.0),  // Left
+                        vec2( 1.0,  0.0),  // Right
+                        vec2( 0.0, -1.0),  // Up
+                        vec2( 0.0,  1.0),  // Down
+                        vec2(-1.0, -1.0),  // Top-left
+                        vec2( 1.0, -1.0),  // Top-right
+                        vec2(-1.0,  1.0),  // Bottom-left
+                        vec2( 1.0,  1.0)   // Bottom-right
+                    );
+                    for (int i = 0; i < 9; i++) {
+                        vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_distance);
+                        vec3 blur_sample = texture(Original, sample_pos).rgb;
+                        float blur_brightness = getBrightness(blur_sample);
+                        blurred_shadow += (1.0 - blur_brightness);
+                    }
+                    sample_count = 9.0;
+                } else {
+                    // Fast: 5-sample pattern (cross)
+                    vec2 sample_offsets[5] = vec2[](
+                        vec2( 0.0,  0.0),  // Center
+                        vec2(-1.0,  0.0),  // Left
+                        vec2( 1.0,  0.0),  // Right
+                        vec2( 0.0, -1.0),  // Up
+                        vec2( 0.0,  1.0)   // Down
+                    );
+                    for (int i = 0; i < 5; i++) {
+                        vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_distance);
+                        vec3 blur_sample = texture(Original, sample_pos).rgb;
+                        float blur_brightness = getBrightness(blur_sample);
+                        blurred_shadow += (1.0 - blur_brightness);
+                    }
+                    sample_count = 5.0;
                 }
 
-                shadow_strength = (blurred_shadow / 9.0) * param.PT_SHADOW_OPACITY;
+                shadow_strength = (blurred_shadow / sample_count) * param.PT_SHADOW_OPACITY;
             }
 
             // Apply shadow to background (BEFORE tinting)
@@ -279,11 +319,15 @@ void main() {
         vec3 bg_palette_color;
 
         if (param.PT_PALETTE < 1.5) {
-            bg_palette_color = vec3(0.651, 0.675, 0.518); // 1: #A6AC84
+            bg_palette_color = vec3(0.651, 0.675, 0.518); // 1: Pocket #A6AC84
         } else if (param.PT_PALETTE < 2.5) {
-            bg_palette_color = vec3(0.737, 0.737, 0.737); // 2: #BCBCBC
+            bg_palette_color = vec3(0.737, 0.737, 0.737); // 2: Gray #BCBCBC
+        } else if (param.PT_PALETTE < 3.5) {
+            bg_palette_color = vec3(1.0, 1.0, 1.0); // 3: White #FFFFFF
+        } else if (param.PT_PALETTE < 4.5) {
+            bg_palette_color = vec3(0.608, 0.737, 0.059); // 4: DMG #9BBC0F
         } else {
-            bg_palette_color = vec3(1.0, 1.0, 1.0); // 3: #FFFFFF
+            bg_palette_color = vec3(0.549, 0.722, 0.510); // 5: GB Light #8CB882
         }
 
         vec3 tinted_background = clamp(
@@ -301,9 +345,27 @@ void main() {
     // PIXEL MODE TOGGLE: Choose between different transparency modes
     // Grid influence OFF: use original_pixel (unaffected by previous shader passes)
     // Grid influence ON: use lcd_color.rgb (affected by previous shaders like lcd1x)
-    vec3 brightness_source = (param.PT_BRIGHTNESS_GRID > 0.5) ? lcd_color.rgb : original_pixel;
+    // When color toggle is OFF (grayscale mode), always use original_pixel for brightness
+    // This ensures transparency is based on original game image, not the dark foreground color
+    vec3 brightness_source;
+    if (param.PT_COLOR_TOGGLE < 0.5) {
+        brightness_source = original_pixel;
+    } else {
+        brightness_source = (param.PT_BRIGHTNESS_GRID > 0.5) ? lcd_color.rgb : original_pixel;
+    }
 
-    if (param.PT_PIXEL_MODE > 0.5 && param.PT_PIXEL_MODE < 1.5) {
+    // === GRAYSCALE MODE: Direct brightness-to-transparency mapping ===
+    // Bright pixels → high transparency → show background (like GB "off" pixels)
+    // Dark pixels → low transparency → show foreground color (like GB "on" pixels)
+    if (param.PT_COLOR_TOGGLE < 0.5 && param.PT_PALETTE > 0.5) {
+        // Use selected brightness mode (simple or perceptual)
+        float pixel_intensity = getBrightness(original_pixel);
+        // Apply gamma boost to brighten mid-tones (gamma < 1 = brighter)
+        float transparency = pow(pixel_intensity, 0.6);
+        output_color.rgb = mix(lcd_color.rgb, background.rgb, transparency);
+    }
+    // === COLOR MODE: Original transparency formulas ===
+    else if (param.PT_PIXEL_MODE > 0.5 && param.PT_PIXEL_MODE < 1.5) {
         // === MODE 1: BRIGHT PIXEL TRANSPARENCY (different formula) ===
         float pixel_intensity = getBrightness(brightness_source);
         // Scale to match Mode 0/2 behavior: 0.20 BASE → 0.533 transparency
