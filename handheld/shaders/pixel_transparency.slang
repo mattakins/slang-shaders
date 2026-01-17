@@ -207,9 +207,13 @@ void main() {
     vec4 lcd_color = texture(Source, vTexCoord);
     vec3 original_pixel = texture(Original, vTexCoord).rgb;
 
+    // Save source with grid effect before any modifications (for grayscale brightness calc)
+    vec3 source_with_grid = lcd_color.rgb;
+
     // Apply gambatte luminance filter to LCD content if enabled
     if (param.PT_DARK_FILTER_ENABLE > 0.5) {
         lcd_color.rgb = darkenRgb(lcd_color.rgb, param.PT_DARK_FILTER_LEVEL);
+        source_with_grid = lcd_color.rgb; // Update with dark filter applied
     }
 
     // Apply grayscale recoloring when color toggle is OFF
@@ -344,12 +348,11 @@ void main() {
 
     // PIXEL MODE TOGGLE: Choose between different transparency modes
     // Grid influence OFF: use original_pixel (unaffected by previous shader passes)
-    // Grid influence ON: use lcd_color.rgb (affected by previous shaders like lcd1x)
-    // When color toggle is OFF (grayscale mode), always use original_pixel for brightness
-    // This ensures transparency is based on original game image, not the dark foreground color
+    // Grid influence ON: use source_with_grid (affected by previous shaders like lcd1x)
     vec3 brightness_source;
     if (param.PT_COLOR_TOGGLE < 0.5) {
-        brightness_source = original_pixel;
+        // Grayscale mode: use source_with_grid (preserves grid effect) or original_pixel
+        brightness_source = (param.PT_BRIGHTNESS_GRID > 0.5) ? source_with_grid : original_pixel;
     } else {
         brightness_source = (param.PT_BRIGHTNESS_GRID > 0.5) ? lcd_color.rgb : original_pixel;
     }
@@ -359,7 +362,7 @@ void main() {
     // Dark pixels → low transparency → show foreground color (like GB "on" pixels)
     if (param.PT_COLOR_TOGGLE < 0.5 && param.PT_PALETTE > 0.5) {
         // Use selected brightness mode (simple or perceptual)
-        float pixel_intensity = getBrightness(original_pixel);
+        float pixel_intensity = getBrightness(brightness_source);
         // Apply gamma boost to brighten mid-tones (gamma < 1 = brighter)
         float transparency = pow(pixel_intensity, 0.6);
         output_color.rgb = mix(lcd_color.rgb, background.rgb, transparency);
