@@ -3,7 +3,8 @@
 /*
  * sharp-shimmerless-plus
  *
- * A shimmer-free upscaler with tunable pixel edge sharpness.
+ * A shimmer-free upscaler with tunable pixel edge sharpness and an
+ * optional area-correct pixel grid overlay.
  *
  * Combines the area-based pixel model from Sharp-Shimmerless (zadpos)
  * with geometric sharpening curves adapted from the Game Boy Dot Matrix
@@ -19,22 +20,34 @@
  * always sum to 1.0, so brightness is preserved by construction — no
  * grey balance compensation needed.
  *
+ * The pixel grid uses the same area-intersection technique as the GB dot
+ * matrix shader: exact sub-pixel coverage of grid lines is computed per
+ * output pixel, producing smooth anti-aliased grid lines with no moiré
+ * at fractional scales. Grid coverage is intentionally kept at linear
+ * area-weighting (no sharpening curve applied) to maximize moiré
+ * suppression.
+ *
  * At SHARPNESS = 0: identical to Sharp-Shimmerless (linear area blend)
  * At SHARPNESS = 1: near point-sampling, still shimmer-free
  *
  * Based on:
  *   sharp-shimmerless by zadpos (Public domain)
  *   Slang optimizations by Hyllian (2025)
- *   Sharpening curve techniques from Game Boy Dot Matrix Shader v1.1
- *     by Harlequin/mattakins (GPL v3)
+ *   Sharpening curve & area-intersection techniques from
+ *     Game Boy Dot Matrix Shader v1.1 by Harlequin/mattakins (GPL v3)
  *
  * Copyright (C) 2025 Matt Akins
  * License: GPL v3
  */
 
-#pragma parameter SSP_SETTINGS "=== SHARP SHIMMERLESS PLUS ===" 0.0 0.0 1.0 1.0
-#pragma parameter SHARPNESS    "     Sharpness (0=Shimmerless, 1=Near point)" 0.5 0.0 1.0 0.05
-#pragma parameter CURVE_TYPE   "     Curve type (0=Sigmoid, 1=Power)" 0.0 0.0 1.0 1.0
+#pragma parameter SSP_SETTINGS   "=== SHARP SHIMMERLESS PLUS ===" 0.0 0.0 1.0 1.0
+#pragma parameter SHARPNESS      "     Sharpness (0=Shimmerless, 1=Near point)" 0.5 0.0 1.0 0.05
+#pragma parameter CURVE_TYPE     "     Curve type (0=Sigmoid, 1=Power)" 0.0 0.0 1.0 1.0
+#pragma parameter SSP_GRID_HDR   "     --- Pixel Grid ---" 0.0 0.0 1.0 1.0
+#pragma parameter GRID_ENABLE    "     Enable pixel grid" 0.0 0.0 1.0 1.0
+#pragma parameter GRID_WIDTH     "     Grid line width" 0.1 0.01 0.5 0.01
+#pragma parameter GRID_INTENSITY "     Grid intensity" 0.5 0.0 1.0 0.05
+#pragma parameter GRID_BRIGHT    "     Grid brightness" 0.5 0.0 1.0 0.05
 
 layout(push_constant) uniform Push
 {
@@ -44,6 +57,11 @@ layout(push_constant) uniform Push
     uint FrameCount;
     float SHARPNESS;
     float CURVE_TYPE;
+    float SSP_GRID_HDR;
+    float GRID_ENABLE;
+    float GRID_WIDTH;
+    float GRID_INTENSITY;
+    float GRID_BRIGHT;
 } params;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -86,6 +104,7 @@ layout(location = 1) in vec2 TexCoord;
 layout(location = 0) out vec2 pixel;
 layout(location = 1) out vec2 scale;
 layout(location = 2) out vec2 invscale;
+layout(location = 3) out vec2 grid_tc;
 
 void main()
 {
@@ -93,6 +112,10 @@ void main()
     pixel    = TexCoord * params.OutputSize.xy * params.SourceSize.xy * params.OriginalSize.zw;
     scale    = params.OutputSize.xy * params.SourceSize.zw;
     invscale = 1.0 / scale;
+
+    // Texel-space position for grid (uses OriginalSize so the grid
+    // aligns with the game's native pixel grid in multi-pass setups)
+    grid_tc = TexCoord * params.OriginalSize.xy;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -103,6 +126,7 @@ void main()
 layout(location = 0) in vec2 pixel;
 layout(location = 1) in vec2 scale;
 layout(location = 2) in vec2 invscale;
+layout(location = 3) in vec2 grid_tc;
 layout(location = 0) out vec4 FragColor;
 layout(set = 0, binding = 2) uniform sampler2D Source;
 
@@ -140,4 +164,47 @@ void main()
     vec2 mod_texel = texel_borders.zw + 0.5 - sharp_overlap;
 
     FragColor = vec4(texture(Source, mod_texel * params.SourceSize.zw).rgb, 1.0);
+
+    ///////////////////////////////////////////////////////////////////
+    // Pixel grid overlay (area-correct, no sharpening to minimize moiré)
+    //
+    // Uses the same line-segment intersection technique as the GB dot
+    // matrix shader: computes exact sub-pixel coverage of grid lines
+    // for each output pixel. Because coverage varies smoothly across
+    // output pixels, grid brightness changes gradually — no moiré
+    // beating pattern even at fractional scales.
+    //
+    // Grid coverage is kept at LINEAR area-weighting intentionally.
+    // Applying the sharpening curve to grid coverage would amplify
+    // small coverage differences between adjacent output pixels,
+    // reintroducing the moiré we're trying to suppress.
+    ///////////////////////////////////////////////////////////////////
+
+    if (params.GRID_ENABLE > 0.5)
+    {
+        // Fractional position within the original texel [0, 1)
+        vec2 tc_frac = fract(grid_tc);
+
+        // Signed distance from output pixel center to nearest texel boundary
+        // Maps [0,1) -> [-0.5, 0.5): 0 = exactly on boundary
+        vec2 s = tc_frac - step(0.5, tc_frac);
+
+        // Output pixel half-width in original texel space
+        vec2 ph = 0.5 * params.OriginalSize.xy * params.OutputSize.zw;
+
+        // Grid line half-width in texel space
+        vec2 gh = vec2(params.GRID_WIDTH * 0.5);
+
+        // 1D line-segment intersection per axis:
+        // output pixel extent [s-ph, s+ph] vs grid line extent [-gh, gh]
+        vec2 cov_lo = max(s - ph, -gh);
+        vec2 cov_hi = min(s + ph,  gh);
+        vec2 grid_1d = clamp((cov_hi - cov_lo) / (2.0 * ph), 0.0, 1.0);
+
+        // 2D: union of horizontal and vertical grid lines
+        float grid_cov = grid_1d.x + grid_1d.y - grid_1d.x * grid_1d.y;
+
+        // Blend grid color over texel color
+        FragColor.rgb = mix(FragColor.rgb, vec3(params.GRID_BRIGHT), grid_cov * params.GRID_INTENSITY);
+    }
 }
