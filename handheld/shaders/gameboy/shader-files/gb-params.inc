@@ -27,6 +27,8 @@
 #pragma parameter pixel_shape "     ↳ Pixel shape [Sharp mode only] (Circle/Rectangle)" 1.0 0.0 1.30 0.05
 #pragma parameter sharpening_amount "     ↳ Sharpening amount" 1.0 0.0 1.0 0.05
 #pragma parameter pixel_size "     ↳ Pixel size" 0.80 0.2 1.10 0.05
+#pragma parameter moire_adapt "     ↳ Adaptive softness (reduces moiré)" 0.0 0.0 1.0 1.0
+#pragma parameter perceptual_blend "     ↳ Perceptual blend (reduces dark moiré)" 0.0 0.0 1.0 1.0
 
 // LCD effects
 #pragma parameter LCD_EFFECTS "== LCD effects ==" 0.0 0.0 1.0 1.0

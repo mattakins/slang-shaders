@@ -48,6 +48,9 @@
 #pragma parameter GRID_WIDTH     "     Grid line width" 0.1 0.01 0.5 0.01
 #pragma parameter GRID_INTENSITY "     Grid intensity" 0.5 0.0 1.0 0.05
 #pragma parameter GRID_BRIGHT    "     Grid brightness" 0.5 0.0 1.0 0.05
+#pragma parameter SSP_MOIRE_HDR  "     --- Moiré Reduction ---" 0.0 0.0 1.0 1.0
+#pragma parameter MOIRE_ADAPT    "     Adaptive softness (reduces moiré)" 0.0 0.0 1.0 1.0
+#pragma parameter PERCEPTUAL_BLEND "     Perceptual blend (reduces dark moiré)" 0.0 0.0 1.0 1.0
 
 layout(push_constant) uniform Push
 {
@@ -62,6 +65,9 @@ layout(push_constant) uniform Push
     float GRID_WIDTH;
     float GRID_INTENSITY;
     float GRID_BRIGHT;
+    float SSP_MOIRE_HDR;
+    float MOIRE_ADAPT;
+    float PERCEPTUAL_BLEND;
 } params;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -145,18 +151,31 @@ void main()
     // In [0,1] when spanning a boundary, zeroed when entirely within one texel
     vec2 overlap = clamp((scale * texel_borders.zw - pixel_borders.xy), 0.0, 1.0) * same_texel;
 
+    // Adaptive softness: reduce sharpness at fractional scales to suppress moiré
+    float sharpness = params.SHARPNESS;
+    if (params.MOIRE_ADAPT > 0.5) {
+        vec2 fract_scale = fract(scale);
+        // 0 at integer scales, 0.5 at worst fractional (x.5)
+        float fract_factor = max(
+            0.5 - abs(fract_scale.x - 0.5),
+            0.5 - abs(fract_scale.y - 0.5)
+        );
+        // Reduce sharpness proportionally to fractional severity
+        sharpness *= (1.0 - fract_factor);
+    }
+
     // Apply sharpening curve to the overlap weight
     vec2 sharp_overlap;
-    if (params.SHARPNESS < 0.01) {
+    if (sharpness < 0.01) {
         // Pure linear - identical to original Sharp-Shimmerless
         sharp_overlap = overlap;
     } else if (params.CURVE_TYPE < 0.5) {
-        // Sigmoid mode: k maps SHARPNESS [0,1] to steepness [0,20]
-        sharp_overlap = sigmoid_sharpen(overlap, params.SHARPNESS * 20.0);
+        // Sigmoid mode: k maps sharpness [0,1] to steepness [0,20]
+        sharp_overlap = sigmoid_sharpen(overlap, sharpness * 20.0);
         sharp_overlap *= same_texel;
     } else {
-        // Power mode: p maps SHARPNESS [0,1] to exponent [1,10]
-        sharp_overlap = power_sharpen(overlap, 1.0 + params.SHARPNESS * 9.0);
+        // Power mode: p maps sharpness [0,1] to exponent [1,10]
+        sharp_overlap = power_sharpen(overlap, 1.0 + sharpness * 9.0);
         sharp_overlap *= same_texel;
     }
 
@@ -205,6 +224,13 @@ void main()
         float grid_cov = grid_1d.x + grid_1d.y - grid_1d.x * grid_1d.y;
 
         // Blend grid color over texel color
-        FragColor.rgb = mix(FragColor.rgb, vec3(params.GRID_BRIGHT), grid_cov * params.GRID_INTENSITY);
+        if (params.PERCEPTUAL_BLEND > 0.5) {
+            // Linearize before blending to equalize moiré visibility across brightness
+            vec3 linear_color = pow(FragColor.rgb, vec3(2.2));
+            vec3 linear_grid  = pow(vec3(params.GRID_BRIGHT), vec3(2.2));
+            FragColor.rgb = pow(mix(linear_color, linear_grid, grid_cov * params.GRID_INTENSITY), vec3(1.0 / 2.2));
+        } else {
+            FragColor.rgb = mix(FragColor.rgb, vec3(params.GRID_BRIGHT), grid_cov * params.GRID_INTENSITY);
+        }
     }
 }

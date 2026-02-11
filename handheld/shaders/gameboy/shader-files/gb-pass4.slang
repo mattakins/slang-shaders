@@ -65,6 +65,7 @@ layout(push_constant) uniform Push
 	float palette;
 	float shadow_scale;
 	float integer_mode;
+	float perceptual_blend;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -187,11 +188,24 @@ void main()
         0.0, 1.0
     );
 
+    // Perceptual blend: linearize RGB before compositing to equalize
+    // moiré visibility across brightness levels (reduces dark pixel moiré)
+    if (registers.perceptual_blend > 0.5) {
+        foreground.rgb = pow(foreground.rgb, vec3(2.2));
+        shadows.rgb    = pow(shadows.rgb,    vec3(2.2));
+        background.rgb = pow(background.rgb, vec3(2.2));
+    }
+
     // Shadows are alpha blended with the background
-    vec4 out_color = (shadows * shadows.a * shadow_alpha) + (background * (1 - shadows.a * shadow_alpha));  
+    vec4 out_color = (shadows * shadows.a * shadow_alpha) + (background * (1 - shadows.a * shadow_alpha));
 
     // Foreground is alpha blended with the shadowed background
     out_color = (foreground * foreground.a * registers.contrast) + (out_color * (registers.screen_light - foreground.a * registers.contrast * registers.pixel_opacity));
-    
+
+    // De-linearize back to sRGB
+    if (registers.perceptual_blend > 0.5) {
+        out_color.rgb = pow(max(out_color.rgb, vec3(0.0)), vec3(1.0 / 2.2));
+    }
+
     FragColor = out_color;
 }
