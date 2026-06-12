@@ -30,11 +30,17 @@
  // gb-pass3 - Vertical Gaussian blur                                   //
 /////////////////////////////////////////////////////////////////////////
 
+#include "gb-params.inc"
+
 layout(push_constant) uniform Push
 {
 	vec4 OutputSize;
 	vec4 OriginalSize;
 	vec4 SourceSize;
+	float integer_mode;
+	float video_scale;
+	float shadow_scale_mode;
+	float shadow_blur_amount;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -53,6 +59,16 @@ layout(location = 0) out vec2 vTexCoord;
 layout(location = 1) out vec2 texel;
 layout(location = 2) out vec2 lower_bound;
 layout(location = 3) out vec2 upper_bound;
+layout(location = 4) out vec2 blur_step;
+
+vec2 get_current_gb_scale() {
+    if (registers.integer_mode > 1.5) {
+        return vec2(registers.video_scale);
+    } else if (registers.integer_mode > 0.5) {
+        return vec2(floor(registers.OutputSize.y * registers.OriginalSize.w));
+    }
+    return registers.OutputSize.xy * registers.OriginalSize.zw;
+}
 
 void main()
 {
@@ -60,6 +76,10 @@ void main()
     vTexCoord = TexCoord * 1.0001;
 
     texel = registers.SourceSize.zw;
+    vec2 remote_blur_step = texel;
+    vec2 reference_blur_step = texel * (get_current_gb_scale() / 5.0);
+    blur_step = (registers.shadow_scale_mode > 0.5) ? reference_blur_step : remote_blur_step;
+    blur_step *= registers.shadow_blur_amount;
     lower_bound = vec2(0.0);
     upper_bound = vec2(texel * (registers.OutputSize.xy - 1.0));
 }
@@ -73,6 +93,7 @@ layout(location = 0) in vec2 vTexCoord;
 layout(location = 1) in vec2 texel;
 layout(location = 2) in vec2 lower_bound;
 layout(location = 3) in vec2 upper_bound;
+layout(location = 4) in vec2 blur_step;
 layout(location = 0) out vec4 FragColor;
 layout(set = 0, binding = 2) uniform sampler2D Source;
 
@@ -126,8 +147,8 @@ void main()
     // and adding their weighted alpha values to the total
     for (int i = 1; i < 5; i++)
     {
-        out_color.a += texture(Source, clamp(vTexCoord + vec2(0.0, offsets[i] * texel.y), lower_bound, upper_bound)).a * weights[i];
-        out_color.a += texture(Source, clamp(vTexCoord - vec2(0.0, offsets[i] * texel.y), lower_bound, upper_bound)).a * weights[i];
+        out_color.a += texture(Source, clamp(vTexCoord + vec2(0.0, offsets[i] * blur_step.y), lower_bound, upper_bound)).a * weights[i];
+        out_color.a += texture(Source, clamp(vTexCoord - vec2(0.0, offsets[i] * blur_step.y), lower_bound, upper_bound)).a * weights[i];
     }
 
     FragColor = out_color;
