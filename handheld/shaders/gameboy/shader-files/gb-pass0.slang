@@ -54,7 +54,7 @@
 
   /////////////////////////////////////////////////////////////////////////
  // Shared functions for numerical grey balance compensation            //
- // Uses 4×4 grid (16-point) coverage sampling with empirical base values //
+ // Normalizes emitted alpha energy to the 5x / 480p reference          //
 /////////////////////////////////////////////////////////////////////////
 
 // 1D line segment intersection
@@ -123,22 +123,28 @@ float calculate_coverage_at_point(vec2 tx_coord_f, float pixel_size,
     return mix(circ_coverage, rect_coverage, pixel_shape);
 }
 
-// Sample coverage across 4×4 grid and return average brightness
+// Sample coverage across a 4x4 grid and return average dot coverage.
 float sample_average_coverage(float pixel_size, float pixel_softness,
                                float sharpening_amount, float pixel_shape,
                                float sharp_mode) {
     float total = 0.0;
-    // Sample at 16 sub-pixel positions representing different pixel-to-dot alignments
+    // Sample the same [0, 1) fractional coordinate domain used by modf(tx_coord).
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
-            vec2 sample_pos = vec2(-0.375 + float(x) * 0.25,
-                                  -0.375 + float(y) * 0.25);
+            vec2 sample_pos = vec2(0.125 + float(x) * 0.25,
+                                  0.125 + float(y) * 0.25);
             total += calculate_coverage_at_point(sample_pos, pixel_size,
                                                 pixel_softness, sharpening_amount,
                                                 pixel_shape, sharp_mode);
         }
     }
     return total / 16.0;
+}
+
+float integer_dot_coverage(float scale) {
+    float safe_scale = max(floor(scale + 0.0001), 1.0);
+    float lit_pixels = max(safe_scale - 1.0, 0.0);
+    return (lit_pixels * lit_pixels) / (safe_scale * safe_scale);
 }
 
 layout(push_constant) uniform Push
@@ -254,44 +260,27 @@ void main()
         effective_softness += fract_factor * 4.0;
     }
 
-    // Calculate grey balance compensation using numerical coverage sampling (only needed for fullscreen mode)
+    // Match emitted dot alpha energy to the 5x/default hard-pixel reference.
+    // This keeps grey_balance stable between fullscreen AA and integer scales.
+    const float reference_coverage = 0.64; // 4x4 lit pixels in a 5x5 cell.
+    float current_coverage;
     if (registers.integer_mode < 0.5) {
-        // Reference params match empirical tuning baseline:
-        // pixel_size=0.80, pixel_softness=0.80, pixel_shape=1.0, sharpening_amount=1.0
-        float ref_brightness = sample_average_coverage(0.80, 0.80, 1.0, 1.0,
-                                                       registers.sharp_mode);
-        float cur_brightness = sample_average_coverage(registers.pixel_size,
-                                                       effective_softness,
-                                                       registers.sharpening_amount,
-                                                       registers.pixel_shape,
-                                                       registers.sharp_mode);
-
-        // Base compensation values empirically tuned at reference params
-        float base_comp = (registers.sharp_mode < 0.5)
-            ? 2.8  // Power mode: circular and rectangular are mathematically identical
-            : mix(2.5, 1.60, registers.pixel_shape);  // Sigmoid mode differs by shape
-
-        // Apply empirical corrections for perceptual brightness effects not captured by numerical sampling
-        float brightness_ratio = ref_brightness / max(cur_brightness, 0.001);
-        float size_comp = (registers.pixel_size > 0.80)
-            ? pow(registers.pixel_size / 0.80, 0.62)  // Larger pixels appear brighter (perceptual effect)
-            : 1.0;
-        float softness_comp = (effective_softness > 1.0)
-            ? pow(effective_softness, 0.444)  // Higher softness increases perceived brightness
-            : 1.0;
-        float sharpening_comp = (registers.sharp_mode < 0.5)
-            ? mix(0.857, 1.0, registers.sharpening_amount)  // Power: linear coverage is brighter
-            : mix(1.5, 1.0, registers.sharpening_amount);   // Sigmoid: linear coverage is darker
-        float shape_comp = (registers.sharp_mode >= 0.5 && registers.pixel_shape > 1.0)
-            ? 1.0 + (registers.pixel_shape - 1.0) * 0.667  // Rectangular shapes increase coverage ratio
-            : 1.0;
-
-        // Combine all factors
-        aa_compensation_factor = base_comp * brightness_ratio * size_comp *
-                                softness_comp * sharpening_comp * shape_comp;
+        current_coverage = sample_average_coverage(registers.pixel_size,
+                                                   effective_softness,
+                                                   registers.sharpening_amount,
+                                                   registers.pixel_shape,
+                                                   registers.sharp_mode);
     } else {
-        aa_compensation_factor = 1.0;  // No compensation in integer mode
+        current_coverage = integer_dot_coverage(video_scale_factor);
     }
+
+    float dynamic_alpha = 3.0 / max(registers.grey_balance, 0.001);
+    float reference_energy = reference_coverage *
+                             (registers.baseline_alpha + dynamic_alpha);
+    aa_compensation_factor = (reference_energy / max(current_coverage, 0.001) -
+                              registers.baseline_alpha) /
+                             max(dynamic_alpha, 0.001);
+    aa_compensation_factor = clamp(aa_compensation_factor, 0.0, 4.0);
 
 }
 

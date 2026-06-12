@@ -37,9 +37,13 @@
 #pragma parameter shadow_motion 				"     ↳ Shadow motion (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter shadow_max_offset 			"         ↳ Max offset" 2.50 0.0 30.0 0.5
 #pragma parameter shadow_opacity 				"     ↳ Shadow opacity" 0.55 0.01 1.0 0.01
-#pragma parameter shadow_offset_x 				"     ↳ Shadow offset horizontal" 1.0 -5.0 5.0 0.5
-#pragma parameter shadow_offset_y 				"     ↳ Shadow offset vertical" 1.0 -5.0 5.0 0.5
+#pragma parameter shadow_offset_x 				"     ↳ Shadow offset horizontal" 1.0 -5.0 5.0 0.25
+#pragma parameter shadow_offset_y 				"     ↳ Shadow offset vertical" 1.0 -5.0 5.0 0.25
+#pragma parameter shadow_scale_mode 			"     ↳ Shadow scale A/B (0=A Remote, 1=B Reference)" 0.0 0.0 1.0 1.0
+#pragma parameter shadow_blur_amount 			"     ↳ Shadow blur amount" 1.0 0.0 3.0 0.05
 
 #pragma parameter SCREEN_POSITIONING 			"== Screen position ==" 0.0 0.0 1.0 1.0
 #pragma parameter screen_offset_x 				"     ↳ Screen offset horizontal" 0.0 -5.0 5.0 1.0
 #pragma parameter screen_offset_y 				"     ↳ Screen offset vertical" 0.0 -5.0 5.0 1.0
+
+#pragma parameter debug_view 					"Debug view" 0.0 0.0 6.0 1.0

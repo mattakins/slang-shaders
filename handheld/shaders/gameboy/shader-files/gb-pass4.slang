@@ -43,6 +43,7 @@ layout(push_constant) uniform Push
 	float pixel_opacity;
 	float bg_smoothing;
 	float shadow_opacity;
+	float baseline_alpha;
 	float shadow_offset_x;
 	float shadow_offset_y;
 	float screen_offset_x;
@@ -52,6 +53,7 @@ layout(push_constant) uniform Push
 	float integer_mode;
 	float shadow_motion;
 	float shadow_max_offset;
+	float debug_view;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -62,19 +64,29 @@ layout(std140, set = 0, binding = 0) uniform UBO
     vec3 Accelerometer;
     vec3 AccelerometerRest;
     #endif
+    float video_scale;
+    float shadow_scale_mode;
 } global;
 
   /////////////////////////////////////////////////////////////////////////
  // Vertex shader                                                       //
 /////////////////////////////////////////////////////////////////////////
 
+vec2 get_current_gb_scale() {
+    if (registers.integer_mode > 1.5) {
+        return vec2(global.video_scale);
+    } else if (registers.integer_mode > 0.5) {
+        return vec2(floor(registers.OutputSize.y * registers.OriginalSize.w));
+    }
+    return registers.OutputSize.xy * registers.OriginalSize.zw;
+}
+
 #pragma stage vertex
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec2 TexCoord;
 layout(location = 0) out vec2 vTexCoord;
 layout(location = 1) out vec2 texel;
-layout(location = 2) out float resolution_scale;
-layout(location = 3) out vec2 shadow_offset;
+layout(location = 2) out vec2 shadow_offset;
 
 vec2 getOrientedTilt(vec3 accel) {
     float magnitude = length(accel);
@@ -88,12 +100,6 @@ void main()
     gl_Position = global.MVP * Position;
     vTexCoord = TexCoord * 1.0001;
 
-    // Calculate resolution scale for shadow compensation
-    // Reference resolution: 640×480 (shadow offsets tuned for this resolution)
-    float scale_x = registers.OutputSize.x / 640.0;
-    float scale_y = registers.OutputSize.y / 480.0;
-    resolution_scale = sqrt(scale_x * scale_y);
-
     vec2 gravity = vec2(0.0);
 
     #ifdef _HAS_SENSOR_UNIFORMS
@@ -106,12 +112,17 @@ void main()
     }
     #endif
 
+    vec2 shadow_offset_px = vec2(registers.shadow_offset_x, registers.shadow_offset_y);
     if (registers.shadow_motion > 0.5) {
-        vec2 base = vec2(registers.shadow_offset_x, registers.shadow_offset_y);
-        shadow_offset = (base + gravity * registers.shadow_max_offset) * resolution_scale * registers.SourceSize.zw;
-    } else {
-        shadow_offset = vec2(registers.shadow_offset_x, registers.shadow_offset_y) * resolution_scale * registers.SourceSize.zw;
+        shadow_offset_px += gravity * registers.shadow_max_offset;
     }
+
+    float scale_x = registers.OutputSize.x / 640.0;
+    float scale_y = registers.OutputSize.y / 480.0;
+    vec2 remote_shadow_step = registers.SourceSize.zw * sqrt(scale_x * scale_y);
+    vec2 reference_shadow_step = registers.SourceSize.zw * (get_current_gb_scale() / 5.0);
+    vec2 shadow_step = (global.shadow_scale_mode > 0.5) ? reference_shadow_step : remote_shadow_step;
+    shadow_offset = shadow_offset_px * shadow_step;
 
     texel = registers.SourceSize.zw;
 }
@@ -123,8 +134,7 @@ void main()
 #pragma stage fragment
 layout(location = 0) in vec2 vTexCoord;
 layout(location = 1) in vec2 texel;
-layout(location = 2) in float resolution_scale;
-layout(location = 3) in vec2 shadow_offset;
+layout(location = 2) in vec2 shadow_offset;
 layout(location = 0) out vec4 FragColor;
 layout(set = 0, binding = 1) uniform sampler2D Source;
 layout(set = 0, binding = 2) uniform sampler2D PassOutput1;
@@ -155,11 +165,9 @@ vec4 get_bg_color() {
 // Sample the background color from the palette
 #define shadow_alpha (registers.contrast * registers.shadow_opacity * registers.shadow_enable)
 
-// Offset for the entire screen
-#define screen_offset vec2( \
-    registers.screen_offset_x * texel.x, \
-    registers.screen_offset_y * texel.y \
-)
+float inside_range(float value, float lower, float upper) {
+    return step(lower, value) * step(value, upper);
+}
 
   /////////////////////////////////////////////////////////////////////////
  // Fragment shader                                                     //
@@ -173,13 +181,42 @@ void main()
     // Cache background color to avoid multiple function calls
     vec4 bg_color_cached = get_bg_color();
 
+    // Preserve the historical one-texel compositor alignment, separately from
+    // the user-facing texel screen nudge. Fullscreen gets a one-texel baseline
+    // nudge to match a 1,1 offset without changing pixel-perfect positioning.
+    vec2 compositor_alignment = -texel;
+    vec2 fullscreen_alignment = (registers.integer_mode < 0.5) ? texel : vec2(0.0);
+    vec2 screen_offset = compositor_alignment + fullscreen_alignment + vec2(
+        registers.screen_offset_x * texel.x,
+        registers.screen_offset_y * texel.y
+    );
+
     vec2 shadow_sample = vTexCoord - (shadow_offset + screen_offset);
-    shadow_sample = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
+    vec2 shadow_sample_clamped = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
+
+    vec2 gb_scale = get_current_gb_scale();
+    vec2 source_bounds = min((registers.OriginalSize.xy * gb_scale) * registers.SourceSize.zw, vec2(1.0));
+    vec2 source_min = vec2(0.5) - source_bounds * 0.5;
+    vec2 source_max = vec2(0.5) + source_bounds * 0.5 - texel;
+    vec2 screen_min = source_min + screen_offset;
+    vec2 screen_max = source_max + screen_offset;
+    float inside_screen =
+        inside_range(vTexCoord.x, screen_min.x, screen_max.x) *
+        inside_range(vTexCoord.y, screen_min.y, screen_max.y);
+    float shadow_inside_source =
+        inside_range(shadow_sample.x, source_min.x, source_max.x) *
+        inside_range(shadow_sample.y, source_min.y, source_max.y);
+    float shadow_oob = inside_screen * (1.0 - shadow_inside_source);
 
     // Sample all the relevant textures
     vec4 foreground = texture(PassOutput1, tex - screen_offset);
     vec4 background = texture(BACKGROUND, vTexCoord);
-    vec4 shadows    = texture(Source, shadow_sample);
+    vec4 raw_shadows = texture(Source, shadow_sample_clamped);
+    vec4 shadows = raw_shadows;
+    vec2 screen_shadow_sample = clamp(vTexCoord - screen_offset, vec2(0.0), vec2(1.0) - texel);
+    float baseline_shadow = min(texture(Source, screen_shadow_sample).a, registers.baseline_alpha);
+    shadows.a = max(shadows.a, baseline_shadow);
+    shadows.a *= inside_screen;
 
     // Foreground and background are blended with the background color
     foreground *= bg_color_cached;
@@ -187,6 +224,23 @@ void main()
     float bg_test = 0.0;
     if ( foreground.a > 0.0 )
         bg_test = 1.0;
+
+    if (registers.debug_view > 0.5) {
+        if (registers.debug_view < 1.5) {
+            FragColor = vec4(vec3(foreground.a), 1.0);
+        } else if (registers.debug_view < 2.5) {
+            FragColor = vec4(vec3(shadows.a), 1.0);
+        } else if (registers.debug_view < 3.5) {
+            FragColor = vec4(vec3(raw_shadows.a), 1.0);
+        } else if (registers.debug_view < 4.5) {
+            FragColor = vec4(shadow_oob, 0.0, 0.0, 1.0);
+        } else if (registers.debug_view < 5.5) {
+            FragColor = vec4(vec3(bg_test), 1.0);
+        } else {
+            FragColor = vec4(vec3(inside_screen), 1.0);
+        }
+        return;
+    }
 
     background -= (background - 0.5) * registers.bg_smoothing * bg_test;
 
@@ -201,8 +255,8 @@ void main()
         0.0, 1.0
     );
 
-    // Shadows are alpha blended with the background
-    vec4 out_color = (shadows * shadows.a * shadow_alpha) + (background * (1 - shadows.a * shadow_alpha));
+    // Shadows are alpha blended with the background.
+    vec4 out_color = (shadows * shadows.a * shadow_alpha) + (background * (1.0 - shadows.a * shadow_alpha));
 
     // Foreground is alpha blended with the shadowed background
     out_color = (foreground * foreground.a * registers.contrast) + (out_color * (registers.screen_light - foreground.a * registers.contrast * registers.pixel_opacity));
