@@ -20,7 +20,6 @@
 
 #pragma parameter blending_mode 				"== Pixel blending mode == (0=Blend gaps, 1=Blend all)" 0.0 0.0 1.0 1.0
 #pragma parameter adjacent_texel_alpha_blending "     ↳ Blend amount" 0.1755 0.0 1.0 0.05
-#pragma parameter alpha_blend_scale_mode 		"     ↳ Scale blend radius with LCD (OFF/ON)" 1.0 0.0 1.0 1.0
 
 #pragma parameter sharp_mode 					"== Fullscreen pixels == (0=Soft, 1=Sharp)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE5 						" *  Soft / circular pixels = less grid distortion" 0.0 0.0 1.0 1.0
