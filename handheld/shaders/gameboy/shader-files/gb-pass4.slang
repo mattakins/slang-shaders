@@ -120,7 +120,7 @@ void main()
     float scale_x = registers.OutputSize.x / 640.0;
     float scale_y = registers.OutputSize.y / 480.0;
     vec2 remote_shadow_step = registers.SourceSize.zw * sqrt(scale_x * scale_y);
-    vec2 reference_shadow_step = registers.SourceSize.zw * (get_current_gb_scale() / 5.0);
+    vec2 reference_shadow_step = registers.SourceSize.zw * (get_current_gb_scale() / GB_SHADOW_REFERENCE_SCALE);
     vec2 shadow_step = (global.shadow_scale_mode > 0.5) ? reference_shadow_step : remote_shadow_step;
     shadow_offset = shadow_offset_px * shadow_step;
 
