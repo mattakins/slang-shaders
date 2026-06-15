@@ -159,6 +159,7 @@ layout(push_constant) uniform Push
 	float sharpening_amount;
 	float integer_mode;
 	float video_scale;
+	float REFERENCE_SCALE;
 	float baseline_alpha;
 	float grey_balance;
 	float response_time;
@@ -219,7 +220,7 @@ void main()
         original_coord = TexCoord;
         dot_size = registers.SourceSize.zw;
         vec2 legacy_gap = 1.0 / (registers.SourceSize.xy * video_scale_factor);
-        vec2 scaled_gap = registers.SourceSize.zw / GB_LCD_REFERENCE_SCALE;
+        vec2 scaled_gap = registers.SourceSize.zw / registers.REFERENCE_SCALE;
         one_texel = (registers.dot_mask_scale_mode > 0.5) ? scaled_gap : legacy_gap;
         screen_bounds = scale_bounds;
 
@@ -266,7 +267,7 @@ void main()
     // Match emitted dot alpha energy to the selected hard-pixel reference.
     // This keeps grey_balance stable between fullscreen AA and integer scales.
     float reference_coverage = (registers.dot_mask_scale_mode > 0.5) ?
-                               integer_dot_coverage(GB_LCD_REFERENCE_SCALE) :
+                               integer_dot_coverage(registers.REFERENCE_SCALE) :
                                0.64; // 4x4 lit pixels in a 5x5 cell.
     float current_coverage;
     if (registers.integer_mode < 0.5) {

@@ -41,6 +41,7 @@ layout(push_constant) uniform Push
 	float adjacent_texel_alpha_blending;
 	float integer_mode;
 	float video_scale;
+	float REFERENCE_SCALE;
 	float alpha_blend_scale_mode;
 } registers;
 
@@ -80,7 +81,7 @@ void main()
     vTexCoord = TexCoord * 1.0001;
 
     texel = registers.SourceSize.zw;
-    vec2 scaled_texel = texel * (get_current_gb_scale() / GB_LCD_REFERENCE_SCALE);
+    vec2 scaled_texel = texel * (get_current_gb_scale() / registers.REFERENCE_SCALE);
     vec2 blend_step = (registers.alpha_blend_scale_mode > 0.5) ? scaled_texel : texel;
     blur_coords_down  = vTexCoord + vec2(0.0, blend_step.y);
     blur_coords_up    = vTexCoord + vec2(0.0, -blend_step.y);
