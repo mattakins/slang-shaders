@@ -6,7 +6,7 @@
 //  / / __/ /| | / /|_/ / __/    / __  / / / /\  /                       //
 // / /_/ / ___ |/ /  / / /___   / /_/ / /_/ / / /                        //
 // \____/_/  |_/_/  /_/_____/  /_____/\____/ /_/                         //
-//  ==================== DOT MATRIX SHADER v1.2                          //
+//  ==================== DOT MATRIX SHADER v1.3                          //
 //                                                                       //
 // Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
 // Copyright (C) 2024-2026 Matt Akins                                    //
@@ -39,6 +39,7 @@ layout(push_constant) uniform Push
 	vec4 SourceSize;
 	float integer_mode;
 	float video_scale;
+	float baseline_alpha;
 	float shadow_scale_mode;
 	float shadow_blur_amount;
 } registers;
@@ -121,6 +122,43 @@ Normalized Gaussian weights:                     Normalized Gaussian weights:
 0.07270923003781316665844409497651 @position4    0.08167444001912718529866079800870 @position4
 0.05488381664578583445722654373702 @position5
 */
+float source_strong_ink(vec2 coord, vec2 lower_bound, vec2 upper_bound) {
+    float alpha = texture(Source, clamp(coord, lower_bound, upper_bound)).a;
+    return step(registers.baseline_alpha + 0.08, alpha);
+}
+
+float shadow_sample_alpha(vec2 coord, vec2 texel, vec2 lower_bound, vec2 upper_bound) {
+    vec2 sample_coord = clamp(coord, lower_bound, upper_bound);
+    float alpha = texture(Source, sample_coord).a;
+    float ink = max(alpha - registers.baseline_alpha, 0.0);
+    float local_ink = source_strong_ink(sample_coord, lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(texel.x, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(texel.x, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(0.0, texel.y), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(0.0, texel.y), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(texel.x, texel.y), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(texel.x, -texel.y), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(-texel.x, texel.y), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(texel.x, texel.y), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(texel.x * 2.0, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(texel.x * 2.0, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(0.0, texel.y * 2.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(0.0, texel.y * 2.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(texel.x * 3.0, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(texel.x * 3.0, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(0.0, texel.y * 3.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(0.0, texel.y * 3.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(texel.x * 6.0, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(texel.x * 6.0, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(0.0, texel.y * 6.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(0.0, texel.y * 6.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(texel.x * 9.0, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(texel.x * 9.0, 0.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord + vec2(0.0, texel.y * 9.0), lower_bound, upper_bound);
+    local_ink += source_strong_ink(coord - vec2(0.0, texel.y * 9.0), lower_bound, upper_bound);
+    return ink + registers.baseline_alpha * step(0.5, local_ink);
+}
+
 void main()
 {
     // Define offsets and weights - change this for both the X and Y passes if you change the sigma value or number of texels sampled
@@ -141,14 +179,18 @@ void main()
                                 0.08167444001912718529866079800870 );
 
     // Sample the current fragment and apply its weight
-    vec4 out_color = texture(Source, clamp(vTexCoord, lower_bound, upper_bound)) * weights[0];
+    vec4 center = texture(Source, clamp(vTexCoord, lower_bound, upper_bound));
+    vec4 out_color = center * weights[0];
+    out_color.a = shadow_sample_alpha(vTexCoord, texel, lower_bound, upper_bound) * weights[0];
 
     // Iterate across the offsets in both directions sampling texels
     // and adding their weighted alpha values to the total
     for (int i = 1; i < 5; i++)
     {
-        out_color.a += texture(Source, clamp(vTexCoord + vec2(offsets[i] * blur_step.x, 0.0), lower_bound, upper_bound)).a * weights[i];
-        out_color.a += texture(Source, clamp(vTexCoord - vec2(offsets[i] * blur_step.x, 0.0), lower_bound, upper_bound)).a * weights[i];
+        vec2 right = vTexCoord + vec2(offsets[i] * blur_step.x, 0.0);
+        vec2 left = vTexCoord - vec2(offsets[i] * blur_step.x, 0.0);
+        out_color.a += shadow_sample_alpha(right, texel, lower_bound, upper_bound) * weights[i];
+        out_color.a += shadow_sample_alpha(left, texel, lower_bound, upper_bound) * weights[i];
     }
 
     FragColor = out_color;

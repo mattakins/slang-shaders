@@ -6,7 +6,7 @@
 //  / / __/ /| | / /|_/ / __/    / __  / / / /\  /                       //
 // / /_/ / ___ |/ /  / / /___   / /_/ / /_/ / / /                        //
 // \____/_/  |_/_/  /_/_____/  /_____/\____/ /_/                         //
-//  ==================== DOT MATRIX SHADER v1.2                          //
+//  ==================== DOT MATRIX SHADER v1.3                          //
 //                                                                       //
 // Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
 // Copyright (C) 2024-2026 Matt Akins                                    //
@@ -53,7 +53,7 @@ layout(push_constant) uniform Push
 	float integer_mode;
 	float shadow_motion;
 	float shadow_max_offset;
-	float debug_view;
+	float shadow_edge_clamp_debug;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -162,11 +162,25 @@ vec4 get_bg_color() {
 
 #define bg_color get_bg_color()
 
-// Sample the background color from the palette
 #define shadow_alpha (registers.contrast * registers.shadow_opacity * registers.shadow_enable)
 
 float inside_range(float value, float lower, float upper) {
     return step(lower, value) * step(value, upper);
+}
+
+float inside_rect(vec2 coord, vec2 lower, vec2 upper) {
+    return inside_range(coord.x, lower.x, upper.x) *
+           inside_range(coord.y, lower.y, upper.y);
+}
+
+float soft_inside_range(float value, float lower, float upper, float feather) {
+    return smoothstep(lower - feather, lower + feather, value) *
+           (1.0 - smoothstep(upper - feather, upper + feather, value));
+}
+
+float soft_inside_rect(vec2 coord, vec2 lower, vec2 upper, vec2 feather) {
+    return soft_inside_range(coord.x, lower.x, upper.x, feather.x) *
+           soft_inside_range(coord.y, lower.y, upper.y, feather.y);
 }
 
   /////////////////////////////////////////////////////////////////////////
@@ -191,32 +205,36 @@ void main()
         registers.screen_offset_y * texel.y
     );
 
+    // Sample all the relevant textures
+    vec4 foreground = texture(PassOutput1, tex - screen_offset);
+    vec4 background = texture(BACKGROUND, vTexCoord);
     vec2 shadow_sample = vTexCoord - (shadow_offset + screen_offset);
-    vec2 shadow_sample_clamped = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
+    vec4 shadows = texture(Source, shadow_sample);
 
     vec2 gb_scale = get_current_gb_scale();
     vec2 source_bounds = min((registers.OriginalSize.xy * gb_scale) * registers.SourceSize.zw, vec2(1.0));
     vec2 source_min = vec2(0.5) - source_bounds * 0.5;
-    vec2 source_max = vec2(0.5) + source_bounds * 0.5 - texel;
+    vec2 source_max = vec2(0.5) + source_bounds * 0.5;
     vec2 screen_min = source_min + screen_offset;
     vec2 screen_max = source_max + screen_offset;
-    float inside_screen =
-        inside_range(vTexCoord.x, screen_min.x, screen_max.x) *
-        inside_range(vTexCoord.y, screen_min.y, screen_max.y);
-    float shadow_inside_source =
-        inside_range(shadow_sample.x, source_min.x, source_max.x) *
-        inside_range(shadow_sample.y, source_min.y, source_max.y);
-    float shadow_oob = inside_screen * (1.0 - shadow_inside_source);
+    vec2 shadow_min = screen_min + shadow_offset;
+    vec2 shadow_max = screen_max + shadow_offset;
+    vec2 shadow_feather = texel * 4.0;
+    float inside_screen = inside_rect(vTexCoord, screen_min, screen_max);
+    float screen_shadow = soft_inside_rect(vTexCoord, shadow_min, shadow_max, shadow_feather);
+    shadows.a = max(shadows.a, registers.baseline_alpha * screen_shadow * (1.0 - inside_screen));
 
-    // Sample all the relevant textures
-    vec4 foreground = texture(PassOutput1, tex - screen_offset);
-    vec4 background = texture(BACKGROUND, vTexCoord);
-    vec4 raw_shadows = texture(Source, shadow_sample_clamped);
-    vec4 shadows = raw_shadows;
-    vec2 screen_shadow_sample = clamp(vTexCoord - screen_offset, vec2(0.0), vec2(1.0) - texel);
-    float baseline_shadow = min(texture(Source, screen_shadow_sample).a, registers.baseline_alpha);
-    shadows.a = max(shadows.a, baseline_shadow);
-    shadows.a *= inside_screen;
+    if (registers.shadow_edge_clamp_debug > 0.5) {
+        vec2 legacy_source_max = source_max - texel;
+        vec2 legacy_screen_min = source_min + screen_offset;
+        vec2 legacy_screen_max = legacy_source_max + screen_offset;
+        vec2 shadow_sample_clamped = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
+        vec2 screen_shadow_sample = clamp(vTexCoord - screen_offset, vec2(0.0), vec2(1.0) - texel);
+        float legacy_inside_screen = inside_rect(vTexCoord, legacy_screen_min, legacy_screen_max);
+        float baseline_shadow = min(texture(Source, screen_shadow_sample).a, registers.baseline_alpha);
+        shadows = texture(Source, shadow_sample_clamped);
+        shadows.a = max(shadows.a, baseline_shadow) * legacy_inside_screen;
+    }
 
     // Foreground and background are blended with the background color
     foreground *= bg_color_cached;
@@ -224,23 +242,6 @@ void main()
     float bg_test = 0.0;
     if ( foreground.a > 0.0 )
         bg_test = 1.0;
-
-    if (registers.debug_view > 0.5) {
-        if (registers.debug_view < 1.5) {
-            FragColor = vec4(vec3(foreground.a), 1.0);
-        } else if (registers.debug_view < 2.5) {
-            FragColor = vec4(vec3(shadows.a), 1.0);
-        } else if (registers.debug_view < 3.5) {
-            FragColor = vec4(vec3(raw_shadows.a), 1.0);
-        } else if (registers.debug_view < 4.5) {
-            FragColor = vec4(shadow_oob, 0.0, 0.0, 1.0);
-        } else if (registers.debug_view < 5.5) {
-            FragColor = vec4(vec3(bg_test), 1.0);
-        } else {
-            FragColor = vec4(vec3(inside_screen), 1.0);
-        }
-        return;
-    }
 
     background -= (background - 0.5) * registers.bg_smoothing * bg_test;
 

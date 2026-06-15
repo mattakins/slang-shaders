@@ -6,12 +6,12 @@
 //  / / __/ /| | / /|_/ / __/    / __  / / / /\  /                       //
 // / /_/ / ___ |/ /  / / /___   / /_/ / /_/ / / /                        //
 // \____/_/  |_/_/  /_/_____/  /_____/\____/ /_/                         //
-//  ==================== DOT MATRIX SHADER v1.2                          //
+//  ==================== DOT MATRIX SHADER v1.3                          //
 //                                                                       //
 // Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
 // Copyright (C) 2024-2026 Matt Akins			                         //
 //                                                                       //
-// 6/2/26 - v1.2				                                         //
+// 6/2/26 - v1.3				                                         //
 //   • Added motion-based shadows               					     //
 //   • Fixed edge light banding											 //
 //                                                                       //
