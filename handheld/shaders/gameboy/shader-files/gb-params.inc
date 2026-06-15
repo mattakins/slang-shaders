@@ -29,7 +29,6 @@
 #pragma parameter pixel_shape 					"     ↳ Pixel shape [Sharp mode] (Circle/Rectangle)" 1.0 0.0 1.30 0.05
 #pragma parameter sharpening_amount 			"     ↳ Pixel edge sharpness" 1.0 0.0 1.0 0.05
 #pragma parameter pixel_size 					"     ↳ Pixel size" 0.80 0.2 1.10 0.05
-#pragma parameter dot_mask_scale_mode 			"     ↳ Scale dot mask with LCD (OFF/ON)" 1.0 0.0 1.0 1.0
 
 #pragma parameter LCD_EFFECTS 					"== LCD effects ==" 0.0 0.0 1.0 1.0
 #pragma parameter response_time 				"     ↳ Latency" 0.0 0.0 0.777 0.111
