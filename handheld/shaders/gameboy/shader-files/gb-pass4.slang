@@ -66,6 +66,7 @@ layout(std140, set = 0, binding = 0) uniform UBO
     #endif
     float video_scale;
     float shadow_scale_mode;
+    float REFERENCE_SCALE;
 } global;
 
   /////////////////////////////////////////////////////////////////////////
@@ -120,7 +121,7 @@ void main()
     float scale_x = registers.OutputSize.x / 640.0;
     float scale_y = registers.OutputSize.y / 480.0;
     vec2 remote_shadow_step = registers.SourceSize.zw * sqrt(scale_x * scale_y);
-    vec2 reference_shadow_step = registers.SourceSize.zw * (get_current_gb_scale() / GB_LCD_REFERENCE_SCALE);
+    vec2 reference_shadow_step = registers.SourceSize.zw * (get_current_gb_scale() / global.REFERENCE_SCALE);
     vec2 shadow_step = (global.shadow_scale_mode > 0.5) ? reference_shadow_step : remote_shadow_step;
     shadow_offset = shadow_offset_px * shadow_step;
 
@@ -221,7 +222,7 @@ void main()
     vec2 shadow_max = screen_max + shadow_offset;
     vec2 shadow_feather = texel * 4.0;
     if (global.shadow_scale_mode > 0.5) {
-        shadow_feather *= gb_scale / GB_LCD_REFERENCE_SCALE;
+        shadow_feather *= gb_scale / global.REFERENCE_SCALE;
     }
     float inside_screen = inside_rect(vTexCoord, screen_min, screen_max);
     float screen_shadow = soft_inside_rect(vTexCoord, shadow_min, shadow_max, shadow_feather);

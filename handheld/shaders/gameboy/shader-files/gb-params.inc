@@ -5,10 +5,9 @@
 #pragma parameter NOTE2 						" *  GBC: Turn OFF Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE3 						" *  GBA: Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 
-#define GB_LCD_REFERENCE_SCALE 3.0
-
 #pragma parameter integer_mode 					"== Display mode == (0=Full, 1=Pixel Perfect, 2=Scale factor)" 0.0 0.0 2.0 1.0
 #pragma parameter video_scale 					"     ↳ Scale factor" 5.0 2.0 15.0 1.0
+#pragma parameter REFERENCE_SCALE 				"     ↳ LCD reference scale" 3.0 1.0 10.0 0.25
 
 #pragma parameter color_toggle 					"== Color mode == (0=Grayscale, 1=Color)" 0.0 0.0 1.0 1.0
 #pragma parameter palette 						"     ↳ Palette (0=IMG, 1/2=Pocket, 3=B&W, 4=DMG, 5/6=Light)" 0.0 0.0 6.0 1.0
@@ -43,7 +42,7 @@
 #pragma parameter shadow_opacity 				"     ↳ Shadow opacity" 0.55 0.01 1.0 0.01
 #pragma parameter shadow_offset_x 				"     ↳ Shadow offset horizontal" 1.0 -5.0 5.0 0.25
 #pragma parameter shadow_offset_y 				"     ↳ Shadow offset vertical" 1.0 -5.0 5.0 0.25
-#pragma parameter shadow_scale_mode 			"     ↳ Shadow scale A/B (0=A Remote, 1=B 3x Ref)" 1.0 0.0 1.0 1.0
+#pragma parameter shadow_scale_mode 			"     ↳ Shadow scale A/B (0=A Remote, 1=B Ref)" 1.0 0.0 1.0 1.0
 #pragma parameter shadow_blur_amount 			"     ↳ Shadow blur amount" 1.0 0.0 3.0 0.05
 #pragma parameter shadow_edge_clamp_debug 		"     ↳ Debug edge clamp workaround" 0.0 0.0 1.0 1.0
 
