@@ -41,7 +41,7 @@
 #pragma parameter shadow_opacity 				"     ↳ Shadow opacity" 0.55 0.01 1.0 0.01
 #pragma parameter shadow_offset_x 				"     ↳ Shadow offset horizontal" 1.0 -5.0 5.0 0.25
 #pragma parameter shadow_offset_y 				"     ↳ Shadow offset vertical" 1.0 -5.0 5.0 0.25
-#pragma parameter shadow_scale_mode 			"     ↳ Shadow scale A/B (0=A Remote, 1=B 3x Ref)" 0.0 0.0 1.0 1.0
+#pragma parameter shadow_scale_mode 			"     ↳ Shadow scale A/B (0=A Remote, 1=B 3x Ref)" 1.0 0.0 1.0 1.0
 #pragma parameter shadow_blur_amount 			"     ↳ Shadow blur amount" 1.0 0.0 3.0 0.05
 #pragma parameter shadow_edge_clamp_debug 		"     ↳ Debug edge clamp workaround" 0.0 0.0 1.0 1.0
 
