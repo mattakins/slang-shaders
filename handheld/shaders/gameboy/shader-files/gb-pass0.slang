@@ -167,6 +167,7 @@ layout(push_constant) uniform Push
 	float pixel_shape;
 	float palette;
 	float auto_soften;
+	float dot_mask_scale_mode;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -217,7 +218,9 @@ void main()
         vTexCoord = TexCoord * 1.0001;
         original_coord = TexCoord;
         dot_size = registers.SourceSize.zw;
-        one_texel = 1.0 / (registers.SourceSize.xy * video_scale_factor);
+        vec2 legacy_gap = 1.0 / (registers.SourceSize.xy * video_scale_factor);
+        vec2 scaled_gap = registers.SourceSize.zw / GB_LCD_REFERENCE_SCALE;
+        one_texel = (registers.dot_mask_scale_mode > 0.5) ? scaled_gap : legacy_gap;
         screen_bounds = scale_bounds;
 
         // Set unused outputs for non-integer mode
@@ -260,9 +263,11 @@ void main()
         effective_softness += fract_factor * 4.0;
     }
 
-    // Match emitted dot alpha energy to the 5x/default hard-pixel reference.
+    // Match emitted dot alpha energy to the selected hard-pixel reference.
     // This keeps grey_balance stable between fullscreen AA and integer scales.
-    const float reference_coverage = 0.64; // 4x4 lit pixels in a 5x5 cell.
+    float reference_coverage = (registers.dot_mask_scale_mode > 0.5) ?
+                               integer_dot_coverage(GB_LCD_REFERENCE_SCALE) :
+                               0.64; // 4x4 lit pixels in a 5x5 cell.
     float current_coverage;
     if (registers.integer_mode < 0.5) {
         current_coverage = sample_average_coverage(registers.pixel_size,
@@ -270,6 +275,8 @@ void main()
                                                    registers.sharpening_amount,
                                                    registers.pixel_shape,
                                                    registers.sharp_mode);
+    } else if (registers.dot_mask_scale_mode > 0.5) {
+        current_coverage = reference_coverage;
     } else {
         current_coverage = integer_dot_coverage(video_scale_factor);
     }

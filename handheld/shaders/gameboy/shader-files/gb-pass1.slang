@@ -39,6 +39,9 @@ layout(push_constant) uniform Push
 	vec4 SourceSize;
 	float blending_mode;
 	float adjacent_texel_alpha_blending;
+	float integer_mode;
+	float video_scale;
+	float alpha_blend_scale_mode;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -62,16 +65,27 @@ layout(location = 5) out vec2 blur_coords_left;
 layout(location = 6) out vec2 blur_coords_lower_bound;
 layout(location = 7) out vec2 blur_coords_upper_bound;
 
+vec2 get_current_gb_scale() {
+    if (registers.integer_mode > 1.5) {
+        return vec2(registers.video_scale);
+    } else if (registers.integer_mode > 0.5) {
+        return vec2(floor(registers.OutputSize.y * registers.OriginalSize.w));
+    }
+    return registers.OutputSize.xy * registers.OriginalSize.zw;
+}
+
 void main()
 {
     gl_Position = global.MVP * Position;
     vTexCoord = TexCoord * 1.0001;
 
     texel = registers.SourceSize.zw;
-    blur_coords_down  = vTexCoord + vec2(0.0, texel.y);
-    blur_coords_up    = vTexCoord + vec2(0.0, -texel.y);
-    blur_coords_right = vTexCoord + vec2(texel.x,  0.0);
-    blur_coords_left  = vTexCoord + vec2(-texel.x, 0.0);
+    vec2 scaled_texel = texel * (get_current_gb_scale() / GB_LCD_REFERENCE_SCALE);
+    vec2 blend_step = (registers.alpha_blend_scale_mode > 0.5) ? scaled_texel : texel;
+    blur_coords_down  = vTexCoord + vec2(0.0, blend_step.y);
+    blur_coords_up    = vTexCoord + vec2(0.0, -blend_step.y);
+    blur_coords_right = vTexCoord + vec2(blend_step.x,  0.0);
+    blur_coords_left  = vTexCoord + vec2(-blend_step.x, 0.0);
     blur_coords_lower_bound = vec2(0.0);
     blur_coords_upper_bound = texel * (registers.OutputSize.xy - vec2(2.0));
 }
