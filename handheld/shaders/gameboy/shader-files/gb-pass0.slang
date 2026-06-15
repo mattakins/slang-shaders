@@ -14,7 +14,7 @@
 // 9/13/26 - v1.3                                                        //
 //   • Fixed sizing and pass references when stacking presets            //
 //                                                                       //
-// 6/2/26 - v1.2				                                         //
+// 6/2/26 - v1.3				                                         //
 //   • Added motion-based shadows               					     //
 //   • Fixed edge light banding											 //
 //                                                                       //
