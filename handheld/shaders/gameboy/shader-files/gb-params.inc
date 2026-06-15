@@ -5,7 +5,7 @@
 #pragma parameter NOTE2 						" *  GBC: Turn OFF Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE3 						" *  GBA: Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 
-#define GB_SHADOW_REFERENCE_SCALE 3.0
+#define GB_LCD_REFERENCE_SCALE 3.0
 
 #pragma parameter integer_mode 					"== Display mode == (0=Full, 1=Pixel Perfect, 2=Scale factor)" 0.0 0.0 2.0 1.0
 #pragma parameter video_scale 					"     ↳ Scale factor" 5.0 2.0 15.0 1.0
@@ -21,6 +21,7 @@
 
 #pragma parameter blending_mode 				"== Pixel blending mode == (0=Blend gaps, 1=Blend all)" 0.0 0.0 1.0 1.0
 #pragma parameter adjacent_texel_alpha_blending "     ↳ Blend amount" 0.1755 0.0 1.0 0.05
+#pragma parameter alpha_blend_scale_mode 		"     ↳ Scale blend radius with LCD (OFF/ON)" 1.0 0.0 1.0 1.0
 
 #pragma parameter sharp_mode 					"== Fullscreen pixels == (0=Soft, 1=Sharp)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE5 						" *  Soft / circular pixels = less grid distortion" 0.0 0.0 1.0 1.0
@@ -29,6 +30,7 @@
 #pragma parameter pixel_shape 					"     ↳ Pixel shape [Sharp mode] (Circle/Rectangle)" 1.0 0.0 1.30 0.05
 #pragma parameter sharpening_amount 			"     ↳ Pixel edge sharpness" 1.0 0.0 1.0 0.05
 #pragma parameter pixel_size 					"     ↳ Pixel size" 0.80 0.2 1.10 0.05
+#pragma parameter dot_mask_scale_mode 			"     ↳ Scale dot mask with LCD (OFF/ON)" 1.0 0.0 1.0 1.0
 
 #pragma parameter LCD_EFFECTS 					"== LCD effects ==" 0.0 0.0 1.0 1.0
 #pragma parameter response_time 				"     ↳ Latency" 0.0 0.0 0.777 0.111
