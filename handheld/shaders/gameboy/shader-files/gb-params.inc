@@ -1,20 +1,17 @@
 // GAME BOY DOT MATRIX SHADER v1.3 - Shared Parameters
 
 #pragma parameter GAMEBOY_SHADER 				"=== GAME BOY DOT MATRIX SHADER v1.3 ===" 0.0 0.0 1.0 1.0
-#pragma parameter NOTE1 						" *  Turn OFF Integer Scale in Settings > Video > Scaling" 0.0 0.0 1.0 1.0
-#pragma parameter NOTE2 						" *  GBC: Turn OFF Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
-#pragma parameter NOTE3 						" *  GBA: Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
+#pragma parameter NOTE1 						" *  Turn OFF Settings > Video > Scaling > Integer Scale" 0.0 0.0 1.0 1.0
+#pragma parameter NOTE2 						" *  Turn OFF Core > Interframe Blending" 0.0 0.0 1.0 1.0
+#pragma parameter NOTE3 						" *  Turn ON Core > Color Correction" 0.0 0.0 1.0 1.0
 
 #pragma parameter integer_mode 					"== Display mode == (0=Full, 1=Pixel Perfect, 2=Scale factor)" 0.0 0.0 2.0 1.0
 #pragma parameter video_scale 					"     ↳ Scale factor" 5.0 3.0 15.0 1.0
 #pragma parameter REFERENCE_SCALE 				"     ↳ LCD reference scale" 3.0 1.0 10.0 0.25
-#pragma parameter GREY_REFERENCE_MODE 			"     ↳ Grey reference mode (0=Scale, 1=Coverage)" 0.0 0.0 1.0 1.0
-#pragma parameter GREY_REFERENCE_SCALE 			"     ↳ Grey balance reference scale" 5.0 1.0 10.0 1.0
-#pragma parameter GREY_REFERENCE_COVERAGE 		"     ↳ Grey reference coverage" 1.0 0.0 1.0 0.01
 
 #pragma parameter color_toggle 					"== Color mode == (0=Grayscale, 1=Color)" 0.0 0.0 1.0 1.0
 #pragma parameter palette 						"     ↳ Palette (0=IMG, 1/2=Pocket, 3=B&W, 4=DMG, 5/6=Light)" 0.0 0.0 6.0 1.0
-#pragma parameter grey_balance 					"     ↳ Grey balance" 3.0 0.0 4.0 0.1
+#pragma parameter grey_balance 					"     ↳ Grey balance" 3.0 0.0 10.0 0.1
 #pragma parameter contrast 						"     ↳ Contrast" 0.95 0.0 1.0 0.05
 
 #pragma parameter brightness_mode 				"== Pixel transparency detection == (0=Simple, 1=Perceptual)" 0.0 0.0 1.0 1.0

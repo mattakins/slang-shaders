@@ -162,9 +162,6 @@ layout(push_constant) uniform Push
 	float sharpening_amount;
 	float integer_mode;
 	float video_scale;
-	float GREY_REFERENCE_MODE;
-	float GREY_REFERENCE_SCALE;
-	float GREY_REFERENCE_COVERAGE;
 	float baseline_alpha;
 	float grey_balance;
 	float response_time;
@@ -268,11 +265,7 @@ void main()
 
     // Match emitted dot alpha energy to the selected hard-pixel reference.
     // This keeps grey_balance stable between fullscreen AA and integer scales.
-    float scale_reference_coverage = integer_dot_coverage(registers.GREY_REFERENCE_SCALE);
-    float direct_reference_coverage = clamp(registers.GREY_REFERENCE_COVERAGE, 0.0, 1.0);
-    float reference_coverage = mix(scale_reference_coverage,
-                                   direct_reference_coverage,
-                                   step(0.5, registers.GREY_REFERENCE_MODE));
+    float reference_coverage = 1.0;
     float current_coverage;
     if (registers.integer_mode < 0.5) {
         current_coverage = sample_average_coverage(registers.pixel_size,
