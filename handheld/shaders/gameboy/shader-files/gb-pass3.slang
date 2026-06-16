@@ -40,7 +40,6 @@ layout(push_constant) uniform Push
 	float integer_mode;
 	float video_scale;
 	float REFERENCE_SCALE;
-	float shadow_scale_mode;
 	float shadow_blur_amount;
 } registers;
 

@@ -231,9 +231,7 @@ void main()
         shadows = mix(shadows, clamped_shadows, inside_shadow * (1.0 - inside_screen) * shadow_facing_edge);
     } else {
         vec2 shadow_feather = texel * 4.0;
-        if (global.shadow_scale_mode > 0.5) {
-            shadow_feather *= gb_scale / global.REFERENCE_SCALE;
-        }
+        shadow_feather *= gb_scale / global.REFERENCE_SCALE;
         float screen_shadow = soft_inside_rect(vTexCoord, shadow_min, shadow_max, shadow_feather);
         shadows.a = max(shadows.a, registers.baseline_alpha * screen_shadow * (1.0 - inside_screen));
     }
