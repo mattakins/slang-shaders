@@ -227,7 +227,13 @@ void main()
         vec2 shadow_sample_clamped = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
         vec4 clamped_shadows = texture(Source, shadow_sample_clamped);
         float inside_shadow = inside_rect(vTexCoord, shadow_min, shadow_max);
-        shadows = mix(shadows, clamped_shadows, inside_shadow * (1.0 - inside_screen));
+        float shadow_facing_edge = max(
+            max(step(texel.x * 0.5, shadow_offset.x) * step(screen_max.x, vTexCoord.x),
+                step(texel.x * 0.5, -shadow_offset.x) * step(vTexCoord.x, screen_min.x)),
+            max(step(texel.y * 0.5, shadow_offset.y) * step(screen_max.y, vTexCoord.y),
+                step(texel.y * 0.5, -shadow_offset.y) * step(vTexCoord.y, screen_min.y))
+        );
+        shadows = mix(shadows, clamped_shadows, inside_shadow * (1.0 - inside_screen) * shadow_facing_edge);
     } else {
         vec2 shadow_feather = texel * 4.0;
         if (global.shadow_scale_mode > 0.5) {
