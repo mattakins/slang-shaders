@@ -45,7 +45,7 @@
 #pragma parameter shadow_offset_y 				"     ↳ Shadow offset vertical" 1.0 -5.0 5.0 0.25
 #pragma parameter shadow_scale_mode 			"     ↳ Shadow scale A/B (0=A Remote, 1=B Ref)" 1.0 0.0 1.0 1.0
 #pragma parameter shadow_blur_amount 			"     ↳ Shadow blur amount" 1.0 0.0 3.0 0.05
-#pragma parameter shadow_edge_clamp_debug 		"     ↳ Debug edge clamp workaround" 0.0 0.0 1.0 1.0
+#pragma parameter shadow_edge_clamp_debug 		"     ↳ Shadow edge mode (0=Clamp, 1=Feather)" 0.0 0.0 1.0 1.0
 
 #pragma parameter SCREEN_POSITIONING 			"== Screen position ==" 0.0 0.0 1.0 1.0
 #pragma parameter screen_offset_x 				"     ↳ Screen offset horizontal" 0.0 -5.0 5.0 1.0

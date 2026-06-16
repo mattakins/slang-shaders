@@ -220,24 +220,21 @@ void main()
     vec2 screen_max = source_max + screen_offset;
     vec2 shadow_min = screen_min + shadow_offset;
     vec2 shadow_max = screen_max + shadow_offset;
-    vec2 shadow_feather = texel * 4.0;
-    if (global.shadow_scale_mode > 0.5) {
-        shadow_feather *= gb_scale / global.REFERENCE_SCALE;
-    }
     float inside_screen = inside_rect(vTexCoord, screen_min, screen_max);
-    float screen_shadow = soft_inside_rect(vTexCoord, shadow_min, shadow_max, shadow_feather);
-    shadows.a = max(shadows.a, registers.baseline_alpha * screen_shadow * (1.0 - inside_screen));
-
-    if (registers.shadow_edge_clamp_debug > 0.5) {
-        vec2 legacy_source_max = source_max - texel;
-        vec2 legacy_screen_min = source_min + screen_offset;
-        vec2 legacy_screen_max = legacy_source_max + screen_offset;
+    if (registers.shadow_edge_clamp_debug < 0.5) {
+        // Preserve the upstream clamp look only outside the virtual screen,
+        // where the hanging edge shadow belongs.
         vec2 shadow_sample_clamped = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
-        vec2 screen_shadow_sample = clamp(vTexCoord - screen_offset, vec2(0.0), vec2(1.0) - texel);
-        float legacy_inside_screen = inside_rect(vTexCoord, legacy_screen_min, legacy_screen_max);
-        float baseline_shadow = min(texture(Source, screen_shadow_sample).a, registers.baseline_alpha);
-        shadows = texture(Source, shadow_sample_clamped);
-        shadows.a = max(shadows.a, baseline_shadow) * legacy_inside_screen;
+        vec4 clamped_shadows = texture(Source, shadow_sample_clamped);
+        float inside_shadow = inside_rect(vTexCoord, shadow_min, shadow_max);
+        shadows = mix(shadows, clamped_shadows, inside_shadow * (1.0 - inside_screen));
+    } else {
+        vec2 shadow_feather = texel * 4.0;
+        if (global.shadow_scale_mode > 0.5) {
+            shadow_feather *= gb_scale / global.REFERENCE_SCALE;
+        }
+        float screen_shadow = soft_inside_rect(vTexCoord, shadow_min, shadow_max, shadow_feather);
+        shadows.a = max(shadows.a, registers.baseline_alpha * screen_shadow * (1.0 - inside_screen));
     }
 
     // Foreground and background are blended with the background color
