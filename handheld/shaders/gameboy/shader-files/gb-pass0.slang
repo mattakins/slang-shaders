@@ -14,6 +14,10 @@
 // 9/13/26 - v1.3                                                        //
 //   • Fixed sizing and pass references when stacking presets            //
 //                                                                       //
+// 6/15/26 - v1.3				                                         //
+//   • True visual consistency across output resolutions                 //
+//   • Improved grey balance matching between fullscreen and integer.    //
+//                                                                       //
 // 6/2/26 - v1.3				                                         //
 //   • Added motion-based shadows               					     //
 //   • Fixed edge light banding											 //
@@ -155,14 +159,15 @@ layout(push_constant) uniform Push
 	vec4 OutputSize;
 	vec4 OriginalSize;
 	vec4 SourceSize;
-	vec4 OriginalHistorySize1;
 	float color_toggle;
 	float pixel_size;
 	float pixel_softness;
 	float sharpening_amount;
 	float integer_mode;
 	float video_scale;
+	float GREY_REFERENCE_MODE;
 	float GREY_REFERENCE_SCALE;
+	float GREY_REFERENCE_COVERAGE;
 	float baseline_alpha;
 	float grey_balance;
 	float response_time;
@@ -266,7 +271,11 @@ void main()
 
     // Match emitted dot alpha energy to the selected hard-pixel reference.
     // This keeps grey_balance stable between fullscreen AA and integer scales.
-    float reference_coverage = integer_dot_coverage(registers.GREY_REFERENCE_SCALE);
+    float scale_reference_coverage = integer_dot_coverage(registers.GREY_REFERENCE_SCALE);
+    float direct_reference_coverage = clamp(registers.GREY_REFERENCE_COVERAGE, 0.0, 1.0);
+    float reference_coverage = mix(scale_reference_coverage,
+                                   direct_reference_coverage,
+                                   step(0.5, registers.GREY_REFERENCE_MODE));
     float current_coverage;
     if (registers.integer_mode < 0.5) {
         current_coverage = sample_average_coverage(registers.pixel_size,

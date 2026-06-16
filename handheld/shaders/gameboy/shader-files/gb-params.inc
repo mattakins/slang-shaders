@@ -6,9 +6,11 @@
 #pragma parameter NOTE3 						" *  GBA: Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 
 #pragma parameter integer_mode 					"== Display mode == (0=Full, 1=Pixel Perfect, 2=Scale factor)" 0.0 0.0 2.0 1.0
-#pragma parameter video_scale 					"     ↳ Scale factor" 5.0 2.0 15.0 1.0
+#pragma parameter video_scale 					"     ↳ Scale factor" 5.0 3.0 15.0 1.0
 #pragma parameter REFERENCE_SCALE 				"     ↳ LCD reference scale" 3.0 1.0 10.0 0.25
-#pragma parameter GREY_REFERENCE_SCALE 			"     ↳ Grey balance reference scale" 3.0 1.0 10.0 1.0
+#pragma parameter GREY_REFERENCE_MODE 			"     ↳ Grey reference mode (0=Scale, 1=Coverage)" 0.0 0.0 1.0 1.0
+#pragma parameter GREY_REFERENCE_SCALE 			"     ↳ Grey balance reference scale" 5.0 1.0 10.0 1.0
+#pragma parameter GREY_REFERENCE_COVERAGE 		"     ↳ Grey reference coverage" 1.0 0.0 1.0 0.01
 
 #pragma parameter color_toggle 					"== Color mode == (0=Grayscale, 1=Color)" 0.0 0.0 1.0 1.0
 #pragma parameter palette 						"     ↳ Palette (0=IMG, 1/2=Pocket, 3=B&W, 4=DMG, 5/6=Light)" 0.0 0.0 6.0 1.0
