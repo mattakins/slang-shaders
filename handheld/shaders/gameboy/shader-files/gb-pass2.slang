@@ -78,10 +78,7 @@ void main()
     vTexCoord = TexCoord * 1.0001;
 
     texel = registers.SourceSize.zw;
-    vec2 remote_blur_step = texel;
-    vec2 reference_blur_step = texel * (get_current_gb_scale() / registers.REFERENCE_SCALE);
-    blur_step = (registers.shadow_scale_mode > 0.5) ? reference_blur_step : remote_blur_step;
-    blur_step *= registers.shadow_blur_amount;
+    blur_step = texel * (get_current_gb_scale() / registers.REFERENCE_SCALE) * registers.shadow_blur_amount;
     lower_bound = vec2(0.0);
     upper_bound = vec2(texel * (registers.OutputSize.xy - 1.0));
 }
