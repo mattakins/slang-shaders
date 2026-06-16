@@ -204,7 +204,6 @@ void main()
     vec4 foreground = texture(PassOutput1, tex - screen_offset);
     vec4 background = texture(BACKGROUND, vTexCoord);
     vec2 shadow_sample = vTexCoord - (shadow_offset + screen_offset);
-    vec4 shadows = texture(Source, shadow_sample);
 
     vec2 gb_scale = get_current_gb_scale();
     vec2 source_bounds = min((registers.OriginalSize.xy * gb_scale) * registers.SourceSize.zw, vec2(1.0));
@@ -215,11 +214,11 @@ void main()
     vec2 shadow_min = screen_min + shadow_offset;
     vec2 shadow_max = screen_max + shadow_offset;
     float inside_screen = inside_rect(vTexCoord, screen_min, screen_max);
+    vec4 shadows;
     if (registers.shadow_edge_clamp_debug < 0.5) {
         // Preserve the upstream clamp look only outside the virtual screen,
         // where the hanging edge shadow belongs.
         vec2 shadow_sample_clamped = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
-        vec4 clamped_shadows = texture(Source, shadow_sample_clamped);
         float inside_shadow = inside_rect(vTexCoord, shadow_min, shadow_max);
         float shadow_facing_edge = max(
             max(step(texel.x * 0.5, shadow_offset.x) * step(screen_max.x, vTexCoord.x),
@@ -227,8 +226,10 @@ void main()
             max(step(texel.y * 0.5, shadow_offset.y) * step(screen_max.y, vTexCoord.y),
                 step(texel.y * 0.5, -shadow_offset.y) * step(vTexCoord.y, screen_min.y))
         );
-        shadows = mix(shadows, clamped_shadows, inside_shadow * (1.0 - inside_screen) * shadow_facing_edge);
+        float use_clamped_shadow = inside_shadow * (1.0 - inside_screen) * shadow_facing_edge;
+        shadows = texture(Source, mix(shadow_sample, shadow_sample_clamped, use_clamped_shadow));
     } else {
+        shadows = texture(Source, shadow_sample);
         vec2 shadow_feather = texel * 4.0;
         shadow_feather *= gb_scale / REFERENCE_SCALE;
         float screen_shadow = soft_inside_rect(vTexCoord, shadow_min, shadow_max, shadow_feather);
