@@ -65,7 +65,6 @@ layout(std140, set = 0, binding = 0) uniform UBO
     vec3 AccelerometerRest;
     #endif
     float video_scale;
-    float REFERENCE_SCALE;
 } global;
 
   /////////////////////////////////////////////////////////////////////////
@@ -117,7 +116,7 @@ void main()
         shadow_offset_px += gravity * registers.shadow_max_offset;
     }
 
-    vec2 shadow_step = registers.SourceSize.zw * (get_current_gb_scale() / global.REFERENCE_SCALE);
+    vec2 shadow_step = registers.SourceSize.zw * (get_current_gb_scale() / REFERENCE_SCALE);
     shadow_offset = shadow_offset_px * shadow_step;
 
     texel = registers.SourceSize.zw;
@@ -231,7 +230,7 @@ void main()
         shadows = mix(shadows, clamped_shadows, inside_shadow * (1.0 - inside_screen) * shadow_facing_edge);
     } else {
         vec2 shadow_feather = texel * 4.0;
-        shadow_feather *= gb_scale / global.REFERENCE_SCALE;
+        shadow_feather *= gb_scale / REFERENCE_SCALE;
         float screen_shadow = soft_inside_rect(vTexCoord, shadow_min, shadow_max, shadow_feather);
         shadows.a = max(shadows.a, registers.baseline_alpha * screen_shadow * (1.0 - inside_screen));
     }
