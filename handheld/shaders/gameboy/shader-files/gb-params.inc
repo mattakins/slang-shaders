@@ -9,11 +9,11 @@
 
 #pragma parameter integer_mode 					"== Display mode == (0=Full, 1=Pixel Perfect, 2=Scale factor)" 0.0 0.0 2.0 1.0
 #pragma parameter video_scale 					"     ↳ Scale factor" 5.0 3.0 15.0 1.0
-#pragma parameter REFERENCE_SCALE 				"     ↳ LCD reference scale" 3.0 1.0 10.0 0.25
 
 #pragma parameter color_toggle 					"== Color mode == (0=Grayscale, 1=Color)" 0.0 0.0 1.0 1.0
 #pragma parameter palette 						"     ↳ Palette (0=IMG, 1/2=Pocket, 3=B&W, 4=DMG, 5/6=Light)" 0.0 0.0 6.0 1.0
 #pragma parameter grey_balance 					"     ↳ Grey balance" 3.0 0.0 10.0 0.1
+#pragma parameter grey_reference_target 		"     ↳ Grey match target (0=Full, 1=5x)" 1.0 0.0 1.0 1.0
 #pragma parameter contrast 						"     ↳ Contrast" 0.95 0.0 1.0 0.05
 
 #pragma parameter brightness_mode 				"== Pixel transparency detection == (0=Simple, 1=Perceptual)" 0.0 0.0 1.0 1.0
