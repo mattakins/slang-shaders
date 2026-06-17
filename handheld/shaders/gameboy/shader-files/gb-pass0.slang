@@ -127,10 +127,27 @@ float calculate_coverage_at_point(vec2 tx_coord_f, float pixel_size,
     return mix(circ_coverage, rect_coverage, pixel_shape);
 }
 
+// Legacy 4x4 coverage estimate over a generic [0, 1) fractional cell.
+float sample_legacy_average_coverage(float pixel_size, float pixel_softness,
+                                      float sharpening_amount, float pixel_shape,
+                                      float sharp_mode) {
+    float total = 0.0;
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            vec2 sample_pos = vec2(0.125 + float(x) * 0.25,
+                                  0.125 + float(y) * 0.25);
+            total += calculate_coverage_at_point(sample_pos, pixel_size,
+                                                pixel_softness, sharpening_amount,
+                                                pixel_shape, sharp_mode);
+        }
+    }
+    return total / 16.0;
+}
+
 // Sample the actual output-pixel phase pattern for the current fullscreen scale.
-float sample_average_coverage(vec2 tx_to_px, float pixel_size,
-                               float pixel_softness, float sharpening_amount,
-                               float pixel_shape, float sharp_mode) {
+float sample_scale_average_coverage(vec2 tx_to_px, float pixel_size,
+                                     float pixel_softness, float sharpening_amount,
+                                     float pixel_shape, float sharp_mode) {
     float total = 0.0;
     const int samples = 8;
     vec2 safe_scale = max(tx_to_px, vec2(1.0));
@@ -160,6 +177,7 @@ layout(push_constant) uniform Push
 	float color_toggle;
 	float pixel_size;
 	float fullscreen_match_pixel_size;
+	float fullscreen_coverage_mode;
 	float pixel_softness;
 	float sharpening_amount;
 	float integer_mode;
@@ -278,12 +296,23 @@ void main()
     float reference_coverage = 1.0;
     float current_coverage;
     if (registers.integer_mode < 0.5) {
-        current_coverage = sample_average_coverage(tx_to_px,
-                                                   effective_pixel_size,
-                                                   effective_softness,
-                                                   registers.sharpening_amount,
-                                                   registers.pixel_shape,
-                                                   registers.sharp_mode);
+        float legacy_coverage = sample_legacy_average_coverage(
+            effective_pixel_size,
+            effective_softness,
+            registers.sharpening_amount,
+            registers.pixel_shape,
+            registers.sharp_mode
+        );
+        float scale_coverage = sample_scale_average_coverage(
+            tx_to_px,
+            effective_pixel_size,
+            effective_softness,
+            registers.sharpening_amount,
+            registers.pixel_shape,
+            registers.sharp_mode
+        );
+        current_coverage = mix(legacy_coverage, scale_coverage,
+                               step(0.5, registers.fullscreen_coverage_mode));
     } else {
         current_coverage = integer_dot_coverage(video_scale_factor);
     }
