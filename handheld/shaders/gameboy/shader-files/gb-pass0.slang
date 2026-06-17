@@ -127,22 +127,23 @@ float calculate_coverage_at_point(vec2 tx_coord_f, float pixel_size,
     return mix(circ_coverage, rect_coverage, pixel_shape);
 }
 
-// Sample coverage across a 4x4 grid and return average dot coverage.
-float sample_average_coverage(float pixel_size, float pixel_softness,
-                               float sharpening_amount, float pixel_shape,
-                               float sharp_mode) {
+// Sample the actual output-pixel phase pattern for the current fullscreen scale.
+float sample_average_coverage(vec2 tx_to_px, float pixel_size,
+                               float pixel_softness, float sharpening_amount,
+                               float pixel_shape, float sharp_mode) {
     float total = 0.0;
-    // Sample the same [0, 1) fractional coordinate domain used by modf(tx_coord).
-    for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++) {
-            vec2 sample_pos = vec2(0.125 + float(x) * 0.25,
-                                  0.125 + float(y) * 0.25);
+    const int samples = 8;
+    vec2 safe_scale = max(tx_to_px, vec2(1.0));
+    for (int y = 0; y < samples; y++) {
+        for (int x = 0; x < samples; x++) {
+            vec2 sample_pos = fract((vec2(float(x), float(y)) + vec2(0.5)) /
+                                   safe_scale);
             total += calculate_coverage_at_point(sample_pos, pixel_size,
                                                 pixel_softness, sharpening_amount,
                                                 pixel_shape, sharp_mode);
         }
     }
-    return total / 16.0;
+    return total / float(samples * samples);
 }
 
 float integer_dot_coverage(float scale) {
@@ -277,7 +278,8 @@ void main()
     float reference_coverage = 1.0;
     float current_coverage;
     if (registers.integer_mode < 0.5) {
-        current_coverage = sample_average_coverage(effective_pixel_size,
+        current_coverage = sample_average_coverage(tx_to_px,
+                                                   effective_pixel_size,
                                                    effective_softness,
                                                    registers.sharpening_amount,
                                                    registers.pixel_shape,
