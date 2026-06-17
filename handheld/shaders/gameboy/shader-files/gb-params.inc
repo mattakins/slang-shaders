@@ -29,6 +29,7 @@
 #pragma parameter pixel_shape 					"     ↳ Pixel shape [Sharp mode] (Circle/Rectangle)" 1.0 0.0 1.30 0.05
 #pragma parameter sharpening_amount 			"     ↳ Pixel edge sharpness" 1.0 0.0 1.0 0.05
 #pragma parameter pixel_size 					"     ↳ Pixel size" 0.80 0.2 1.10 0.05
+#pragma parameter fullscreen_match_pixel_size 	"     ↳ Match integer dot size in fullscreen (OFF/ON)" 0.0 0.0 1.0 1.0
 
 #pragma parameter LCD_EFFECTS 					"== LCD effects ==" 0.0 0.0 1.0 1.0
 #pragma parameter response_time 				"     ↳ Latency" 0.0 0.0 0.777 0.111

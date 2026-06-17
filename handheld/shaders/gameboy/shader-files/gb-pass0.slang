@@ -161,6 +161,7 @@ layout(push_constant) uniform Push
 	vec4 SourceSize;
 	float color_toggle;
 	float pixel_size;
+	float fullscreen_match_pixel_size;
 	float pixel_softness;
 	float sharpening_amount;
 	float integer_mode;
@@ -208,6 +209,7 @@ layout(location = 11) out float effective_softness;      // Adaptive softness (m
 void main()
 {
     // Pre-calculate frame-constant values once in vertex shader
+    float effective_pixel_size = registers.pixel_size;
     if (registers.integer_mode > 0.5) {
         // Integer scaling mode calculations moved to vertex shader
         if (registers.integer_mode > 1.5) {
@@ -243,8 +245,15 @@ void main()
         tx_coord = TexCoord * registers.OriginalSize.xy;
         tx_to_px = registers.OutputSize.xy / registers.OriginalSize.xy;
 
+        float fullscreen_scale = max(min(tx_to_px.x, tx_to_px.y), 1.0);
+        float integer_matched_pixel_size = clamp(1.0 - (1.0 / fullscreen_scale),
+                                                 0.2, 1.10);
+        effective_pixel_size = mix(registers.pixel_size,
+                                   integer_matched_pixel_size,
+                                   step(0.5, registers.fullscreen_match_pixel_size));
+
         // Game Boy dot size in output pixels
-        dot_size_in_px = tx_to_px * registers.pixel_size;
+        dot_size_in_px = tx_to_px * effective_pixel_size;
 
         // Set unused outputs for integer mode
         dot_size = vec2(0.0);
@@ -271,7 +280,7 @@ void main()
     float reference_coverage = 1.0;
     float current_coverage;
     if (registers.integer_mode < 0.5) {
-        current_coverage = sample_average_coverage(registers.pixel_size,
+        current_coverage = sample_average_coverage(effective_pixel_size,
                                                    effective_softness,
                                                    registers.sharpening_amount,
                                                    registers.pixel_shape,
