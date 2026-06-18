@@ -149,7 +149,7 @@ float sample_scale_average_coverage(vec2 tx_to_px, float pixel_size,
                                      float pixel_softness, float sharpening_amount,
                                      float pixel_shape, float sharp_mode) {
     float total = 0.0;
-    const int samples = 8;
+    const int samples = 16;
     vec2 safe_scale = max(tx_to_px, vec2(1.0));
     for (int y = 0; y < samples; y++) {
         for (int x = 0; x < samples; x++) {
