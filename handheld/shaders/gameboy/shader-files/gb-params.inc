@@ -25,6 +25,7 @@
 #pragma parameter sharp_mode 					"== Fullscreen pixels == (0=Soft, 1=Sharp)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE5 						" *  Soft / circular pixels = less grid distortion" 0.0 0.0 1.0 1.0
 #pragma parameter fullscreen_coverage_mode 		"     ↳ Grey coverage estimate (0=Legacy, 1=Scale-aware)" 1.0 0.0 1.0 1.0
+#pragma parameter fullscreen_peak_compensation 	"     ↳ Peak alpha compensation (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter pixel_softness 				"     ↳ Pixel softness" 1.0 0.20 5.0 0.05
 #pragma parameter auto_soften 					"         ↳ Auto soften (reduce distortion)"  0.0 0.0 1.0 1.0
 #pragma parameter pixel_shape 					"     ↳ Pixel shape [Sharp mode] (Circle/Rectangle)" 1.0 0.0 1.30 0.05
