@@ -178,7 +178,6 @@ layout(push_constant) uniform Push
 	float pixel_size;
 	float fullscreen_match_pixel_size;
 	float fullscreen_coverage_mode;
-	float fullscreen_peak_compensation;
 	float pixel_softness;
 	float sharpening_amount;
 	float integer_mode;
@@ -339,11 +338,7 @@ void main()
         float solved_peak_compensation =
             (target_peak_alpha / peak_coverage - registers.baseline_alpha) /
             max(dynamic_alpha * aa_compensation_factor, 0.001);
-        aa_compensation_factor *= mix(
-            1.0,
-            clamp(solved_peak_compensation, 1.0, 1.35),
-            step(0.5, registers.fullscreen_peak_compensation)
-        );
+        aa_compensation_factor *= clamp(solved_peak_compensation, 1.0, 1.35);
     }
     aa_compensation_factor = clamp(aa_compensation_factor, 0.0, 4.0);
 
