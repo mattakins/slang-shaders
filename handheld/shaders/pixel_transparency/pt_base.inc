@@ -470,7 +470,7 @@ void main() {
                 gamma_eff *= (1.0 + noise * global.PT_FILM_NOISE);
             }
 
-            vec3 tint = qwpSpectralTint(gamma_eff, global.PT_RAINBOW_WAVELENGTHS);
+            vec3 tint = qwpSpectralTint(gamma_eff, global.PT_RAINBOW_COLORS);
 
             float tint_strength = global.PT_RAINBOW_INTENSITY;
 
