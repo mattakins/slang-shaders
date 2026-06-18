@@ -238,6 +238,8 @@ void main()
 
     // Foreground and background are blended with the background color
     foreground *= bg_color_cached;
+    float receiver_alpha = max(foreground.a - registers.baseline_alpha, 0.0);
+    shadows.a = max(shadows.a - receiver_alpha * inside_screen, 0.0);
 
     float bg_test = 0.0;
     if ( foreground.a > 0.0 )
