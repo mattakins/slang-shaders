@@ -73,6 +73,7 @@
 
 #pragma parameter PT_RAINBOW_ENABLE 	"--- Rainbow shimmer (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_RAINBOW_INTENSITY 	"      ↳ Intensity" 0.15 0.0 1.0 0.01
+#pragma parameter PT_RAINBOW_WAVELENGTHS "      ↳ Wavelengths (3/5/7)" 7.0 3.0 7.0 2.0
 #pragma parameter PT_FILM_TUNING 		"      ↳ Color shift" 1.0 0.5 2.0 0.05
 #pragma parameter PT_LIGHT_SPREAD 		"      ↳ Band density" 1.8 0.5 4.0 0.1
 
@@ -163,6 +164,7 @@ layout(std140, set = 0, binding = 0) uniform UBO {
     float PT_REFLECT_BIAS;
     float PT_REFLECT_WARM;
     float PT_RAINBOW_INTENSITY;
+    float PT_RAINBOW_WAVELENGTHS;
     float PT_FILM_TUNING;
     float PT_FILM_NOISE;
     float PT_FILM_SCALE;

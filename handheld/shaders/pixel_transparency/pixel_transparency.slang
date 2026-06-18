@@ -65,7 +65,7 @@
 
 #pragma parameter PT_SHADOW_OPACITY 	"      ↳ Opacity" 0.50 0.0 1.0 0.01
 #pragma parameter PT_SHADOW_BLUR 		"      ↳ Blur amount" 1.0 0.0 5.0 0.1
-#pragma parameter PT_SHADOW_SCALE_MODE 	"      ↳ Scale A/B/C (0=A Remote, 1=B Per-axis, 2=C Clamp)" 2.0 0.0 2.0 1.0
+#pragma parameter PT_SHADOW_SCALE_MODE 	"      ↳ Shadow scale (0=Legacy, 1=Per-axis)" 1.0 0.0 1.0 1.0
 
 #pragma parameter PT_ACCEL_ENABLE 		"== MOTION == (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE3 				" *  Motion enabled on latest RetroArch nightly build." 0.0 0.0 1.0 1.0

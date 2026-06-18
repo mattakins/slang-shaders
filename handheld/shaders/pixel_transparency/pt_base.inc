@@ -198,8 +198,9 @@ vec3 generateProceduralBackground(vec2 uv) {
 // spectral leakage — the rainbow seen on GBC screens in sunlight.
 //
 // Uses cos²(4π·γ/λ) — warm, vivid rainbow with rich color cycling.
+// Wavelength count supports 3/5/7 samples. 7 preserves the original path exactly.
 // Returns a normalized RGB tint (peak channel = 1.0).
-vec3 qwpSpectralTint(float gamma_eff) {
+vec3 qwpSpectralTint(float gamma_eff, float wavelengths) {
     vec3 tint = vec3(0.0);
 
     // 7 wavelengths with pre-computed spectral colors and phase factors (4π/λ)
@@ -217,13 +218,24 @@ vec3 qwpSpectralTint(float gamma_eff) {
     const float k4 = 0.021991149; // 4π / 571.429
     const float k5 = 0.020462441; // 4π / 614.286
     const float k6 = 0.019138570; // 4π / 657.143
-    float c0 = cos(k0 * gamma_eff); tint += s0 * c0 * c0;
-    float c1 = cos(k1 * gamma_eff); tint += s1 * c1 * c1;
-    float c2 = cos(k2 * gamma_eff); tint += s2 * c2 * c2;
-    float c3 = cos(k3 * gamma_eff); tint += s3 * c3 * c3;
-    float c4 = cos(k4 * gamma_eff); tint += s4 * c4 * c4;
-    float c5 = cos(k5 * gamma_eff); tint += s5 * c5 * c5;
-    float c6 = cos(k6 * gamma_eff); tint += s6 * c6 * c6;
+    if (wavelengths > 6.5) {
+        float c0 = cos(k0 * gamma_eff); tint += s0 * c0 * c0;
+        float c1 = cos(k1 * gamma_eff); tint += s1 * c1 * c1;
+        float c2 = cos(k2 * gamma_eff); tint += s2 * c2 * c2;
+        float c3 = cos(k3 * gamma_eff); tint += s3 * c3 * c3;
+        float c4 = cos(k4 * gamma_eff); tint += s4 * c4 * c4;
+        float c5 = cos(k5 * gamma_eff); tint += s5 * c5 * c5;
+        float c6 = cos(k6 * gamma_eff); tint += s6 * c6 * c6;
+    } else {
+        float c1 = cos(k1 * gamma_eff); tint += s1 * c1 * c1;
+        float c3 = cos(k3 * gamma_eff); tint += s3 * c3 * c3;
+        float c5 = cos(k5 * gamma_eff); tint += s5 * c5 * c5;
+
+        if (wavelengths > 4.5) {
+            float c2 = cos(k2 * gamma_eff); tint += s2 * c2 * c2;
+            float c4 = cos(k4 * gamma_eff); tint += s4 * c4 * c4;
+        }
+    }
 
     // Normalize so the peak channel = 1.0
     float peak = max(tint.r, max(tint.g, tint.b));
@@ -267,9 +279,6 @@ void main() {
     // Drop shadows (suppressed in debug mode 2)
     if (param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
         vec2 shadow_offset = -shadow_offset_raw * shadow_step;
-        vec2 shadow_lower_bound = vec2(0.0);
-        vec2 shadow_upper_bound = vec2(1.0) - texel;
-        bool clamp_shadow_samples = param.PT_SHADOW_SCALE_MODE > 1.5;
 
         float shadow_strength = 0.0;
 
@@ -288,9 +297,6 @@ void main() {
                 );
                 for (int i = 0; i < 5; i++) {
                     vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_dist);
-                    if (clamp_shadow_samples) {
-                        sample_pos = clamp(sample_pos, shadow_lower_bound, shadow_upper_bound);
-                    }
                     vec3 blur_sample = texture(Original, sample_pos).rgb;
                     float w = (i == 0) ? 4.0 : 2.0;
                     float blur_brightness = getBrightness(blur_sample);
@@ -312,9 +318,6 @@ void main() {
                 );
                 for (int i = 0; i < 9; i++) {
                     vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_dist);
-                    if (clamp_shadow_samples) {
-                        sample_pos = clamp(sample_pos, shadow_lower_bound, shadow_upper_bound);
-                    }
                     vec3 blur_sample = texture(Original, sample_pos).rgb;
                     float w = (i == 0) ? 4.0 : (i < 5 ? 2.0 : 1.0);
                     float blur_brightness = getBrightness(blur_sample);
@@ -323,11 +326,7 @@ void main() {
                 shadow_strength = (blurred_shadow / 16.0) * param.PT_SHADOW_OPACITY;
             }
         } else {
-            vec2 shadow_sample = vTexCoord + shadow_offset;
-            if (clamp_shadow_samples) {
-                shadow_sample = clamp(shadow_sample, shadow_lower_bound, shadow_upper_bound);
-            }
-            vec3 center_source = texture(Original, shadow_sample).rgb;
+            vec3 center_source = texture(Original, vTexCoord + shadow_offset).rgb;
             float shadow_source_brightness = getBrightness(center_source);
             shadow_strength = (1.0 - shadow_source_brightness) * param.PT_SHADOW_OPACITY;
         }
@@ -471,7 +470,7 @@ void main() {
                 gamma_eff *= (1.0 + noise * global.PT_FILM_NOISE);
             }
 
-            vec3 tint = qwpSpectralTint(gamma_eff);
+            vec3 tint = qwpSpectralTint(gamma_eff, global.PT_RAINBOW_WAVELENGTHS);
 
             float tint_strength = global.PT_RAINBOW_INTENSITY;
 
