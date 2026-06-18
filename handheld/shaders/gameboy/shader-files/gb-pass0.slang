@@ -334,14 +334,12 @@ void main()
                               registers.baseline_alpha) /
                              max(dynamic_alpha, 0.001);
     if (registers.integer_mode < 0.5) {
-        float target_peak_alpha = dynamic_alpha * aa_compensation_factor +
-                                  registers.baseline_alpha;
-        float solved_peak_compensation =
-            (target_peak_alpha / peak_coverage - registers.baseline_alpha) /
-            max(dynamic_alpha * aa_compensation_factor, 0.001);
-        aa_compensation_factor *= mix(
-            1.0,
-            clamp(solved_peak_compensation, 1.0, 1.35),
+        float peak_matched_factor =
+            (1.0 / peak_coverage - registers.baseline_alpha) /
+            max(dynamic_alpha, 0.001);
+        aa_compensation_factor = mix(
+            aa_compensation_factor,
+            min(aa_compensation_factor, peak_matched_factor),
             step(0.5, registers.fullscreen_peak_compensation)
         );
     }
