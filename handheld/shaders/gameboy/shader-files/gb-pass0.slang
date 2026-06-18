@@ -296,7 +296,7 @@ void main()
     // This keeps grey_balance stable between fullscreen AA and integer scales.
     float reference_coverage = 1.0;
     float current_coverage;
-    float peak_compensation = 1.0;
+    float peak_coverage = 1.0;
     if (registers.integer_mode < 0.5) {
         float legacy_coverage = sample_legacy_average_coverage(
             effective_pixel_size,
@@ -315,7 +315,7 @@ void main()
         );
         current_coverage = mix(legacy_coverage, scale_coverage,
                                step(0.5, registers.fullscreen_coverage_mode));
-        float peak_coverage = clamp(calculate_coverage_at_point(
+        peak_coverage = clamp(calculate_coverage_at_point(
             vec2(0.5),
             effective_pixel_size,
             effective_softness,
@@ -323,8 +323,6 @@ void main()
             registers.pixel_shape,
             registers.sharp_mode
         ), 0.001, 1.0);
-        peak_compensation = mix(1.0, clamp(1.0 / peak_coverage, 1.0, 1.35),
-                                step(0.5, registers.fullscreen_peak_compensation));
     } else {
         current_coverage = integer_dot_coverage(video_scale_factor);
     }
@@ -335,7 +333,18 @@ void main()
     aa_compensation_factor = (reference_energy / max(current_coverage, 0.001) -
                               registers.baseline_alpha) /
                              max(dynamic_alpha, 0.001);
-    aa_compensation_factor *= peak_compensation;
+    if (registers.integer_mode < 0.5) {
+        float target_peak_alpha = dynamic_alpha * aa_compensation_factor +
+                                  registers.baseline_alpha;
+        float solved_peak_compensation =
+            (target_peak_alpha / peak_coverage - registers.baseline_alpha) /
+            max(dynamic_alpha * aa_compensation_factor, 0.001);
+        aa_compensation_factor *= mix(
+            1.0,
+            clamp(solved_peak_compensation, 1.0, 1.35),
+            step(0.5, registers.fullscreen_peak_compensation)
+        );
+    }
     aa_compensation_factor = clamp(aa_compensation_factor, 0.0, 4.0);
 
 }
