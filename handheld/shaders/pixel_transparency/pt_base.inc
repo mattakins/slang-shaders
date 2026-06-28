@@ -27,7 +27,7 @@ layout(location = 0) in vec4 Position;
 layout(location = 1) in vec2 TexCoord;
 layout(location = 0) out vec2 vTexCoord;
 layout(location = 1) out vec2 texel;
-layout(location = 2) out vec2 shadow_step;
+layout(location = 2) out float shadow_scale_factor;
 layout(location = 3) out vec2 shadow_offset_raw;
 #ifdef PT_SHIMMER
 layout(location = 4) out vec2 light_pos;
@@ -47,11 +47,10 @@ void main() {
     vTexCoord = TexCoord;
     texel = param.OutputSize.zw;
 
+    // Resolution scale for shadow compensation (reference: 640x480)
     float scale_x = param.OutputSize.x / 640.0;
     float scale_y = param.OutputSize.y / 480.0;
-    vec2 remote_shadow_step = vec2(sqrt(scale_x * scale_y)) * texel;
-    vec2 reference_shadow_step = (param.OutputSize.xy / vec2(640.0, 480.0)) * texel;
-    shadow_step = (param.PT_SHADOW_SCALE_MODE > 0.5) ? reference_shadow_step : remote_shadow_step;
+    shadow_scale_factor = sqrt(scale_x * scale_y);
 
     // Get raw gravity tilt (-1 to 1 per axis, or 0 if no sensor data)
     vec2 gravity = vec2(0.0);
@@ -95,7 +94,7 @@ void main() {
 #pragma stage fragment
 layout(location = 0) in vec2 vTexCoord;
 layout(location = 1) in vec2 texel;
-layout(location = 2) in vec2 shadow_step;
+layout(location = 2) in float shadow_scale_factor;
 layout(location = 3) in vec2 shadow_offset_raw;
 #ifdef PT_SHIMMER
 layout(location = 4) in vec2 light_pos;
@@ -278,12 +277,12 @@ void main() {
 
     // Drop shadows (suppressed in debug mode 2)
     if (param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
-        vec2 shadow_offset = -shadow_offset_raw * shadow_step;
+        vec2 shadow_offset = -shadow_offset_raw * shadow_scale_factor * texel;
 
         float shadow_strength = 0.0;
 
         if (param.PT_SHADOW_BLUR > 0.1) {
-            vec2 blur_dist = param.PT_SHADOW_BLUR * shadow_step;
+            vec2 blur_dist = param.PT_SHADOW_BLUR * shadow_scale_factor * texel;
             float blurred_shadow = 0.0;
 
             if (param.PT_SHADOW_FAST_BLUR < 0.5) {
