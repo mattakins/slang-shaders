@@ -49,10 +49,6 @@ layout(push_constant) uniform Push
 #pragma parameter gb_x_offset "     ↳ Border offset horizontal" 0.0 -10000.0 10000.0 1.0
 #pragma parameter gb_y_offset "     ↳ Border offset vertical" 0.0 -10000.0 10000.0 1.0
 
-vec2 middle	= vec2(0.5, 0.5);
-vec2 border_scale = vec2(3200, 1600) * registers.video_scale / registers.border_texture_scale;
-vec2 offset_xy = vec2(registers.gb_x_offset, -registers.gb_y_offset) * registers.SourceSize.zw * 5.0;
-
 layout(std140, set = 0, binding = 0) uniform UBO
 {
    mat4 MVP;
@@ -67,6 +63,10 @@ layout(location = 1) out vec2 tex_border;
 void main()
 {
 	gl_Position	=	global.MVP * Position;
+
+	vec2 middle	=	vec2(0.5, 0.5);
+	vec2 border_scale = vec2(3200, 1600) * registers.video_scale / registers.border_texture_scale;
+	vec2 offset_xy = vec2(registers.gb_x_offset, -registers.gb_y_offset) * registers.SourceSize.zw * 5.0;
 
 	vTexCoord	=	TexCoord.xy + offset_xy;
 

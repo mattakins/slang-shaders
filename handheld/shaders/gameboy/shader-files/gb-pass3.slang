@@ -39,7 +39,6 @@ layout(push_constant) uniform Push
 	vec4 SourceSize;
 	float integer_mode;
 	float video_scale;
-	float REFERENCE_SCALE;
 	float shadow_blur_amount;
 } registers;
 
