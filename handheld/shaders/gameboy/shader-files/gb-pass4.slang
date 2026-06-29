@@ -37,13 +37,11 @@ layout(push_constant) uniform Push
 	vec4 OutputSize;
 	vec4 OriginalSize;
 	vec4 SourceSize;
-	vec4 PassOutputSize1;
 	float contrast;
 	float screen_light;
 	float pixel_opacity;
 	float bg_smoothing;
 	float shadow_opacity;
-	float baseline_alpha;
 	float shadow_offset_x;
 	float shadow_offset_y;
 	float screen_offset_x;
@@ -51,6 +49,7 @@ layout(push_constant) uniform Push
 	float shadow_enable;
 	float palette;
 	float integer_mode;
+	float video_scale;
 	float shadow_motion;
 	float shadow_max_offset;
 } registers;
@@ -63,7 +62,7 @@ layout(std140, set = 0, binding = 0) uniform UBO
     vec3 Accelerometer;
     vec3 AccelerometerRest;
     #endif
-    float video_scale;
+    vec4 PassOutputSize1;
 } global;
 
   /////////////////////////////////////////////////////////////////////////
@@ -72,7 +71,7 @@ layout(std140, set = 0, binding = 0) uniform UBO
 
 vec2 get_current_gb_scale() {
     if (registers.integer_mode > 1.5) {
-        return vec2(global.video_scale);
+        return vec2(registers.video_scale);
     } else if (registers.integer_mode > 0.5) {
         return vec2(floor(registers.OutputSize.y * registers.OriginalSize.w));
     }
@@ -158,33 +157,14 @@ vec4 get_bg_color() {
 
 #define shadow_alpha (registers.contrast * registers.shadow_opacity * registers.shadow_enable)
 
-float inside_range(float value, float lower, float upper) {
-    return step(lower, value) * step(value, upper);
-}
-
-float inside_rect(vec2 coord, vec2 lower, vec2 upper) {
-    return inside_range(coord.x, lower.x, upper.x) *
-           inside_range(coord.y, lower.y, upper.y);
-}
-
-float soft_inside_range(float value, float lower, float upper, float feather) {
-    return smoothstep(lower - feather, lower + feather, value) *
-           (1.0 - smoothstep(upper - feather, upper + feather, value));
-}
-
-float soft_inside_rect(vec2 coord, vec2 lower, vec2 upper, vec2 feather) {
-    return soft_inside_range(coord.x, lower.x, upper.x, feather.x) *
-           soft_inside_range(coord.y, lower.y, upper.y, feather.y);
-}
-
   /////////////////////////////////////////////////////////////////////////
  // Fragment shader                                                     //
 /////////////////////////////////////////////////////////////////////////
 
 void main()
 {
-    vec2 tex = floor(registers.PassOutputSize1.xy * vTexCoord);
-    tex = (tex + 0.5) * registers.PassOutputSize1.zw;
+    vec2 tex = floor(global.PassOutputSize1.xy * vTexCoord);
+    tex = (tex + 0.5) * global.PassOutputSize1.zw;
 
     // Cache background color to avoid multiple function calls
     vec4 bg_color_cached = get_bg_color();
@@ -202,35 +182,12 @@ void main()
     // Sample all the relevant textures
     vec4 foreground = texture(PassOutput1, tex - screen_offset);
     vec4 background = texture(BACKGROUND, vTexCoord);
-    vec2 shadow_sample = vTexCoord - (shadow_offset + screen_offset);
+	vec2 shadow_sample = vTexCoord - (shadow_offset + screen_offset);
+	vec2 shadow_coord = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
+	vec4 shadows = texture(Source, shadow_coord);
 
-    vec2 gb_scale = get_current_gb_scale();
-    vec2 source_bounds = min((registers.OriginalSize.xy * gb_scale) * registers.SourceSize.zw, vec2(1.0));
-    vec2 source_min = vec2(0.5) - source_bounds * 0.5;
-    vec2 source_max = vec2(0.5) + source_bounds * 0.5;
-    vec2 screen_min = source_min + screen_offset;
-    vec2 screen_max = source_max + screen_offset;
-    vec2 shadow_min = screen_min + shadow_offset;
-    vec2 shadow_max = screen_max + shadow_offset;
-    float inside_screen = inside_rect(vTexCoord, screen_min, screen_max);
-    // Preserve the upstream clamp look only outside the virtual screen,
-    // where the hanging edge shadow belongs.
-    vec2 shadow_sample_clamped = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
-    float inside_shadow = inside_rect(vTexCoord, shadow_min, shadow_max);
-    float shadow_facing_edge = max(
-        max(step(texel.x * 0.5, shadow_offset.x) * step(screen_max.x, vTexCoord.x),
-            step(texel.x * 0.5, -shadow_offset.x) * step(vTexCoord.x, screen_min.x)),
-        max(step(texel.y * 0.5, shadow_offset.y) * step(screen_max.y, vTexCoord.y),
-            step(texel.y * 0.5, -shadow_offset.y) * step(vTexCoord.y, screen_min.y))
-    );
-    float use_clamped_shadow = inside_shadow * (1.0 - inside_screen) * shadow_facing_edge;
-    vec4 shadows = texture(Source, mix(shadow_sample, shadow_sample_clamped, use_clamped_shadow));
-
-    // Foreground and background are blended with the background color
-    foreground *= bg_color_cached;
-    float receiver_alpha = max(foreground.a - registers.baseline_alpha, 0.0);
-    float receiver_shadow = texture(Source, vTexCoord - screen_offset).a;
-    shadows.a = max(shadows.a - max(receiver_alpha, receiver_shadow) * inside_screen, 0.0);
+	// Foreground and background are blended with the background color
+	foreground *= bg_color_cached;
 
     float bg_test = 0.0;
     if ( foreground.a > 0.0 )
@@ -250,7 +207,8 @@ void main()
     );
 
     // Shadows are alpha blended with the background.
-    vec4 out_color = (shadows * shadows.a * shadow_alpha) + (background * (1.0 - shadows.a * shadow_alpha));
+    vec4 out_color = (shadows * shadows.a * shadow_alpha) +
+                     (background * (1.0 - shadows.a * shadow_alpha));
 
     // Foreground is alpha blended with the shadowed background
     out_color = (foreground * foreground.a * registers.contrast) + (out_color * (registers.screen_light - foreground.a * registers.contrast * registers.pixel_opacity));

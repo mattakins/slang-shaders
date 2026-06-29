@@ -127,46 +127,54 @@ float calculate_coverage_at_point(vec2 tx_coord_f, float pixel_size,
     return mix(circ_coverage, rect_coverage, pixel_shape);
 }
 
-// Legacy 4x4 coverage estimate over a generic [0, 1) fractional cell.
-float sample_legacy_average_coverage(float pixel_size, float pixel_softness,
-                                      float sharpening_amount, float pixel_shape,
-                                      float sharp_mode) {
-    float total = 0.0;
-    for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++) {
-            vec2 sample_pos = vec2(0.125 + float(x) * 0.25,
-                                  0.125 + float(y) * 0.25);
-            total += calculate_coverage_at_point(sample_pos, pixel_size,
-                                                pixel_softness, sharpening_amount,
-                                                pixel_shape, sharp_mode);
-        }
+int greatest_common_divisor(int a, int b) {
+    for (int i = 0; i < 32; i++) {
+        if (b == 0) break;
+        int remainder = a % b;
+        a = b;
+        b = remainder;
     }
-    return total / 16.0;
+    return max(a, 1);
 }
 
-// Sample the actual output-pixel phase pattern for the current fullscreen scale.
-float sample_scale_average_coverage(vec2 tx_to_px, float pixel_size,
+// Sample every unique output phase when practical, with a bounded fallback.
+float sample_scale_average_coverage(vec2 tx_to_px, vec2 output_size,
+                                     vec2 source_size, float pixel_size,
                                      float pixel_softness, float sharpening_amount,
                                      float pixel_shape, float sharp_mode) {
     float total = 0.0;
-    const int samples = 16;
+    const int max_samples = 32;
     vec2 safe_scale = max(tx_to_px, vec2(1.0));
-    for (int y = 0; y < samples; y++) {
-        for (int x = 0; x < samples; x++) {
-            vec2 sample_pos = fract((vec2(float(x), float(y)) + vec2(0.5)) /
-                                   safe_scale);
+    ivec2 output_pixels = max(ivec2(round(output_size)), ivec2(1));
+    ivec2 source_pixels = max(ivec2(round(source_size)), ivec2(1));
+    ivec2 phase_count = ivec2(
+        output_pixels.x / greatest_common_divisor(output_pixels.x, source_pixels.x),
+        output_pixels.y / greatest_common_divisor(output_pixels.y, source_pixels.y)
+    );
+    bvec2 exact_phase_cycle = lessThanEqual(phase_count, ivec2(max_samples));
+    ivec2 sample_count = ivec2(
+        exact_phase_cycle.x ? phase_count.x : max_samples,
+        exact_phase_cycle.y ? phase_count.y : max_samples
+    );
+    vec2 sample_denominator = vec2(
+        exact_phase_cycle.x ? safe_scale.x : float(max_samples),
+        exact_phase_cycle.y ? safe_scale.y : float(max_samples)
+    );
+
+    for (int y = 0; y < max_samples; y++) {
+        if (y >= sample_count.y) break;
+        for (int x = 0; x < max_samples; x++) {
+            if (x >= sample_count.x) break;
+            vec2 sample_pos = fract(
+                (vec2(float(x), float(y)) + vec2(0.5)) /
+                sample_denominator
+            );
             total += calculate_coverage_at_point(sample_pos, pixel_size,
                                                 pixel_softness, sharpening_amount,
                                                 pixel_shape, sharp_mode);
         }
     }
-    return total / float(samples * samples);
-}
-
-float integer_dot_coverage(float scale) {
-    float safe_scale = max(floor(scale + 0.0001), 1.0);
-    float lit_pixels = max(safe_scale - 1.0, 0.0);
-    return (lit_pixels * lit_pixels) / (safe_scale * safe_scale);
+    return total / float(sample_count.x * sample_count.y);
 }
 
 layout(push_constant) uniform Push
@@ -177,7 +185,6 @@ layout(push_constant) uniform Push
 	float color_toggle;
 	float pixel_size;
 	float fullscreen_match_pixel_size;
-	float fullscreen_coverage_mode;
 	float pixel_softness;
 	float sharpening_amount;
 	float integer_mode;
@@ -190,6 +197,7 @@ layout(push_constant) uniform Push
 	float pixel_shape;
 	float palette;
 	float auto_soften;
+	float fullscreen_alpha_gain;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
@@ -262,11 +270,13 @@ void main()
         tx_to_px = registers.OutputSize.xy / registers.SourceSize.xy;
 
         float fullscreen_scale = max(min(tx_to_px.x, tx_to_px.y), 1.0);
-        float integer_matched_pixel_size = clamp(1.0 - (1.0 / fullscreen_scale),
-                                                 0.2, 1.10);
-        effective_pixel_size = mix(registers.pixel_size,
-                                   integer_matched_pixel_size,
-                                   step(0.5, registers.fullscreen_match_pixel_size));
+        float integer_matched_pixel_size = clamp(
+            1.0 - 1.0 / fullscreen_scale, 0.2, 1.10
+        );
+        effective_pixel_size = mix(
+            registers.pixel_size, integer_matched_pixel_size,
+            step(0.5, registers.fullscreen_match_pixel_size)
+        );
 
         // Game Boy dot size in output pixels
         dot_size_in_px = tx_to_px * effective_pixel_size;
@@ -291,56 +301,34 @@ void main()
         effective_softness += fract_factor * 4.0;
     }
 
-    // Match emitted dot alpha energy to the selected hard-pixel reference.
-    // This keeps grey_balance stable between fullscreen AA and integer scales.
-    float reference_coverage = 1.0;
-    float current_coverage;
-    float peak_coverage = 1.0;
+    // Match fullscreen alpha energy to the 5x integer-dot reference.
     if (registers.integer_mode < 0.5) {
-        float legacy_coverage = sample_legacy_average_coverage(
-            effective_pixel_size,
-            effective_softness,
-            registers.sharpening_amount,
-            registers.pixel_shape,
-            registers.sharp_mode
-        );
-        float scale_coverage = sample_scale_average_coverage(
+        float lit_reference_pixels = REFERENCE_SCALE - 1.0;
+        float reference_coverage =
+            (lit_reference_pixels * lit_reference_pixels) /
+            (REFERENCE_SCALE * REFERENCE_SCALE);
+        float current_coverage = sample_scale_average_coverage(
             tx_to_px,
+            registers.OutputSize.xy,
+            registers.SourceSize.xy,
             effective_pixel_size,
             effective_softness,
             registers.sharpening_amount,
             registers.pixel_shape,
             registers.sharp_mode
         );
-        current_coverage = mix(legacy_coverage, scale_coverage,
-                               step(0.5, registers.fullscreen_coverage_mode));
-        peak_coverage = clamp(calculate_coverage_at_point(
-            vec2(0.5),
-            effective_pixel_size,
-            effective_softness,
-            registers.sharpening_amount,
-            registers.pixel_shape,
-            registers.sharp_mode
-        ), 0.001, 1.0);
+        float dynamic_alpha = 3.0 / max(registers.grey_balance, 0.001);
+        float reference_energy = reference_coverage *
+                                 (registers.baseline_alpha + dynamic_alpha);
+        aa_compensation_factor =
+            (reference_energy / max(current_coverage, 0.001) -
+             registers.baseline_alpha) /
+            max(dynamic_alpha, 0.001);
+        aa_compensation_factor *= registers.fullscreen_alpha_gain;
+        aa_compensation_factor = clamp(aa_compensation_factor, 0.0, 4.0);
     } else {
-        current_coverage = integer_dot_coverage(video_scale_factor);
+        aa_compensation_factor = 1.0;
     }
-
-    float dynamic_alpha = 3.0 / max(registers.grey_balance, 0.001);
-    float reference_energy = reference_coverage *
-                             (registers.baseline_alpha + dynamic_alpha);
-    aa_compensation_factor = (reference_energy / max(current_coverage, 0.001) -
-                              registers.baseline_alpha) /
-                             max(dynamic_alpha, 0.001);
-    if (registers.integer_mode < 0.5) {
-        float target_peak_alpha = dynamic_alpha * aa_compensation_factor +
-                                  registers.baseline_alpha;
-        float solved_peak_compensation =
-            (target_peak_alpha / peak_coverage - registers.baseline_alpha) /
-            max(dynamic_alpha * aa_compensation_factor, 0.001);
-        aa_compensation_factor *= clamp(solved_peak_compensation, 1.0, 1.35);
-    }
-    aa_compensation_factor = clamp(aa_compensation_factor, 0.0, 4.0);
 
 }
 
@@ -394,18 +382,9 @@ void main()
         final_tex_coord = (vTexCoord - 0.5) / scale_bounds + 0.5;
     }
 
-    // Sample texture and frame history with final coordinates
+    // Sample texture and only fetch frame history when response time is active.
     vec3 foreground_source = texture(Source, final_tex_coord).rgb;
-
-    // Sample frame history for response time calculation (uses full 7-frame history)
-    vec3 curr_rgb = abs(1.0 - texture(Source, final_tex_coord).rgb);
-    vec3 prev0_rgb = abs(1.0 - texture(OriginalHistory1, final_tex_coord).rgb);
-    vec3 prev1_rgb = abs(1.0 - texture(OriginalHistory2, final_tex_coord).rgb);
-    vec3 prev2_rgb = abs(1.0 - texture(OriginalHistory3, final_tex_coord).rgb);
-    vec3 prev3_rgb = abs(1.0 - texture(OriginalHistory4, final_tex_coord).rgb);
-    vec3 prev4_rgb = abs(1.0 - texture(OriginalHistory5, final_tex_coord).rgb);
-    vec3 prev5_rgb = abs(1.0 - texture(OriginalHistory6, final_tex_coord).rgb);
-    vec3 prev6_rgb = abs(1.0 - texture(OriginalHistory7, final_tex_coord).rgb);
+    vec3 curr_rgb = abs(1.0 - foreground_source);
 
     float is_on_dot = 0.0;
 
@@ -472,13 +451,23 @@ void main()
     // Sample color from the current and previous frames, apply response time modifier
     // Response time effect implemented through an exponential dropoff algorithm
     vec3 input_rgb = curr_rgb;
-    input_rgb += (prev0_rgb - input_rgb) * registers.response_time;
-    input_rgb += (prev1_rgb - input_rgb) * pow(registers.response_time, 2.0);
-    input_rgb += (prev2_rgb - input_rgb) * pow(registers.response_time, 3.0);
-    input_rgb += (prev3_rgb - input_rgb) * pow(registers.response_time, 4.0);
-    input_rgb += (prev4_rgb - input_rgb) * pow(registers.response_time, 5.0);
-    input_rgb += (prev5_rgb - input_rgb) * pow(registers.response_time, 6.0);
-    input_rgb += (prev6_rgb - input_rgb) * pow(registers.response_time, 7.0);
+    if (registers.response_time > 0.0) {
+        vec3 prev0_rgb = abs(1.0 - texture(OriginalHistory1, final_tex_coord).rgb);
+        vec3 prev1_rgb = abs(1.0 - texture(OriginalHistory2, final_tex_coord).rgb);
+        vec3 prev2_rgb = abs(1.0 - texture(OriginalHistory3, final_tex_coord).rgb);
+        vec3 prev3_rgb = abs(1.0 - texture(OriginalHistory4, final_tex_coord).rgb);
+        vec3 prev4_rgb = abs(1.0 - texture(OriginalHistory5, final_tex_coord).rgb);
+        vec3 prev5_rgb = abs(1.0 - texture(OriginalHistory6, final_tex_coord).rgb);
+        vec3 prev6_rgb = abs(1.0 - texture(OriginalHistory7, final_tex_coord).rgb);
+
+        input_rgb += (prev0_rgb - input_rgb) * registers.response_time;
+        input_rgb += (prev1_rgb - input_rgb) * pow(registers.response_time, 2.0);
+        input_rgb += (prev2_rgb - input_rgb) * pow(registers.response_time, 3.0);
+        input_rgb += (prev3_rgb - input_rgb) * pow(registers.response_time, 4.0);
+        input_rgb += (prev4_rgb - input_rgb) * pow(registers.response_time, 5.0);
+        input_rgb += (prev5_rgb - input_rgb) * pow(registers.response_time, 6.0);
+        input_rgb += (prev6_rgb - input_rgb) * pow(registers.response_time, 7.0);
+    }
 
     // Brightness calculation based on mode
     float brightness;
@@ -488,8 +477,8 @@ void main()
         brightness = (0.2126 * input_rgb.r) + (0.7152 * input_rgb.g) + (0.0722 * input_rgb.b);
     }
 
-    // Apply numerical grey balance compensation (calculated in vertex shader)
-    float grey_balance_adjusted = registers.grey_balance / aa_compensation_factor;
+    float grey_balance_adjusted =
+        registers.grey_balance / aa_compensation_factor;
 
     // Compensate for brightness range difference between modes
     // Perceptual mode outputs 0-1, simple mode outputs 0-3
@@ -497,7 +486,8 @@ void main()
         grey_balance_adjusted = grey_balance_adjusted / 3.0;
     }
 
-    float rgb_to_alpha = brightness / grey_balance_adjusted + registers.baseline_alpha;
+    float rgb_to_alpha = brightness / grey_balance_adjusted +
+                         registers.baseline_alpha;
 
     // Foreground palette color selection
     vec3 foreground_color;

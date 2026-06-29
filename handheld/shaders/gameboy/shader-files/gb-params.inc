@@ -1,7 +1,5 @@
 // GAME BOY DOT MATRIX SHADER v1.3 - Shared Parameters
 
-#define REFERENCE_SCALE 5.0
-
 #pragma parameter GAMEBOY_SHADER 				"=== GAME BOY DOT MATRIX SHADER v1.3 ===" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE1 						" *  Turn OFF Settings > Video > Scaling > Integer Scale" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE2 						" *  Turn OFF Core > Interframe Blending" 0.0 0.0 1.0 1.0
@@ -12,7 +10,7 @@
 
 #pragma parameter color_toggle 					"== Color mode == (0=Grayscale, 1=Color)" 0.0 0.0 1.0 1.0
 #pragma parameter palette 						"     ↳ Palette (0=IMG, 1/2=Pocket, 3=B&W, 4=DMG, 5/6=Light)" 0.0 0.0 6.0 1.0
-#pragma parameter grey_balance 					"     ↳ Grey balance" 3.0 0.0 10.0 0.1
+#pragma parameter grey_balance 					"     ↳ LCD transparency" 3.0 0.0 10.0 0.05
 #pragma parameter contrast 						"     ↳ Contrast" 0.95 0.0 1.0 0.05
 
 #pragma parameter brightness_mode 				"== Pixel transparency detection == (0=Simple, 1=Perceptual)" 0.0 0.0 1.0 1.0
@@ -24,13 +22,12 @@
 
 #pragma parameter sharp_mode 					"== Fullscreen pixels == (0=Soft, 1=Sharp)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE5 						" *  Soft / circular pixels = less grid distortion" 0.0 0.0 1.0 1.0
-#pragma parameter fullscreen_coverage_mode 		"     ↳ Grey coverage estimate (0=Legacy, 1=Scale-aware)" 1.0 0.0 1.0 1.0
 #pragma parameter pixel_softness 				"     ↳ Pixel softness" 1.0 0.20 5.0 0.05
-#pragma parameter auto_soften 					"         ↳ Auto soften (reduce distortion)"  0.0 0.0 1.0 1.0
+#pragma parameter auto_soften 					"         ↳ Auto soften (reduce distortion) (OFF/ON)"  0.0 0.0 1.0 1.0
 #pragma parameter pixel_shape 					"     ↳ Pixel shape [Sharp mode] (Circle/Rectangle)" 1.0 0.0 1.30 0.05
 #pragma parameter sharpening_amount 			"     ↳ Pixel edge sharpness" 1.0 0.0 1.0 0.05
 #pragma parameter pixel_size 					"     ↳ Pixel size" 0.80 0.2 1.10 0.05
-#pragma parameter fullscreen_match_pixel_size 	"     ↳ Match integer dot size in fullscreen (OFF/ON)" 0.0 0.0 1.0 1.0
+#pragma parameter fullscreen_match_pixel_size 	"         ↳ Auto size (match integer) (OFF/ON)" 1.0 0.0 1.0 1.0
 
 #pragma parameter LCD_EFFECTS 					"== LCD effects ==" 0.0 0.0 1.0 1.0
 #pragma parameter response_time 				"     ↳ Latency" 0.0 0.0 0.777 0.111
@@ -41,9 +38,15 @@
 #pragma parameter shadow_motion 				"     ↳ Shadow motion (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter shadow_max_offset 			"         ↳ Max offset" 2.50 0.0 30.0 0.5
 #pragma parameter shadow_opacity 				"     ↳ Shadow opacity" 0.55 0.01 1.0 0.01
-#pragma parameter shadow_offset_x 				"     ↳ Shadow offset horizontal" 1.0 -5.0 5.0 0.25
-#pragma parameter shadow_offset_y 				"     ↳ Shadow offset vertical" 1.0 -5.0 5.0 0.25
+#pragma parameter shadow_offset_x 				"     ↳ Shadow offset horizontal" 1.5 -5.0 5.0 0.5
+#pragma parameter shadow_offset_y 				"     ↳ Shadow offset vertical" 1.5 -5.0 5.0 0.5
 #pragma parameter shadow_blur_amount 			"     ↳ Shadow blur amount" 1.0 0.0 3.0 0.05
+
 #pragma parameter SCREEN_POSITIONING 			"== Screen position ==" 0.0 0.0 1.0 1.0
 #pragma parameter screen_offset_x 				"     ↳ Screen offset horizontal" 0.0 -5.0 5.0 1.0
 #pragma parameter screen_offset_y 				"     ↳ Screen offset vertical" 0.0 -5.0 5.0 1.0
+
+#pragma parameter DEBUG 						"=== Debug ===" 0.0 0.0 1.0 1.0
+#pragma parameter fullscreen_alpha_gain 		"     ↳ FS alpha gain" 1.35 0.50 1.50 0.01
+
+#define REFERENCE_SCALE 5.0
