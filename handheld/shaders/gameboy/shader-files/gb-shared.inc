@@ -164,10 +164,18 @@ float integer_dot_coverage(float scale) {
 float integer_post_blend_coverage(float scale, float blending_mode,
                                   float blend_amount) {
     float safe_scale = max(scale, 1.0);
+    float safe_blend_amount = min(blend_amount, max_adjacent_alpha_blend);
     float lit_pixels = max(safe_scale - 1.0, 0.0);
     float hard_coverage = integer_dot_coverage(safe_scale);
     float gap_blend_coverage =
-        4.0 * blend_amount * lit_pixels / (safe_scale * safe_scale);
+        4.0 * safe_blend_amount * lit_pixels / (safe_scale * safe_scale);
     float blend_gaps_only = 1.0 - step(0.5, blending_mode);
     return hard_coverage + gap_blend_coverage * blend_gaps_only;
+}
+
+// Match alpha coverage without allowing unstable amplification.
+float alpha_normalization_factor(float reference_coverage,
+                                 float current_coverage) {
+    return clamp(reference_coverage / max(current_coverage, 0.001),
+                 0.0, 4.0);
 }

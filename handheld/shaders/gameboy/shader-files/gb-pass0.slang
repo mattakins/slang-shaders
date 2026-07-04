@@ -194,9 +194,10 @@ void main()
             registers.pixel_shape,
             registers.sharp_mode
         );
-        aa_compensation_factor =
-            reference_coverage / max(current_coverage, 0.001);
-        aa_compensation_factor = clamp(aa_compensation_factor, 0.0, 4.0);
+        aa_compensation_factor = alpha_normalization_factor(
+            reference_coverage,
+            current_coverage
+        );
     } else if (registers.integer_mode > 0.5) {
         float reference_scale = registers.alpha_reference_scale;
         float reference_coverage = integer_post_blend_coverage(
@@ -209,9 +210,10 @@ void main()
             global.blending_mode,
             global.adjacent_texel_alpha_blending
         );
-        aa_compensation_factor =
-            reference_coverage / max(current_coverage, 0.001);
-        aa_compensation_factor = clamp(aa_compensation_factor, 0.0, 4.0);
+        aa_compensation_factor = alpha_normalization_factor(
+            reference_coverage,
+            current_coverage
+        );
     }
 
 }

@@ -122,6 +122,8 @@ void main()
     vec4 adjacent_texel_2 = texture(Source, blur_coords_down_clamped).rgba;
     vec4 adjacent_texel_3 = texture(Source, blur_coords_right_clamped).rgba;
     vec4 adjacent_texel_4 = texture(Source, blur_coords_left_clamped).rgba;
+    float blend_amount = min(registers.adjacent_texel_alpha_blending,
+                             max_adjacent_alpha_blend);
 
     // Sum the alpha differences between neighboring texels, apply modifiers, then subtract the result from the current fragment alpha value
     out_color.a -=
@@ -130,7 +132,7 @@ void main()
         (out_color.a - adjacent_texel_2.a) +
         (out_color.a - adjacent_texel_3.a) +
         (out_color.a - adjacent_texel_4.a)
-    ) * registers.adjacent_texel_alpha_blending * blending_modifier(out_color.a);
+    ) * blend_amount * blending_modifier(out_color.a);
 
     FragColor = out_color;
 }
