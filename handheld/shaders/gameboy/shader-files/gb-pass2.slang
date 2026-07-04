@@ -96,7 +96,8 @@ float get_alpha_normalization_factor() {
             registers.blending_mode,
             registers.adjacent_texel_alpha_blending
         );
-        return reference_coverage / max(current_coverage, 0.001);
+        return alpha_normalization_factor(reference_coverage,
+                                          current_coverage);
     }
 
     if (registers.integer_mode < 0.5) {
@@ -121,7 +122,8 @@ float get_alpha_normalization_factor() {
             registers.pixel_shape,
             registers.sharp_mode
         );
-        return reference_coverage / max(current_coverage, 0.001);
+        return alpha_normalization_factor(reference_coverage,
+                                          current_coverage);
     }
 
     return 1.0;
