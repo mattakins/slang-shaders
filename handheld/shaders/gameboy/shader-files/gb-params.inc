@@ -8,26 +8,27 @@
 #pragma parameter integer_mode 					"== Display mode == (0=Full, 1=Pixel Perfect, 2=Scale factor)" 0.0 0.0 2.0 1.0
 #pragma parameter video_scale 					"     ↳ Scale factor" 5.0 3.0 15.0 1.0
 
-#pragma parameter color_toggle 					"== Color mode == (0=Grayscale, 1=Color)" 0.0 0.0 1.0 1.0
+#pragma parameter color_toggle 					"== Color mode == (Grayscale / Color)" 0.0 0.0 1.0 1.0
 #pragma parameter palette 						"     ↳ Palette (0=IMG, 1/2=Pocket, 3=B&W, 4=DMG, 5/6=Light)" 0.0 0.0 6.0 1.0
 #pragma parameter grey_balance 					"     ↳ LCD transparency" 3.0 0.0 10.0 0.05
 #pragma parameter contrast 						"     ↳ Contrast" 0.95 0.0 1.0 0.05
 
-#pragma parameter brightness_mode 				"== Pixel transparency detection == (0=Simple, 1=Perceptual)" 0.0 0.0 1.0 1.0
-#pragma parameter baseline_alpha 				"     ↳ Base pixel transparency" 0.10 0.0 1.0 0.01
-#pragma parameter pixel_opacity 				"     ↳ Pixel opacity" 1.0 0.01 1.0 0.01
+#pragma parameter brightness_mode 				"== Pixel transparency detection == (Simple / Perceptual)" 0.0 0.0 1.0 1.0
+#pragma parameter alpha_reference_scale 		"     ↳ Pixel alpha intensity" 5.0 3.0 15.0 1.0
+#pragma parameter baseline_alpha 				"         ↳ Base pixel transparency" 0.10 0.0 1.0 0.01
+#pragma parameter pixel_opacity 				"         ↳ Pixel opacity" 1.0 0.01 1.0 0.01
 
-#pragma parameter blending_mode 				"== Pixel blending mode == (0=Blend gaps, 1=Blend all)" 0.0 0.0 1.0 1.0
+#pragma parameter blending_mode 				"== Pixel blending mode == (Blend gaps / Blend all)" 0.0 0.0 1.0 1.0
 #pragma parameter adjacent_texel_alpha_blending "     ↳ Blend amount" 0.1755 0.0 1.0 0.05
 
-#pragma parameter sharp_mode 					"== Fullscreen pixels == (0=Soft, 1=Sharp)" 1.0 0.0 1.0 1.0
+#pragma parameter sharp_mode 					"== Fullscreen pixels == (Soft / Sharp)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE5 						" *  Soft / circular pixels = less grid distortion" 0.0 0.0 1.0 1.0
-#pragma parameter pixel_softness 				"     ↳ Pixel softness" 1.0 0.20 5.0 0.05
-#pragma parameter auto_soften 					"         ↳ Auto soften (reduce distortion) (OFF/ON)"  0.0 0.0 1.0 1.0
-#pragma parameter pixel_shape 					"     ↳ Pixel shape [Sharp mode] (Circle/Rectangle)" 1.0 0.0 1.30 0.05
+#pragma parameter auto_soften 					"     ↳ Pixel softness (Fixed / Adaptive)"  0.0 0.0 1.0 1.0
+#pragma parameter pixel_softness 				"         ↳ Base softness" 1.0 0.20 5.0 0.05
+#pragma parameter pixel_shape 					"     ↳ Pixel shape [Sharp mode] (Circle / Rectangle)" 1.0 0.0 1.30 0.05
 #pragma parameter sharpening_amount 			"     ↳ Pixel edge sharpness" 1.0 0.0 1.0 0.05
-#pragma parameter pixel_size 					"     ↳ Pixel size" 0.80 0.2 1.10 0.05
-#pragma parameter fullscreen_match_pixel_size 	"         ↳ Auto size (match integer) (OFF/ON)" 1.0 0.0 1.0 1.0
+#pragma parameter fullscreen_match_pixel_size 	"     ↳ Pixel size (Manual / Match pixel perfect)" 1.0 0.0 1.0 1.0
+#pragma parameter pixel_size 					"         ↳ Size" 0.80 0.2 1.10 0.05
 
 #pragma parameter LCD_EFFECTS 					"== LCD effects ==" 0.0 0.0 1.0 1.0
 #pragma parameter response_time 				"     ↳ Latency" 0.0 0.0 0.777 0.111
@@ -46,7 +47,4 @@
 #pragma parameter screen_offset_x 				"     ↳ Screen offset horizontal" 0.0 -5.0 5.0 1.0
 #pragma parameter screen_offset_y 				"     ↳ Screen offset vertical" 0.0 -5.0 5.0 1.0
 
-#pragma parameter DEBUG 						"=== Debug ===" 0.0 0.0 1.0 1.0
-#pragma parameter fullscreen_alpha_gain 		"     ↳ FS alpha gain" 1.35 0.50 1.50 0.01
-
-#define REFERENCE_SCALE 5.0
+#define shadow_reference_scale 5.0

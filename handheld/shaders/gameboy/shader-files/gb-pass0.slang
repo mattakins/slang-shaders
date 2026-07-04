@@ -12,8 +12,8 @@
 // Copyright (C) 2024-2026 Matt Akins			                         //
 //                                                                       //
 // 6/15/26 - v1.3				                                         //
-//   • True visual consistency across output resolutions                 //
-//   • Improved grey balance matching between fullscreen and integer.    //
+//   • Improved visual consistency across output resolutions.            //
+//   • Consistent pixel alpha across fullscreen and integer scales.      //
 //                                                                       //
 // 6/2/26 - v1.2				                                         //
 //   • Added motion-based shadows               					     //
@@ -55,127 +55,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #include "gb-params.inc"
-
-  /////////////////////////////////////////////////////////////////////////
- // Shared functions for numerical grey balance compensation            //
- // Normalizes emitted alpha energy to the 5x / 480p reference          //
-/////////////////////////////////////////////////////////////////////////
-
-// 1D line segment intersection
-float intersect_line_segment(float pixel_start, float pixel_end,
-                             float dot_start, float dot_end) {
-    float overlap_start = max(pixel_start, dot_start);
-    float overlap_end = min(pixel_end, dot_end);
-    return max(overlap_end - overlap_start, 0.0);
-}
-
-// 2D rectangle intersection
-float intersect_rect_area(vec4 px_square, vec4 rect) {
-    const vec2 bl = max(px_square.xy, rect.xy);
-    const vec2 tr = min(px_square.zw, rect.zw);
-    const vec2 coverage = max(tr - bl, vec2(0.0));
-    return coverage.x * coverage.y;
-}
-
-// Calculate coverage for a single sample point in normalized coordinate space
-float calculate_coverage_at_point(vec2 tx_coord_f, float pixel_size,
-                                   float pixel_softness, float sharpening_amount,
-                                   float pixel_shape, float sharp_mode) {
-    // Normalized coordinate space where tx_to_px = 1.0
-    vec2 pixel_center = (tx_coord_f - 0.5);
-    vec4 pixel_rect = vec4(pixel_center - 0.5, pixel_center + 0.5);
-    vec2 dot_size_in_px = vec2(pixel_size);
-    vec4 dot_rect = vec4(-dot_size_in_px * 0.5, dot_size_in_px * 0.5);
-
-    // RECTANGULAR METHOD: 1D separable coverage
-    float x_coverage = intersect_line_segment(pixel_rect.x, pixel_rect.z,
-                                              dot_rect.x, dot_rect.z);
-    float y_coverage = intersect_line_segment(pixel_rect.y, pixel_rect.w,
-                                              dot_rect.y, dot_rect.w);
-    float rect_linear = x_coverage * y_coverage;
-
-    // Apply sharpening
-    float rect_sharpened;
-    if (sharp_mode < 0.5) {
-        // Power mode
-        float sharp_factor = 1.0 / max(pixel_softness, 0.001);
-        rect_sharpened = pow(x_coverage, sharp_factor) *
-                        pow(y_coverage, sharp_factor);
-    } else {
-        // Sigmoid mode
-        float sigmoid_strength = 10.0 / max(pixel_softness, 0.001);
-        float x_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (x_coverage - 0.5)));
-        float y_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (y_coverage - 0.5)));
-        rect_sharpened = x_sharp * y_sharp;
-    }
-    float rect_coverage = mix(rect_linear, rect_sharpened, sharpening_amount);
-
-    // CIRCULAR METHOD: 2D area coverage
-    float circ_linear = intersect_rect_area(pixel_rect, dot_rect);
-
-    // Apply sharpening
-    float circ_sharpened;
-    if (sharp_mode < 0.5) {
-        circ_sharpened = pow(circ_linear, 1.0 / max(pixel_softness, 0.001));
-    } else {
-        float sigmoid_strength = 10.0 / max(pixel_softness, 0.001);
-        circ_sharpened = 1.0 / (1.0 + exp(-sigmoid_strength * (circ_linear - 0.5)));
-    }
-    float circ_coverage = mix(circ_linear, circ_sharpened, sharpening_amount);
-
-    // Blend between circular and rectangular based on pixel_shape parameter
-    return mix(circ_coverage, rect_coverage, pixel_shape);
-}
-
-int greatest_common_divisor(int a, int b) {
-    for (int i = 0; i < 32; i++) {
-        if (b == 0) break;
-        int remainder = a % b;
-        a = b;
-        b = remainder;
-    }
-    return max(a, 1);
-}
-
-// Sample every unique output phase when practical, with a bounded fallback.
-float sample_scale_average_coverage(vec2 tx_to_px, vec2 output_size,
-                                     vec2 source_size, float pixel_size,
-                                     float pixel_softness, float sharpening_amount,
-                                     float pixel_shape, float sharp_mode) {
-    float total = 0.0;
-    const int max_samples = 32;
-    vec2 safe_scale = max(tx_to_px, vec2(1.0));
-    ivec2 output_pixels = max(ivec2(round(output_size)), ivec2(1));
-    ivec2 source_pixels = max(ivec2(round(source_size)), ivec2(1));
-    ivec2 phase_count = ivec2(
-        output_pixels.x / greatest_common_divisor(output_pixels.x, source_pixels.x),
-        output_pixels.y / greatest_common_divisor(output_pixels.y, source_pixels.y)
-    );
-    bvec2 exact_phase_cycle = lessThanEqual(phase_count, ivec2(max_samples));
-    ivec2 sample_count = ivec2(
-        exact_phase_cycle.x ? phase_count.x : max_samples,
-        exact_phase_cycle.y ? phase_count.y : max_samples
-    );
-    vec2 sample_denominator = vec2(
-        exact_phase_cycle.x ? safe_scale.x : float(max_samples),
-        exact_phase_cycle.y ? safe_scale.y : float(max_samples)
-    );
-
-    for (int y = 0; y < max_samples; y++) {
-        if (y >= sample_count.y) break;
-        for (int x = 0; x < max_samples; x++) {
-            if (x >= sample_count.x) break;
-            vec2 sample_pos = fract(
-                (vec2(float(x), float(y)) + vec2(0.5)) /
-                sample_denominator
-            );
-            total += calculate_coverage_at_point(sample_pos, pixel_size,
-                                                pixel_softness, sharpening_amount,
-                                                pixel_shape, sharp_mode);
-        }
-    }
-    return total / float(sample_count.x * sample_count.y);
-}
+#include "gb-shared.inc"
 
 layout(push_constant) uniform Push
 {
@@ -197,12 +77,14 @@ layout(push_constant) uniform Push
 	float pixel_shape;
 	float palette;
 	float auto_soften;
-	float fullscreen_alpha_gain;
+	float alpha_reference_scale;
 } registers;
 
 layout(std140, set = 0, binding = 0) uniform UBO
 {
    mat4 MVP;
+   float blending_mode;
+   float adjacent_texel_alpha_blending;
 } global;
 
   /////////////////////////////////////////////////////////////////////////
@@ -223,7 +105,7 @@ layout(location = 7) out vec2 screen_bounds;
 // OPTIMIZATION: Frame-constant values calculated once in vertex shader
 layout(location = 8) out float video_scale_factor;
 layout(location = 9) out vec2 scale_bounds;
-layout(location = 10) out float aa_compensation_factor;  // Grey balance compensation (numerical)
+layout(location = 10) out float aa_compensation_factor;  // Pixel alpha normalization factor
 layout(location = 11) out float effective_softness;      // Adaptive softness (moiré reduction)
 
   /////////////////////////////////////////////////////////////////////////
@@ -269,13 +151,10 @@ void main()
         tx_coord = TexCoord * registers.SourceSize.xy;
         tx_to_px = registers.OutputSize.xy / registers.SourceSize.xy;
 
-        float fullscreen_scale = max(min(tx_to_px.x, tx_to_px.y), 1.0);
-        float integer_matched_pixel_size = clamp(
-            1.0 - 1.0 / fullscreen_scale, 0.2, 1.10
-        );
-        effective_pixel_size = mix(
-            registers.pixel_size, integer_matched_pixel_size,
-            step(0.5, registers.fullscreen_match_pixel_size)
+        effective_pixel_size = get_effective_pixel_size(
+            tx_to_px,
+            registers.pixel_size,
+            registers.fullscreen_match_pixel_size
         );
 
         // Game Boy dot size in output pixels
@@ -289,24 +168,22 @@ void main()
 
     // Compute scale-aware softness for uneven fullscreen scales
     effective_softness = registers.pixel_softness;
-    if (registers.auto_soften > 0.5 && registers.integer_mode < 0.5) {
-        vec2 scale = registers.OutputSize.xy / registers.SourceSize.xy;
-        vec2 fract_scale = fract(scale);
-        // 0 at integer scales, 0.5 at worst fractional (x.5)
-        float fract_factor = max(
-            0.5 - abs(fract_scale.x - 0.5),
-            0.5 - abs(fract_scale.y - 0.5)
+    if (registers.integer_mode < 0.5)
+        effective_softness = get_effective_pixel_softness(
+            tx_to_px,
+            registers.pixel_softness,
+            registers.auto_soften
         );
-        // Increase softness proportionally to fractional severity
-        effective_softness += fract_factor * 4.0;
-    }
 
-    // Match fullscreen alpha energy to the 5x integer-dot reference.
+    aa_compensation_factor = 1.0;
+
+    // Match fullscreen AA coverage to the selected pixel alpha intensity.
     if (registers.integer_mode < 0.5) {
-        float lit_reference_pixels = REFERENCE_SCALE - 1.0;
-        float reference_coverage =
-            (lit_reference_pixels * lit_reference_pixels) /
-            (REFERENCE_SCALE * REFERENCE_SCALE);
+        float reference_coverage = integer_post_blend_coverage(
+            registers.alpha_reference_scale,
+            global.blending_mode,
+            global.adjacent_texel_alpha_blending
+        );
         float current_coverage = sample_scale_average_coverage(
             tx_to_px,
             registers.OutputSize.xy,
@@ -317,17 +194,24 @@ void main()
             registers.pixel_shape,
             registers.sharp_mode
         );
-        float dynamic_alpha = 3.0 / max(registers.grey_balance, 0.001);
-        float reference_energy = reference_coverage *
-                                 (registers.baseline_alpha + dynamic_alpha);
         aa_compensation_factor =
-            (reference_energy / max(current_coverage, 0.001) -
-             registers.baseline_alpha) /
-            max(dynamic_alpha, 0.001);
-        aa_compensation_factor *= registers.fullscreen_alpha_gain;
+            reference_coverage / max(current_coverage, 0.001);
         aa_compensation_factor = clamp(aa_compensation_factor, 0.0, 4.0);
-    } else {
-        aa_compensation_factor = 1.0;
+    } else if (registers.integer_mode > 0.5) {
+        float reference_scale = registers.alpha_reference_scale;
+        float reference_coverage = integer_post_blend_coverage(
+            reference_scale,
+            global.blending_mode,
+            global.adjacent_texel_alpha_blending
+        );
+        float current_coverage = integer_post_blend_coverage(
+            video_scale_factor,
+            global.blending_mode,
+            global.adjacent_texel_alpha_blending
+        );
+        aa_compensation_factor =
+            reference_coverage / max(current_coverage, 0.001);
+        aa_compensation_factor = clamp(aa_compensation_factor, 0.0, 4.0);
     }
 
 }
@@ -477,8 +361,7 @@ void main()
         brightness = (0.2126 * input_rgb.r) + (0.7152 * input_rgb.g) + (0.0722 * input_rgb.b);
     }
 
-    float grey_balance_adjusted =
-        registers.grey_balance / aa_compensation_factor;
+    float grey_balance_adjusted = registers.grey_balance;
 
     // Compensate for brightness range difference between modes
     // Perceptual mode outputs 0-1, simple mode outputs 0-3
@@ -488,6 +371,7 @@ void main()
 
     float rgb_to_alpha = brightness / grey_balance_adjusted +
                          registers.baseline_alpha;
+    rgb_to_alpha *= aa_compensation_factor;
 
     // Foreground palette color selection
     vec3 foreground_color;

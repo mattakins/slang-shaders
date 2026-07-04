@@ -114,7 +114,7 @@ void main()
         shadow_offset_px += gravity * registers.shadow_max_offset;
     }
 
-    vec2 shadow_step = registers.SourceSize.zw * (get_current_gb_scale() / REFERENCE_SCALE);
+    vec2 shadow_step = registers.SourceSize.zw * (get_current_gb_scale() / shadow_reference_scale);
     shadow_offset = shadow_offset_px * shadow_step;
 
     texel = registers.SourceSize.zw;

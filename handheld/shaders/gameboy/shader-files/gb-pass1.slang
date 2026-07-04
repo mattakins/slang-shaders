@@ -105,11 +105,10 @@ float blending_modifier(float color){
 
 void main()
 {
-    // A simple blur technique that softens harsh color transitions
-    // Specialized to only blur alpha values and limited to only blurring texels
-    // lying in the spaces between two or more texels
+    // Blend neighboring alpha values to soften harsh transitions.
+    // Blend Gaps affects zero-alpha gaps; Blend All affects every pixel.
 
-    // Sample the input textures
+    // Sample the input texture
     vec4 out_color = texture(Source, vTexCoord).rgba;
 
     // Clamp the blur coords to the input texture size so it doesn't attempt to sample off the texture (it'll retrieve float4(0.0) and darken the edges otherwise)
@@ -118,7 +117,7 @@ void main()
     vec2 blur_coords_right_clamped = clamp(blur_coords_right, blur_coords_lower_bound, blur_coords_upper_bound);
     vec2 blur_coords_left_clamped  = clamp(blur_coords_left, blur_coords_lower_bound, blur_coords_upper_bound);
 
-    //Sample adjacent texels based on the coordinates above
+    // Sample adjacent texels based on the coordinates above
     vec4 adjacent_texel_1 = texture(Source, blur_coords_up_clamped).rgba;
     vec4 adjacent_texel_2 = texture(Source, blur_coords_down_clamped).rgba;
     vec4 adjacent_texel_3 = texture(Source, blur_coords_right_clamped).rgba;
