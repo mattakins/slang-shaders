@@ -9,7 +9,7 @@
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
                           |_|                BASE #INCLUDE  |___/
-    v2.2 by mattakins
+    v2.3 by mattakins
     Copyright (C) 2025-2026 Matt Akins.
 
     Expects before #include:
@@ -122,6 +122,14 @@ float getBrightness(vec3 color) {
     } else {
         return getPerceptualBrightness(color);
     }
+}
+
+float getShadowCasterStrength(vec2 uv) {
+    bool out_of_bounds = any(lessThan(uv, vec2(0.0))) || any(greaterThanEqual(uv, vec2(1.0)));
+    if (out_of_bounds) {
+        return 0.0;
+    }
+    return 1.0 - getBrightness(texture(Original, uv).rgb);
 }
 
 bool isWhitePixel(vec3 color, float threshold) {
@@ -272,11 +280,15 @@ void main() {
     }
 
     bool current_is_white = isWhitePixel(original_pixel, param.PT_THRESHOLD);
+    bool should_apply = (param.PT_PIXEL_MODE < 0.5) ? current_is_white : true;
 
-    vec4 background = vec4(generateProceduralBackground(vTexCoord), 1.0);
+    vec4 background = vec4(0.0);
+    if (should_apply) {
+        background = vec4(generateProceduralBackground(vTexCoord), 1.0);
+    }
 
     // Drop shadows (suppressed in debug mode 2)
-    if (param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
+    if (should_apply && param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
         vec2 shadow_offset = -shadow_offset_raw * shadow_scale_factor * texel;
 
         float shadow_strength = 0.0;
@@ -296,10 +308,8 @@ void main() {
                 );
                 for (int i = 0; i < 5; i++) {
                     vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_dist);
-                    vec3 blur_sample = texture(Original, sample_pos).rgb;
                     float w = (i == 0) ? 4.0 : 2.0;
-                    float blur_brightness = getBrightness(blur_sample);
-                    blurred_shadow += (1.0 - blur_brightness) * w;
+                    blurred_shadow += getShadowCasterStrength(sample_pos) * w;
                 }
                 shadow_strength = (blurred_shadow / 12.0) * param.PT_SHADOW_OPACITY;
             } else {
@@ -317,17 +327,13 @@ void main() {
                 );
                 for (int i = 0; i < 9; i++) {
                     vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_dist);
-                    vec3 blur_sample = texture(Original, sample_pos).rgb;
                     float w = (i == 0) ? 4.0 : (i < 5 ? 2.0 : 1.0);
-                    float blur_brightness = getBrightness(blur_sample);
-                    blurred_shadow += (1.0 - blur_brightness) * w;
+                    blurred_shadow += getShadowCasterStrength(sample_pos) * w;
                 }
                 shadow_strength = (blurred_shadow / 16.0) * param.PT_SHADOW_OPACITY;
             }
         } else {
-            vec3 center_source = texture(Original, vTexCoord + shadow_offset).rgb;
-            float shadow_source_brightness = getBrightness(center_source);
-            shadow_strength = (1.0 - shadow_source_brightness) * param.PT_SHADOW_OPACITY;
+            shadow_strength = getShadowCasterStrength(vTexCoord + shadow_offset) * param.PT_SHADOW_OPACITY;
         }
 
         // Deadzone — suppress faint shadows from near-white pixels
@@ -340,7 +346,7 @@ void main() {
     }
 
     // Background tinting
-    if (global.PT_PALETTE > 0.5) {
+    if (should_apply && global.PT_PALETTE > 0.5) {
         vec3 bg_palette_color;
 
         if (global.PT_PALETTE < 1.5) {
@@ -368,39 +374,30 @@ void main() {
         background.rgb = mix(background.rgb, tinted_background, global.PT_PALETTE_INTENSITY);
     }
 
-    // Transparency compositing — gridline intensity
-    // 0.0 = OFF: original pixel brightness for all (no grid effect).
-    // 0.05 = grid on darks, whites fully bypass. Deadzone via smoothstep(0.05, 1.0).
-    // 0.10–0.95 = grid on darks, whites partially blended.
-    // 1.0 = full grid on all pixels.
-    vec3 brightness_source = original_pixel;
-    if (global.PT_BRIGHTNESS_GRID > 0.001) {
-        brightness_source = lcd_color.rgb;
-        if (current_is_white) {
-            float white_blend = smoothstep(0.05, 1.0, global.PT_BRIGHTNESS_GRID);
-            brightness_source = mix(original_pixel, lcd_color.rgb, white_blend);
-        }
-    }
+    // Gridline alpha mix: color and white pixels are controlled separately.
+    float grid_mix = current_is_white ? global.PT_GRID_WHITE_MIX : global.PT_GRID_COLOR_MIX;
 
     if (param.PT_PIXEL_MODE > 0.5 && param.PT_PIXEL_MODE < 1.5) {
-        float pixel_intensity = getBrightness(brightness_source);
-        float transparency = (param.PT_BASE_ALPHA * pixel_intensity) * 2.665;
+        float no_grid_alpha = (param.PT_BASE_ALPHA * getBrightness(original_pixel)) * 2.665;
+        float grid_alpha = (param.PT_BASE_ALPHA * getBrightness(lcd_color.rgb)) * 2.665;
 
         if (current_is_white && global.PT_WHITE_BOOST > 0.5) {
-            transparency = max(transparency, global.PT_WHITE_TRANSPARENCY);
+            no_grid_alpha = max(no_grid_alpha, global.PT_WHITE_TRANSPARENCY);
+            grid_alpha = max(grid_alpha, global.PT_WHITE_TRANSPARENCY);
         }
+        float transparency = mix(no_grid_alpha, grid_alpha, grid_mix);
         transparency = clamp(transparency, 0.0, 1.0);
         output_color.rgb = mix(lcd_color.rgb, background.rgb, transparency);
     } else {
-        bool should_apply = (param.PT_PIXEL_MODE < 0.5) ? current_is_white : true;
-
         if (should_apply) {
-            float pixel_intensity = getBrightness(brightness_source);
-            float pixel_alpha = (pixel_intensity / 3.0) + param.PT_BASE_ALPHA;
+            float no_grid_alpha = (getBrightness(original_pixel) / 3.0) + param.PT_BASE_ALPHA;
+            float grid_alpha = (getBrightness(lcd_color.rgb) / 3.0) + param.PT_BASE_ALPHA;
 
             if (current_is_white && global.PT_WHITE_BOOST > 0.5) {
-                pixel_alpha = max(pixel_alpha, global.PT_WHITE_TRANSPARENCY);
+                no_grid_alpha = max(no_grid_alpha, global.PT_WHITE_TRANSPARENCY);
+                grid_alpha = max(grid_alpha, global.PT_WHITE_TRANSPARENCY);
             }
+            float pixel_alpha = mix(no_grid_alpha, grid_alpha, grid_mix);
             pixel_alpha = clamp(pixel_alpha, 0.0, 1.0);
             output_color.rgb = mix(lcd_color.rgb, background.rgb, pixel_alpha);
         }

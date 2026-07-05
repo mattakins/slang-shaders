@@ -11,7 +11,7 @@
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
                           |_|                               |___/
-    v2.2 by mattakins
+    v2.3 by mattakins
     Copyright (C) 2025-2026 Matt Akins.
 
     Grid shaders look great on Game Boy Color games - except for one glaring issue.
@@ -25,7 +25,7 @@
 
 */
 
-#pragma parameter PT_ENABLE 			"=== Pixel Transparency v2.2 === (OFF/ON)" 1.0 0.0 1.0 1.0
+#pragma parameter PT_ENABLE 			"=== Pixel Transparency v2.3 === (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_HIDE_CONTENT 		" *  Append to any LCD shader as last pass. Try with GBC & GBA." 0.0 0.0 2.0 1.0
 #pragma parameter NOTE2 				" *  Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 
@@ -50,9 +50,10 @@
 #pragma parameter PT_WHITE_BOOST 		"--- Boost white pixel transparency (OFF/ON)" 0.0 0.0 1.0 1.0
 #pragma parameter PT_WHITE_TRANSPARENCY "      ↳ Boost amount" 0.50 0.0 1.0 0.01
 
-#pragma parameter PT_BRIGHTNESS_MODE 	"--- Brightness mode (0=Simple, 1=Natural)" 1.0 0.0 1.0 1.0
+#pragma parameter PT_BRIGHTNESS_MODE 	"--- Brightness mode (Simple / Natural)" 1.0 0.0 1.0 1.0
 
-#pragma parameter PT_BRIGHTNESS_GRID 	"--- Gridline intensity (0=Less, 1=More)" 0.0 0.0 1.0 0.05
+#pragma parameter PT_GRID_COLOR_MIX 	"--- Grid visibility on color pixels" 0.0 0.0 1.0 0.05
+#pragma parameter PT_GRID_WHITE_MIX 	"--- Grid visibility on white pixels" 0.0 0.0 1.0 0.05
 
 #pragma parameter PT_SHADOW_ENABLE 		"== SHADOWS == (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_SHADOW_MOTION 		"      ↳ Shadow motion (OFF/ON) " 1.0 0.0 1.0 1.0
@@ -71,7 +72,7 @@
 #pragma parameter PT_ACCEL_SENSITIVITY 	"      ↳ Tilt sensitivity" 1.0 0.1 5.0 0.05
 
 #pragma parameter SECTION_PERF 			"== PERFORMANCE ==" 0.0 0.0 1.0 1.0
-#pragma parameter PT_SHADOW_FAST_BLUR 	"      ↳ Shadow blur (0=Fast, 1=Smooth)" 1.0 0.0 1.0 1.0
+#pragma parameter PT_SHADOW_FAST_BLUR 	"      ↳ Shadow blur (Fast / Smooth)" 1.0 0.0 1.0 1.0
 
 layout(push_constant) uniform Push {
     vec4 SourceSize;
@@ -114,7 +115,8 @@ layout(std140, set = 0, binding = 0) uniform UBO {
     float PT_HIGHLIGHTS;
     float PT_WHITE_BOOST;
     float PT_WHITE_TRANSPARENCY;
-    float PT_BRIGHTNESS_GRID;
+    float PT_GRID_COLOR_MIX;
+    float PT_GRID_WHITE_MIX;
 } global;
 
 #include "pt_base.inc"
