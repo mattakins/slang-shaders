@@ -64,6 +64,7 @@
 #pragma parameter PT_SHADOW_OFFSET_X 	"      ↳ X offset" 3.0 -30.0 30.0 0.5
 #pragma parameter PT_SHADOW_OFFSET_Y 	"      ↳ Y offset" 3.0 -30.0 30.0 0.5
 
+#pragma parameter PT_SHADOW_EDGE_ENABLE "      ↳ Screen edge shadow (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_SHADOW_OPACITY 	"      ↳ Opacity" 0.50 0.0 1.0 0.01
 #pragma parameter PT_SHADOW_BLUR 		"      ↳ Blur amount" 1.0 0.0 5.0 0.1
 
@@ -117,6 +118,7 @@ layout(std140, set = 0, binding = 0) uniform UBO {
     float PT_WHITE_TRANSPARENCY;
     float PT_GRID_COLOR_MIX;
     float PT_GRID_WHITE_MIX;
+    float PT_SHADOW_EDGE_ENABLE;
 } global;
 
 #include "pt_base.inc"

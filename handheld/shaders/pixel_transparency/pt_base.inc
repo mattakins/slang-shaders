@@ -127,7 +127,7 @@ float getBrightness(vec3 color) {
 float getShadowCasterStrength(vec2 uv) {
     bool out_of_bounds = any(lessThan(uv, vec2(0.0))) || any(greaterThanEqual(uv, vec2(1.0)));
     if (out_of_bounds) {
-        return 0.0;
+        return global.PT_SHADOW_EDGE_ENABLE > 0.5 ? 1.0 : 0.0;
     }
     return 1.0 - getBrightness(texture(Original, uv).rgb);
 }
