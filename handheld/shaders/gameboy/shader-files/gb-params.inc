@@ -20,7 +20,7 @@
 
 #pragma parameter blending_mode 				"== Pixel blending mode == (Blend gaps / Blend all)" 0.0 0.0 1.0 1.0
 #pragma parameter adjacent_texel_alpha_blending "     ↳ Blend amount" 0.1755 0.0 0.25 0.05
-	const float max_adjacent_alpha_blend = 0.25; // 1/4: four-neighbor bleed in pass1 must not exceed the alpha budget, or normalization factor overshoots
+const float max_adjacent_alpha_blend = 0.25; // 1/4: four-neighbor bleed in pass1 must not exceed the alpha budget, or normalization factor overshoots
 
 #pragma parameter sharp_mode 					"== Fullscreen pixels == (Soft / Sharp)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE5 						" *  Soft / circular pixels = less grid distortion" 0.0 0.0 1.0 1.0
