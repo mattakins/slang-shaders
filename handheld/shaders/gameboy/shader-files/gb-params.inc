@@ -14,14 +14,13 @@
 #pragma parameter contrast 						"     ↳ Contrast" 0.95 0.0 1.0 0.05
 
 #pragma parameter brightness_mode 				"== Pixel transparency detection == (Simple / Perceptual)" 0.0 0.0 1.0 1.0
-#pragma parameter alpha_reference_scale 		"     ↳ Pixel alpha intensity" 5.0 3.0 15.0 1.0
+#pragma parameter alpha_reference_scale 		"     ↳ Pixel alpha intensity" 6.0 3.0 15.0 1.0
 #pragma parameter baseline_alpha 				"         ↳ Base pixel transparency" 0.10 0.0 1.0 0.01
 #pragma parameter pixel_opacity 				"         ↳ Pixel opacity" 1.0 0.01 1.0 0.01
 
 #pragma parameter blending_mode 				"== Pixel blending mode == (Blend gaps / Blend all)" 0.0 0.0 1.0 1.0
 #pragma parameter adjacent_texel_alpha_blending "     ↳ Blend amount" 0.1755 0.0 0.25 0.05
-
-const float max_adjacent_alpha_blend = 0.25;
+	const float max_adjacent_alpha_blend = 0.25; // 1/4: four-neighbor bleed in pass1 must not exceed the alpha budget, or normalization factor overshoots
 
 #pragma parameter sharp_mode 					"== Fullscreen pixels == (Soft / Sharp)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE5 						" *  Soft / circular pixels = less grid distortion" 0.0 0.0 1.0 1.0
