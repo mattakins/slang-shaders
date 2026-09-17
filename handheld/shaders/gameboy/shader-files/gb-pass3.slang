@@ -117,6 +117,14 @@ Normalized Gaussian weights:                     Normalized Gaussian weights:
 0.07270923003781316665844409497651 @position4    0.08167444001912718529866079800870 @position4
 0.05488381664578583445722654373702 @position5
 */
+vec2 shadow_sample_coord(vec2 coord) {
+    // Continue the edge dot through the fullscreen boundary instead of
+    // extending its low-alpha gap across the blur kernel.
+    if (registers.integer_mode < 0.5)
+        coord.y = 1.0 - abs(1.0 - abs(coord.y));
+    return clamp(coord, lower_bound, upper_bound);
+}
+
 void main()
 {
     // Define offsets and weights - change this for both the X and Y passes if you change the sigma value or number of texels sampled
@@ -137,14 +145,14 @@ void main()
                                 0.08167444001912718529866079800870 );
 
     // Sample the current fragment and apply its weight
-    vec4 out_color = texture(Source, clamp(vTexCoord, lower_bound, upper_bound)) * weights[0];
+    vec4 out_color = texture(Source, shadow_sample_coord(vTexCoord)) * weights[0];
 
     // Iterate across the offsets in both directions sampling texels
     // and adding their weighted alpha values to the total
     for (int i = 1; i < 5; i++)
     {
-        out_color.a += texture(Source, clamp(vTexCoord + vec2(0.0, offsets[i] * blur_step.y), lower_bound, upper_bound)).a * weights[i];
-        out_color.a += texture(Source, clamp(vTexCoord - vec2(0.0, offsets[i] * blur_step.y), lower_bound, upper_bound)).a * weights[i];
+        out_color.a += texture(Source, shadow_sample_coord(vTexCoord + vec2(0.0, offsets[i] * blur_step.y))).a * weights[i];
+        out_color.a += texture(Source, shadow_sample_coord(vTexCoord - vec2(0.0, offsets[i] * blur_step.y))).a * weights[i];
     }
 
     FragColor = out_color;
