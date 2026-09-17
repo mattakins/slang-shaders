@@ -11,7 +11,7 @@
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
                           |_|     SUNLIGHT SHIMMER EDITION  |___/
-    v2.2 by mattakins
+    v2.3 by mattakins
     Copyright (C) 2025-2026 Matt Akins.
 
     Grid shaders look great on Game Boy Color games - except for one glaring issue.
@@ -31,7 +31,7 @@
 
 #define PT_SHIMMER
 
-#pragma parameter PT_ENABLE 			"=== Pixel Transparency v2.2 - SUNLIGHT SHIMMER === (OFF/ON)" 1.0 0.0 1.0 1.0
+#pragma parameter PT_ENABLE 			"=== Pixel Transparency v2.3 - SUNLIGHT SHIMMER === (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_HIDE_CONTENT 		" *  Append to any LCD shader as last pass. Try with GBC & GBA." 0.0 0.0 2.0 1.0
 #pragma parameter NOTE2 				" *  Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 
@@ -56,9 +56,10 @@
 #pragma parameter PT_WHITE_BOOST 		"--- Boost white pixel transparency (OFF/ON)" 0.0 0.0 1.0 1.0
 #pragma parameter PT_WHITE_TRANSPARENCY "      ↳ Boost amount" 0.50 0.0 1.0 0.01
 
-#pragma parameter PT_BRIGHTNESS_MODE 	"--- Brightness mode (0=Simple, 1=Natural)" 1.0 0.0 1.0 1.0
+#pragma parameter PT_BRIGHTNESS_MODE 	"--- Brightness mode (Simple / Natural)" 1.0 0.0 1.0 1.0
 
-#pragma parameter PT_BRIGHTNESS_GRID 	"--- Gridline intensity (0=Less, 1=More)" 0.0 0.0 1.0 0.05
+#pragma parameter PT_GRID_COLOR_MIX 	"--- Grid visibility on color pixels" 0.0 0.0 1.0 0.05
+#pragma parameter PT_GRID_WHITE_MIX 	"--- Grid visibility on white pixels" 0.0 0.0 1.0 0.05
 
 #pragma parameter PT_SUNLIGHT_ENABLE 	"== SUNLIGHT == (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_GLARE_ENABLE 		"--- Glare (OFF/ON)" 1.0 0.0 1.0 1.0
@@ -67,12 +68,12 @@
 
 #pragma parameter PT_REFLECT_ENABLE     "--- Reflection (OFF/ON)" 0.0 0.0 1.0 1.0
 #pragma parameter PT_REFLECT_INTENSITY  "      ↳ Strength" 0.08 0.0 0.5 0.01
-#pragma parameter PT_REFLECT_SPREAD     "      ↳ Spread (lower=sharper)" 0.6 0.1 1.0 0.05
+#pragma parameter PT_REFLECT_SPREAD     "      ↳ Spread (lower = sharper)" 0.6 0.1 1.0 0.05
 #pragma parameter PT_REFLECT_BIAS       "      ↳ Ambient floor" 0.02 0.0 0.2 0.005
 #pragma parameter PT_REFLECT_WARM       "      ↳ Warm tint" 0.3 0.0 1.0 0.05
 
 #pragma parameter PT_RAINBOW_ENABLE 	"--- Rainbow shimmer (OFF/ON)" 1.0 0.0 1.0 1.0
-#pragma parameter PT_RAINBOW_INTENSITY 	"      ↳ Intensity" 0.15 0.0 1.0 0.01
+#pragma parameter PT_RAINBOW_INTENSITY 	"      ↳ Intensity" 0.20 0.0 1.0 0.01
 #pragma parameter PT_FILM_TUNING 		"      ↳ Color shift" 1.0 0.5 2.0 0.05
 #pragma parameter PT_LIGHT_SPREAD 		"      ↳ Band density" 1.8 0.5 4.0 0.1
 
@@ -93,15 +94,17 @@
 #pragma parameter PT_SHADOW_OFFSET_X 	"      ↳ X offset" 3.0 -30.0 30.0 0.5
 #pragma parameter PT_SHADOW_OFFSET_Y 	"      ↳ Y offset" 3.0 -30.0 30.0 0.5
 
+#pragma parameter PT_SHADOW_EDGE_ENABLE "      ↳ Screen edge shadow (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_SHADOW_OPACITY 	"      ↳ Opacity" 0.50 0.0 1.0 0.01
 #pragma parameter PT_SHADOW_BLUR 		"      ↳ Blur amount" 1.0 0.0 5.0 0.1
+
 #pragma parameter PT_ACCEL_ENABLE 		"== MOTION == (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE3 				" *  Motion enabled on latest RetroArch nightly build." 0.0 0.0 1.0 1.0
 #pragma parameter PT_ACCEL_SENSITIVITY 	"      ↳ Tilt sensitivity" 1.0 0.1 5.0 0.05
 
 #pragma parameter SECTION_PERF 			"== PERFORMANCE ==" 0.0 0.0 1.0 1.0
 #pragma parameter PT_RAINBOW_COLORS 	"      ↳ Rainbow colors (3=Fast, 7=Full)" 7.0 3.0 7.0 2.0
-#pragma parameter PT_SHADOW_FAST_BLUR 	"      ↳ Shadow blur (0=Fast, 1=Smooth)" 1.0 0.0 1.0 1.0
+#pragma parameter PT_SHADOW_FAST_BLUR 	"      ↳ Shadow blur (Fast / Smooth)" 1.0 0.0 1.0 1.0
 
 layout(push_constant) uniform Push {
     vec4 SourceSize;
@@ -115,13 +118,14 @@ layout(push_constant) uniform Push {
     float PT_SHADOW_MOTION_Y;
     float PT_SHADOW_OFFSET_X;
     float PT_SHADOW_OFFSET_Y;
-    // Both vertex and fragment stages
+    // Parameters used in both vertex and fragment stages
     float PT_RAINBOW_ENABLE;
     float PT_GLARE_ENABLE;
+    // Vertex-stage light-position parameters
     float PT_LIGHT_RANGE;
     float PT_LIGHT_X;
     float PT_LIGHT_Y;
-    // Hot fragment-stage parameters (push_constant for register-speed access)
+    // Frequently accessed fragment-stage parameters
     float PT_ENABLE;
     float PT_BRIGHTNESS_MODE;
     float PT_SHADOW_ENABLE;
@@ -140,7 +144,7 @@ layout(std140, set = 0, binding = 0) uniform UBO {
     vec3 Accelerometer;
     vec3 AccelerometerRest;
     #endif
-    // Fragment-stage parameters (remaining in UBO)
+    // Remaining parameters
     float PT_HIDE_CONTENT;
     float PT_PALETTE;
     float PT_PALETTE_INTENSITY;
@@ -151,7 +155,9 @@ layout(std140, set = 0, binding = 0) uniform UBO {
     float PT_HIGHLIGHTS;
     float PT_WHITE_BOOST;
     float PT_WHITE_TRANSPARENCY;
-    float PT_BRIGHTNESS_GRID;
+    float PT_GRID_COLOR_MIX;
+    float PT_GRID_WHITE_MIX;
+    float PT_SHADOW_EDGE_ENABLE;
     float PT_SUNLIGHT_ENABLE;
     float PT_GLARE_INTENSITY;
     float PT_GLARE_SIZE;
