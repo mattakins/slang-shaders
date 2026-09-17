@@ -47,7 +47,6 @@ layout(push_constant) uniform Push
 	float screen_offset_x;
 	float screen_offset_y;
 	float shadow_enable;
-	float shadow_edge_sample_bounds;
 	float palette;
 	float integer_mode;
 	float video_scale;
@@ -181,8 +180,7 @@ void main()
     vec4 foreground = texture(PassOutput1, tex - screen_offset);
     vec4 background = texture(BACKGROUND, vTexCoord);
 	vec2 shadow_sample = vTexCoord - (shadow_offset + screen_offset);
-	vec2 shadow_coord = (registers.shadow_edge_sample_bounds > 0.5) ?
-		clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel) : shadow_sample;
+	vec2 shadow_coord = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
 	vec4 shadows = texture(Source, shadow_coord);
 
 	// Foreground and background are blended with the background color
