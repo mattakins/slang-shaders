@@ -11,7 +11,14 @@ float get_effective_pixel_size(vec2 tx_to_px, float pixel_size,
     float auto_pixel_size = clamp(
         1.0 - 1.0 / fullscreen_scale, 0.2, 1.10
     );
-    return mix(pixel_size, auto_pixel_size, step(0.5, auto_size));
+    return mix(pixel_size, auto_pixel_size, step(0.5, min(auto_size, 1.0)));
+}
+
+float hard_dot_mask(vec2 cell_index, vec2 cell_frac, vec2 scale) {
+    vec2 gap = 1.0 / max(scale, vec2(1.0));
+    vec2 edge_cell = 1.0 - step(vec2(0.5), cell_index);
+    gap = mix(gap, vec2(0.0), edge_cell);
+    return (cell_frac.x > gap.x && cell_frac.y > gap.y) ? 1.0 : 0.0;
 }
 
 // Add softness as either output axis moves away from an integer scale.
@@ -160,17 +167,26 @@ float integer_dot_coverage(float scale) {
     return (lit_pixels * lit_pixels) / (safe_scale * safe_scale);
 }
 
+float integer_rect_post_blend_coverage(vec2 scale, float blending_mode,
+                                       float blend_amount) {
+    vec2 safe_scale = max(scale, vec2(1.0));
+    float safe_blend_amount = min(blend_amount, max_adjacent_alpha_blend);
+    vec2 lit_pixels = max(safe_scale - vec2(1.0), vec2(0.0));
+    float hard_coverage = (lit_pixels.x * lit_pixels.y) /
+                          (safe_scale.x * safe_scale.y);
+    float gap_blend_coverage =
+        2.0 * safe_blend_amount * (lit_pixels.x + lit_pixels.y) /
+        (safe_scale.x * safe_scale.y);
+    float blend_gaps_only = 1.0 - step(0.5, blending_mode);
+    return hard_coverage + gap_blend_coverage * blend_gaps_only;
+}
+
 // Include the alpha that Blend Gaps adds around the hard integer mask.
 float integer_post_blend_coverage(float scale, float blending_mode,
                                   float blend_amount) {
-    float safe_scale = max(scale, 1.0);
-    float safe_blend_amount = min(blend_amount, max_adjacent_alpha_blend);
-    float lit_pixels = max(safe_scale - 1.0, 0.0);
-    float hard_coverage = integer_dot_coverage(safe_scale);
-    float gap_blend_coverage =
-        4.0 * safe_blend_amount * lit_pixels / (safe_scale * safe_scale);
-    float blend_gaps_only = 1.0 - step(0.5, blending_mode);
-    return hard_coverage + gap_blend_coverage * blend_gaps_only;
+    vec2 safe_scale = vec2(max(scale, 1.0));
+    return integer_rect_post_blend_coverage(safe_scale, blending_mode,
+                                            blend_amount);
 }
 
 // Match alpha coverage without allowing unstable amplification.

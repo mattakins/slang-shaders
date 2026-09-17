@@ -144,11 +144,12 @@ void main()
         scale_bounds = vec2(1.0); // Full screen
 
         gl_Position = global.MVP * Position;
-        vTexCoord = TexCoord;
+        vec2 fullscreen_tex_coord = TexCoord;
+        vTexCoord = fullscreen_tex_coord;
         original_coord = TexCoord;
 
         // Calculate scaling parameters for geometric dot rendering
-        tx_coord = TexCoord * registers.SourceSize.xy;
+        tx_coord = fullscreen_tex_coord * registers.SourceSize.xy;
         tx_to_px = registers.OutputSize.xy / registers.SourceSize.xy;
 
         effective_pixel_size = get_effective_pixel_size(
@@ -276,61 +277,67 @@ void main()
 
     if (registers.integer_mode > 0.5) {
         // Integer mode dot detection
-        if ( mod(final_tex_coord.x, dot_size.x) > one_texel.x && mod(final_tex_coord.y, dot_size.y) > one_texel.y )
-            is_on_dot = 1.0;
+        vec2 cell_index;
+        vec2 cell_frac = modf(final_tex_coord * registers.SourceSize.xy,
+                              cell_index);
+        is_on_dot = hard_dot_mask(
+            cell_index,
+            cell_frac,
+            vec2(video_scale_factor)
+        );
     } else {
         // Non-integer scaling mode - use geometric intersection for accuracy
         vec2 tx_coord_i;
         const vec2 tx_coord_f = modf(tx_coord, tx_coord_i);
 
         // Calculate pixel rectangle in output space
-        vec2 pixel_center = (tx_coord_f - 0.5) * tx_to_px;
-        vec4 pixel_rect = vec4(pixel_center - tx_to_px * 0.5, pixel_center + tx_to_px * 0.5);
+            vec2 pixel_center = (tx_coord_f - 0.5) * tx_to_px;
+            vec4 pixel_rect = vec4(pixel_center - tx_to_px * 0.5, pixel_center + tx_to_px * 0.5);
 
-        // Create Game Boy dot rectangle (dot_size_in_px calculated in vertex shader)
-        vec4 dot_rect = vec4(-dot_size_in_px * 0.5, dot_size_in_px * 0.5);
+            // Create Game Boy dot rectangle (dot_size_in_px calculated in vertex shader)
+            vec4 dot_rect = vec4(-dot_size_in_px * 0.5, dot_size_in_px * 0.5);
 
-        // RECTANGULAR METHOD: Calculate 1D line segment intersections
-        float x_coverage = intersect_line_segment(pixel_rect.x, pixel_rect.z, dot_rect.x, dot_rect.z) / tx_to_px.x;
-        float y_coverage = intersect_line_segment(pixel_rect.y, pixel_rect.w, dot_rect.y, dot_rect.w) / tx_to_px.y;
+            // RECTANGULAR METHOD: Calculate 1D line segment intersections
+            float x_coverage = intersect_line_segment(pixel_rect.x, pixel_rect.z, dot_rect.x, dot_rect.z) / tx_to_px.x;
+            float y_coverage = intersect_line_segment(pixel_rect.y, pixel_rect.w, dot_rect.y, dot_rect.w) / tx_to_px.y;
 
-        // Linear coverage (no sharpening)
-        float rect_linear = x_coverage * y_coverage;
+            // Linear coverage (no sharpening)
+            float rect_linear = x_coverage * y_coverage;
 
-        // Apply sharpening to X and Y separately (preserves rectangular shape)
-        float rect_sharpened;
-        if (registers.sharp_mode < 0.5) {
-            // Mode 0: Power curve
-            float sharp_factor = 1.0 / max(effective_softness, 0.001);
-            rect_sharpened = pow(x_coverage, sharp_factor) * pow(y_coverage, sharp_factor);
-        } else {
-            // Mode 1: Sigmoid
-            // Base steepness of 10.0 provides moderate sharpness, scaled by effective_softness
-            float sigmoid_strength = 10.0 / max(effective_softness, 0.001);
-            float x_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (x_coverage - 0.5)));
-            float y_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (y_coverage - 0.5)));
-            rect_sharpened = x_sharp * y_sharp;
-        }
+            // Apply sharpening to X and Y separately (preserves rectangular shape)
+            float rect_sharpened;
+            if (registers.sharp_mode < 0.5) {
+                // Mode 0: Power curve
+                float sharp_factor = 1.0 / max(effective_softness, 0.001);
+                rect_sharpened = pow(x_coverage, sharp_factor) * pow(y_coverage, sharp_factor);
+            } else {
+                // Mode 1: Sigmoid
+                // Base steepness of 10.0 provides moderate sharpness, scaled by effective_softness
+                float sigmoid_strength = 10.0 / max(effective_softness, 0.001);
+                float x_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (x_coverage - 0.5)));
+                float y_sharp = 1.0 / (1.0 + exp(-sigmoid_strength * (y_coverage - 0.5)));
+                rect_sharpened = x_sharp * y_sharp;
+            }
 
-        // Blend between linear and sharpened coverage
-        float rect_coverage = mix(rect_linear, rect_sharpened, registers.sharpening_amount);
+            // Blend between linear and sharpened coverage
+            float rect_coverage = mix(rect_linear, rect_sharpened, registers.sharpening_amount);
 
-        // CIRCULAR METHOD: 2D area intersection with sharpening applied after
-        float circ_linear = intersect_rect_area(pixel_rect, dot_rect) / (tx_to_px.x * tx_to_px.y);
+            // CIRCULAR METHOD: 2D area intersection with sharpening applied after
+            float circ_linear = intersect_rect_area(pixel_rect, dot_rect) / (tx_to_px.x * tx_to_px.y);
 
-        // Apply sharpening to 2D coverage (creates circular gradients)
-        float circ_sharpened;
-        if (registers.sharp_mode < 0.5) {
-            circ_sharpened = pow(circ_linear, 1.0 / max(effective_softness, 0.001));
-        } else {
-            float sigmoid_strength = 10.0 / max(effective_softness, 0.001);
-            circ_sharpened = 1.0 / (1.0 + exp(-sigmoid_strength * (circ_linear - 0.5)));
-        }
+            // Apply sharpening to 2D coverage (creates circular gradients)
+            float circ_sharpened;
+            if (registers.sharp_mode < 0.5) {
+                circ_sharpened = pow(circ_linear, 1.0 / max(effective_softness, 0.001));
+            } else {
+                float sigmoid_strength = 10.0 / max(effective_softness, 0.001);
+                circ_sharpened = 1.0 / (1.0 + exp(-sigmoid_strength * (circ_linear - 0.5)));
+            }
 
-        // Blend between linear and sharpened coverage
-        float circ_coverage = mix(circ_linear, circ_sharpened, registers.sharpening_amount);
+            // Blend between linear and sharpened coverage
+            float circ_coverage = mix(circ_linear, circ_sharpened, registers.sharpening_amount);
 
-        // Blend between circular and rectangular based on pixel_shape parameter
+            // Blend between circular and rectangular based on pixel_shape parameter
         is_on_dot = mix(circ_coverage, rect_coverage, registers.pixel_shape);
     }
 
@@ -389,8 +396,10 @@ void main()
         foreground_color = vec3(0.114, 0.416, 0.420); // 4: #1D6A6B
     } else if (registers.palette < 5.5) {
         foreground_color = vec3(0.0, 0.325, 0.200); // 5: #005333
-    } else {
+    } else if (registers.palette < 6.5) {
         foreground_color = vec3(0.0, 0.325, 0.314); // 6: #005350
+    } else {
+        foreground_color = vec3(29.0, 106.0, 107.0) / 255.0; // 7: #1D6A6B
     }
 
     vec4 out_color;

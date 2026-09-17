@@ -47,6 +47,7 @@ layout(push_constant) uniform Push
 	float screen_offset_x;
 	float screen_offset_y;
 	float shadow_enable;
+	float shadow_edge_sample_bounds;
 	float palette;
 	float integer_mode;
 	float video_scale;
@@ -148,8 +149,10 @@ vec4 get_bg_color() {
         return vec4(0.627, 0.667, 0.024, 1.0); // 4: #A0AA06
     } else if (registers.palette < 5.5) {
         return vec4(0.027, 0.729, 0.369, 1.0); // 5: #07BA5E
-    } else {
+    } else if (registers.palette < 6.5) {
         return vec4(0.027, 0.729, 0.608, 1.0); // 6: #07BA9B
+    } else {
+        return vec4(vec3(217.0, 196.0, 37.0) / 255.0, 1.0); // 7: #D9C425
     }
 }
 
@@ -169,12 +172,7 @@ void main()
     // Cache background color to avoid multiple function calls
     vec4 bg_color_cached = get_bg_color();
 
-    // Preserve the historical one-texel compositor alignment, separately from
-    // the user-facing texel screen nudge. Fullscreen gets a one-texel baseline
-    // nudge to match a 1,1 offset without changing pixel-perfect positioning.
-    vec2 compositor_alignment = -texel;
-    vec2 fullscreen_alignment = (registers.integer_mode < 0.5) ? texel : vec2(0.0);
-    vec2 screen_offset = compositor_alignment + fullscreen_alignment + vec2(
+    vec2 screen_offset = vec2(
         registers.screen_offset_x * texel.x,
         registers.screen_offset_y * texel.y
     );
@@ -183,7 +181,8 @@ void main()
     vec4 foreground = texture(PassOutput1, tex - screen_offset);
     vec4 background = texture(BACKGROUND, vTexCoord);
 	vec2 shadow_sample = vTexCoord - (shadow_offset + screen_offset);
-	vec2 shadow_coord = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);
+	vec2 shadow_coord = (registers.shadow_edge_sample_bounds > 0.5) ?
+		clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel) : shadow_sample;
 	vec4 shadows = texture(Source, shadow_coord);
 
 	// Foreground and background are blended with the background color
