@@ -80,13 +80,13 @@
 #pragma parameter PT_FILM_NOISE 		"      ↳ Film splotchiness" 0.5 0.0 1.0 0.05
 #pragma parameter PT_FILM_SCALE 		"          ↳ Splotch size" 0.6 0.1 3.0 0.05
 
-#pragma parameter PT_LIGHT_HEIGHT 		"      ↳ Light source distance (0=Flat, 1=Far)" 0.0 0.0 1.0 0.05
-#pragma parameter PT_LIGHT_RANGE 		"          ↳ Tilt range" 0.6 0.0 2.0 0.05
-#pragma parameter PT_LIGHT_X 			"          ↳ X" 0.5 -1.0 2.0 0.01
-#pragma parameter PT_LIGHT_Y 			"          ↳ Y" 0.5 -1.0 2.0 0.01
+#pragma parameter PT_LIGHT_HEIGHT 		"--- Light source distance (0=Flat, 1=Far)" 0.0 0.0 1.0 0.05
+#pragma parameter PT_LIGHT_RANGE 		"      ↳ Tilt range" 0.6 0.0 2.0 0.05
+#pragma parameter PT_LIGHT_X 			"      ↳ X" 0.5 -1.0 2.0 0.01
+#pragma parameter PT_LIGHT_Y 			"      ↳ Y" 0.5 -1.0 2.0 0.01
 
 #pragma parameter PT_SHADOW_ENABLE 		"== SHADOWS == (OFF/ON)" 1.0 0.0 1.0 1.0
-#pragma parameter PT_SHADOW_MOTION 		"      ↳ Shadow motion (OFF/ON) " 1.0 0.0 1.0 1.0
+#pragma parameter PT_SHADOW_MOTION 		"      ↳ Motion (OFF/ON) " 1.0 0.0 1.0 1.0
 #pragma parameter PT_SHADOW_MAX_OFFSET	"          ↳ Max offset" 2.50 0.0 30.0 0.5
 #pragma parameter PT_SHADOW_MOTION_X 	"          ↳ Neutral X" 2.0 -30.0 30.0 0.5
 #pragma parameter PT_SHADOW_MOTION_Y 	"          ↳ Neutral Y" 2.0 -30.0 30.0 0.5
@@ -96,7 +96,7 @@
 
 #pragma parameter PT_SHADOW_EDGE_ENABLE "      ↳ Screen edge shadow (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_SHADOW_OPACITY 	"      ↳ Opacity" 0.50 0.0 1.0 0.01
-#pragma parameter PT_SHADOW_BLUR 		"      ↳ Blur amount" 1.0 0.0 5.0 0.1
+#pragma parameter PT_SHADOW_BLUR 		"      ↳ Blur" 1.0 0.0 5.0 0.1
 
 #pragma parameter PT_ACCEL_ENABLE 		"== MOTION == (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter NOTE3 				" *  Motion enabled on latest RetroArch nightly build." 0.0 0.0 1.0 1.0
