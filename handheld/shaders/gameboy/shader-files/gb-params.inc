@@ -24,7 +24,6 @@
 #pragma parameter PIXELS 						"== PIXELS ==" 0.0 0.0 1.0 1.0
 #pragma parameter blending_mode 				"     ↳ Pixel blending mode == (Blend gaps / Blend all)" 0.0 0.0 1.0 1.0
 #pragma parameter adjacent_texel_alpha_blending "         ↳ Blend amount" 0.1755 0.0 0.25 0.05
-const float max_adjacent_alpha_blend = 0.25; // Shared cap: four neighbors can contribute at most 1.0 alpha.
 
 #pragma parameter FULLSCREEN_PIXELS 			"== FULLSCREEN PIXELS ==" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE4							" *  Soft / circular pixels = less grid distortion" 0.0 0.0 1.0 1.0
@@ -43,15 +42,16 @@ const float max_adjacent_alpha_blend = 0.25; // Shared cap: four neighbors can c
 #pragma parameter bg_smoothing 					"     ↳ Background texture smoothing" 0.75 0.0 1.0 0.05
 
 #pragma parameter shadow_enable 				"== SHADOWS == (OFF/ON)" 1.0 0.0 1.0 1.0
-#pragma parameter shadow_motion 				"     ↳ Shadow motion (OFF/ON)" 1.0 0.0 1.0 1.0
+#pragma parameter shadow_motion 				"     ↳ Motion (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter shadow_max_offset 			"         ↳ Max offset" 2.50 0.0 30.0 0.5
-#pragma parameter shadow_opacity 				"     ↳ Shadow opacity" 0.55 0.01 1.0 0.01
-#pragma parameter shadow_offset_x 				"     ↳ Shadow offset horizontal" 2.0 -5.0 5.0 0.5
-#pragma parameter shadow_offset_y 				"     ↳ Shadow offset vertical" 2.0 -5.0 5.0 0.5
-#pragma parameter shadow_blur_amount 			"     ↳ Shadow blur amount" 1.0 0.0 3.0 0.05
+#pragma parameter shadow_opacity 				"     ↳ Opacity" 0.55 0.01 1.0 0.01
+#pragma parameter shadow_offset_x 				"     ↳ X offset" 2.0 -5.0 5.0 0.5
+#pragma parameter shadow_offset_y 				"     ↳ Y offset" 2.0 -5.0 5.0 0.5
+#pragma parameter shadow_blur_amount 			"     ↳ Blur" 1.0 0.0 3.0 0.05
 
-#pragma parameter SCREEN_POSITIONING 			"== SCREEN POSITION ==" 0.0 0.0 1.0 1.0
-#pragma parameter screen_offset_x 				"     ↳ Screen offset horizontal" 0.0 -5.0 5.0 1.0
-#pragma parameter screen_offset_y 				"     ↳ Screen offset vertical" 0.0 -5.0 5.0 1.0
+#pragma parameter SCREEN_POSITIONING 			"== SCREEN OFFSET ==" 0.0 0.0 1.0 1.0
+#pragma parameter screen_offset_x 				"     ↳ X offset" 0.0 -5.0 5.0 1.0
+#pragma parameter screen_offset_y 				"     ↳ Y offset" 0.0 -5.0 5.0 1.0
 
+const float max_adjacent_alpha_blend = 0.25; 	// Shared cap: four neighbors can contribute at most 1.0 alpha.
 #define shadow_reference_scale 5.0

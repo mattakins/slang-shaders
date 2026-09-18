@@ -44,10 +44,10 @@ layout(push_constant) uniform Push
 #include "gb-params.inc"
 
 #pragma parameter BORDER 				"== BORDER ==" 0.0 0.0 1.0 1.0
-#pragma parameter border_texture_scale 	"     ↳ Border scale" 4.0 1.0 20.0 0.005
-#pragma parameter border_brightness 	"     ↳ Border brightness" 1.0 0.0 1.0 0.01
-#pragma parameter gb_x_offset 			"     ↳ Border offset horizontal" 0.0 -10000.0 10000.0 1.0
-#pragma parameter gb_y_offset 			"     ↳ Border offset vertical" 0.0 -10000.0 10000.0 1.0
+#pragma parameter border_texture_scale 	"     ↳ Scale" 4.0 1.0 20.0 0.005
+#pragma parameter border_brightness 	"     ↳ Brightness" 1.0 0.0 1.0 0.01
+#pragma parameter gb_x_offset 			"     ↳ X offset" 0.0 -10000.0 10000.0 1.0
+#pragma parameter gb_y_offset 			"     ↳ Y offset" 0.0 -10000.0 10000.0 1.0
 
 layout(std140, set = 0, binding = 0) uniform UBO
 {
