@@ -153,6 +153,10 @@ float hash(vec2 p) {
 
 float paperNoise(vec2 uv, float scale) {
     vec2 p = uv * scale * 512.0;
+    if (global.PT_PAPER_NOISE_FAST > 1.5) {
+        float n = hash(p) * 0.5 + hash(p * 2.0) * 0.25;
+        return n * (7.0 / 6.0);
+    }
     float n = 0.0;
     float amplitude = 0.5;
     float frequency = 1.0;

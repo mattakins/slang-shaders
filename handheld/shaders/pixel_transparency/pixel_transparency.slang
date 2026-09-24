@@ -73,6 +73,7 @@
 #pragma parameter PT_ACCEL_SENSITIVITY 	"      ↳ Tilt sensitivity" 1.0 0.1 5.0 0.05
 
 #pragma parameter SECTION_PERF 			"== PERFORMANCE ==" 0.0 0.0 1.0 1.0
+#pragma parameter PT_PAPER_NOISE_FAST 	"      ↳ Paper grain (1=Full, 2=Fast)" 1.0 1.0 2.0 1.0
 #pragma parameter PT_SHADOW_FAST_BLUR 	"      ↳ Shadow blur (Fast / Smooth)" 1.0 0.0 1.0 1.0
 
 layout(push_constant) uniform Push {
@@ -118,6 +119,7 @@ layout(std140, set = 0, binding = 0) uniform UBO {
     float PT_WHITE_TRANSPARENCY;
     float PT_GRID_COLOR_MIX;
     float PT_GRID_WHITE_MIX;
+    float PT_PAPER_NOISE_FAST;
     float PT_SHADOW_EDGE_ENABLE;
 } global;
 
