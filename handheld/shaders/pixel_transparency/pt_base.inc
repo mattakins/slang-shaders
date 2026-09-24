@@ -289,6 +289,42 @@ void main() {
     bool current_is_white = isWhitePixel(original_pixel, param.PT_THRESHOLD);
     bool should_apply = (param.PT_PIXEL_MODE < 0.5) ? current_is_white : true;
 
+    // Resolve transparency early so zero grid mix skips LCD brightness work.
+    float grid_mix = current_is_white ? global.PT_GRID_WHITE_MIX : global.PT_GRID_COLOR_MIX;
+    float pixel_alpha = 0.0;
+
+    if (param.PT_PIXEL_MODE > 0.5 && param.PT_PIXEL_MODE < 1.5) {
+        float no_grid_alpha = (param.PT_BASE_ALPHA * getBrightness(original_pixel)) * 2.665;
+        if (current_is_white && global.PT_WHITE_BOOST > 0.5) {
+            no_grid_alpha = max(no_grid_alpha, global.PT_WHITE_TRANSPARENCY);
+        }
+
+        if (grid_mix <= 0.0) {
+            pixel_alpha = clamp(no_grid_alpha, 0.0, 1.0);
+        } else {
+            float grid_alpha = (param.PT_BASE_ALPHA * getBrightness(lcd_color.rgb)) * 2.665;
+            if (current_is_white && global.PT_WHITE_BOOST > 0.5) {
+                grid_alpha = max(grid_alpha, global.PT_WHITE_TRANSPARENCY);
+            }
+            pixel_alpha = clamp(mix(no_grid_alpha, grid_alpha, grid_mix), 0.0, 1.0);
+        }
+    } else if (should_apply) {
+        float no_grid_alpha = (getBrightness(original_pixel) / 3.0) + param.PT_BASE_ALPHA;
+        if (current_is_white && global.PT_WHITE_BOOST > 0.5) {
+            no_grid_alpha = max(no_grid_alpha, global.PT_WHITE_TRANSPARENCY);
+        }
+
+        if (grid_mix <= 0.0) {
+            pixel_alpha = clamp(no_grid_alpha, 0.0, 1.0);
+        } else {
+            float grid_alpha = (getBrightness(lcd_color.rgb) / 3.0) + param.PT_BASE_ALPHA;
+            if (current_is_white && global.PT_WHITE_BOOST > 0.5) {
+                grid_alpha = max(grid_alpha, global.PT_WHITE_TRANSPARENCY);
+            }
+            pixel_alpha = clamp(mix(no_grid_alpha, grid_alpha, grid_mix), 0.0, 1.0);
+        }
+    }
+
     vec4 background = vec4(0.0);
     if (should_apply) {
         background = vec4(generateProceduralBackground(vTexCoord), 1.0);
@@ -423,33 +459,8 @@ void main() {
         background.rgb = mix(background.rgb, tinted_background, global.PT_PALETTE_INTENSITY);
     }
 
-    // Gridline alpha mix: color and white pixels are controlled separately.
-    float grid_mix = current_is_white ? global.PT_GRID_WHITE_MIX : global.PT_GRID_COLOR_MIX;
-
-    if (param.PT_PIXEL_MODE > 0.5 && param.PT_PIXEL_MODE < 1.5) {
-        float no_grid_alpha = (param.PT_BASE_ALPHA * getBrightness(original_pixel)) * 2.665;
-        float grid_alpha = (param.PT_BASE_ALPHA * getBrightness(lcd_color.rgb)) * 2.665;
-
-        if (current_is_white && global.PT_WHITE_BOOST > 0.5) {
-            no_grid_alpha = max(no_grid_alpha, global.PT_WHITE_TRANSPARENCY);
-            grid_alpha = max(grid_alpha, global.PT_WHITE_TRANSPARENCY);
-        }
-        float transparency = mix(no_grid_alpha, grid_alpha, grid_mix);
-        transparency = clamp(transparency, 0.0, 1.0);
-        output_color.rgb = mix(lcd_color.rgb, background.rgb, transparency);
-    } else {
-        if (should_apply) {
-            float no_grid_alpha = (getBrightness(original_pixel) / 3.0) + param.PT_BASE_ALPHA;
-            float grid_alpha = (getBrightness(lcd_color.rgb) / 3.0) + param.PT_BASE_ALPHA;
-
-            if (current_is_white && global.PT_WHITE_BOOST > 0.5) {
-                no_grid_alpha = max(no_grid_alpha, global.PT_WHITE_TRANSPARENCY);
-                grid_alpha = max(grid_alpha, global.PT_WHITE_TRANSPARENCY);
-            }
-            float pixel_alpha = mix(no_grid_alpha, grid_alpha, grid_mix);
-            pixel_alpha = clamp(pixel_alpha, 0.0, 1.0);
-            output_color.rgb = mix(lcd_color.rgb, background.rgb, pixel_alpha);
-        }
+    if (should_apply) {
+        output_color.rgb = mix(lcd_color.rgb, background.rgb, pixel_alpha);
     }
 
     // === Shared post-compositing ===
