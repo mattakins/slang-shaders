@@ -25,7 +25,7 @@
 #pragma parameter fullscreen_match_pixel_size 	"      ↳ Pixel size (Manual / Auto)" 1.0 0.0 1.0 1.0
 #pragma parameter pixel_size 					"          ↳ Size" 0.8 0.2 1.10 0.05
 #pragma parameter auto_soften 					"      ↳ Pixel softness (Fixed / Adaptive)"  0.0 0.0 1.0 1.0
-#pragma parameter NOTE5							"          *  Adaptive reduces distortion" 0.0 0.0 1.0 1.0
+#pragma parameter NOTE5							"       *  Adaptive reduces distortion" 0.0 0.0 1.0 1.0
 #pragma parameter pixel_softness 				"          ↳ Base softness" 1.0 0.20 5.0 0.05
 #pragma parameter pixel_shape 					"      ↳ Pixel shape (Circle / Rectangle)" 1.0 0.0 1.30 0.05
 #pragma parameter sharpening_amount 			"      ↳ Pixel edge sharpness" 1.0 0.0 1.0 0.05
