@@ -132,6 +132,13 @@ float getShadowCasterStrength(vec2 uv) {
     return 1.0 - getBrightness(texture(Original, uv).rgb);
 }
 
+float getShadowCasterTexel(ivec2 cell, ivec2 size) {
+    if (any(lessThan(cell, ivec2(0))) || any(greaterThanEqual(cell, size))) {
+        return global.PT_SHADOW_EDGE_ENABLE > 0.5 ? 1.0 : 0.0;
+    }
+    return 1.0 - getBrightness(texelFetch(Original, cell, 0).rgb);
+}
+
 bool isWhitePixel(vec3 color, float threshold) {
     float brightness = getPerceptualBrightness(color);
     float min_channel = min(min(color.r, color.g), color.b);
@@ -299,36 +306,78 @@ void main() {
 
             if (param.PT_SHADOW_FAST_BLUR < 0.5) {
                 // 5-tap cross with Gaussian weights: center=4, cardinal=2 (total=12)
-                vec2 sample_offsets[5] = vec2[](
-                        vec2(0.0, 0.0),
-                        vec2(-1.0, 0.0),
-                        vec2(1.0, 0.0),
-                        vec2(0.0, -1.0),
-                        vec2(0.0, 1.0)
-                );
-                for (int i = 0; i < 5; i++) {
-                    vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_dist);
-                    float w = (i == 0) ? 4.0 : 2.0;
-                    blurred_shadow += getShadowCasterStrength(sample_pos) * w;
+                bool use_full_kernel = true;
+                ivec2 original_size = textureSize(Original, 0);
+                vec2 center = vTexCoord + shadow_offset;
+                ivec2 low = ivec2(floor((center - blur_dist) * vec2(original_size)));
+                ivec2 middle = ivec2(floor(center * vec2(original_size)));
+                ivec2 high = ivec2(floor((center + blur_dist) * vec2(original_size)));
+                if (all(lessThanEqual(high - low, ivec2(1)))) {
+                    // Reuse the three texels touched by the cross, retaining tap order.
+                    float middle_strength = getShadowCasterTexel(middle, original_size);
+                    float horizontal_strength = getShadowCasterTexel(
+                        ivec2(low.x + high.x - middle.x, middle.y), original_size);
+                    float vertical_strength = getShadowCasterTexel(
+                        ivec2(middle.x, low.y + high.y - middle.y), original_size);
+                    blurred_shadow = middle_strength * 4.0;
+                    blurred_shadow += (low.x == middle.x ? middle_strength : horizontal_strength) * 2.0;
+                    blurred_shadow += (high.x == middle.x ? middle_strength : horizontal_strength) * 2.0;
+                    blurred_shadow += (low.y == middle.y ? middle_strength : vertical_strength) * 2.0;
+                    blurred_shadow += (high.y == middle.y ? middle_strength : vertical_strength) * 2.0;
+                    use_full_kernel = false;
+                }
+                if (use_full_kernel) {
+                    vec2 sample_offsets[5] = vec2[](
+                            vec2(0.0, 0.0),
+                            vec2(-1.0, 0.0),
+                            vec2(1.0, 0.0),
+                            vec2(0.0, -1.0),
+                            vec2(0.0, 1.0)
+                    );
+                    for (int i = 0; i < 5; i++) {
+                        vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_dist);
+                        float w = (i == 0) ? 4.0 : 2.0;
+                        blurred_shadow += getShadowCasterStrength(sample_pos) * w;
+                    }
                 }
                 shadow_strength = (blurred_shadow / 12.0) * param.PT_SHADOW_OPACITY;
             } else {
                 // Full 3x3 grid with Gaussian weights: center=4, edge=2, corner=1 (total=16)
-                vec2 sample_offsets[9] = vec2[](
-                        vec2(0.0, 0.0),
-                        vec2(-1.0, 0.0),
-                        vec2(1.0, 0.0),
-                        vec2(0.0, -1.0),
-                        vec2(0.0, 1.0),
-                        vec2(-1.0, -1.0),
-                        vec2(1.0, -1.0),
-                        vec2(-1.0, 1.0),
-                        vec2(1.0, 1.0)
-                );
-                for (int i = 0; i < 9; i++) {
-                    vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_dist);
-                    float w = (i == 0) ? 4.0 : (i < 5 ? 2.0 : 1.0);
-                    blurred_shadow += getShadowCasterStrength(sample_pos) * w;
+                bool use_full_kernel = true;
+                ivec2 original_size = textureSize(Original, 0);
+                vec2 center = vTexCoord + shadow_offset;
+                ivec2 low = ivec2(floor((center - blur_dist) * vec2(original_size)));
+                ivec2 middle = ivec2(floor(center * vec2(original_size)));
+                ivec2 high = ivec2(floor((center + blur_dist) * vec2(original_size)));
+                if (all(lessThanEqual(high - low, ivec2(1)))) {
+                    // Combine repeated nearest-neighbor reads with the same 1:2:1 weights.
+                    vec2 low_weight = vec2(1.0) + 2.0 * vec2(equal(middle, low))
+                                      + vec2(equal(high, low));
+                    vec2 high_weight = vec2(4.0) - low_weight;
+                    blurred_shadow =
+                        getShadowCasterTexel(low, original_size) * low_weight.x * low_weight.y +
+                        getShadowCasterTexel(ivec2(high.x, low.y), original_size) * high_weight.x * low_weight.y +
+                        getShadowCasterTexel(ivec2(low.x, high.y), original_size) * low_weight.x * high_weight.y +
+                        getShadowCasterTexel(high, original_size) * high_weight.x * high_weight.y;
+                    use_full_kernel = false;
+                }
+                if (use_full_kernel) {
+                    vec2 sample_offsets[9] = vec2[](
+                            vec2(0.0, 0.0),
+                            vec2(-1.0, 0.0),
+                            vec2(1.0, 0.0),
+                            vec2(0.0, -1.0),
+                            vec2(0.0, 1.0),
+                            vec2(-1.0, -1.0),
+                            vec2(1.0, -1.0),
+                            vec2(-1.0, 1.0),
+                            vec2(1.0, 1.0)
+                    );
+                    for (int i = 0; i < 9; i++) {
+                        vec2 sample_pos = vTexCoord + shadow_offset + (sample_offsets[i] * blur_dist);
+                        float w = (i == 0) ? 4.0 : (i < 5 ? 2.0 : 1.0);
+                        blurred_shadow += getShadowCasterStrength(sample_pos) * w;
+                    }
                 }
                 shadow_strength = (blurred_shadow / 16.0) * param.PT_SHADOW_OPACITY;
             }
