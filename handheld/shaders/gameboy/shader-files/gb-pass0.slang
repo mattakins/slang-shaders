@@ -6,10 +6,12 @@
 //  / / __/ /| | / /|_/ / __/    / __  / / / /\  /                       //
 // / /_/ / ___ |/ /  / / /___   / /_/ / /_/ / / /                        //
 // \____/_/  |_/_/  /_/_____/  /_____/\____/ /_/                         //
-//  ==================== DOT MATRIX SHADER v1.3                          //
+//  ==================== DOT MATRIX SHADER v1.4                          //
 //                                                                       //
 // Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
 // Copyright (C) 2024-2026 Matt Akins			                         //
+//                                                                       //
+// 9/25/26 - v1.4 - Renamed from v1.3 after upstream took that number; no behavior change from rename alone				                                         //
 //                                                                       //
 // 9/13/26 - v1.3                                                        //
 //   • Fixed sizing and pass references when stacking presets            //

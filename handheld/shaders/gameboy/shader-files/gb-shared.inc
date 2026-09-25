@@ -1,4 +1,4 @@
-// GAME BOY DOT MATRIX SHADER v1.3 - Shared Helpers
+// GAME BOY DOT MATRIX SHADER v1.4 - Shared Helpers
 
   /////////////////////////////////////////////////////////////////////////
  // Fullscreen pixel sizing and adaptive softness                      //
