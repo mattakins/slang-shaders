@@ -20,7 +20,7 @@
 //   • Improved visual consistency across output resolutions.            //
 //   • Consistent pixel alpha across fullscreen and integer scales.      //
 //                                                                       //
-// 6/2/26 - v1.3				                                         //
+// 6/2/26 - v1.2				                                         //
 //   • Added motion-based shadows               					     //
 //   • Fixed edge light banding											 //
 //                                                                       //
