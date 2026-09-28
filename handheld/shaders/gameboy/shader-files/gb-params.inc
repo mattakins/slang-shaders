@@ -9,7 +9,7 @@
 #pragma parameter video_scale 					"      ↳ Scale factor" 5.0 3.0 15.0 1.0
 
 #pragma parameter color_toggle 					"== COLOR == (Grayscale / Color)" 0.0 0.0 1.0 1.0
-#pragma parameter palette 						"      ↳ Palette (0=IMG 1/2=Pkt 3=B&W 4=DMG 5/6=Light 7=DMG2)" 0.0 0.0 7.0 1.0
+#pragma parameter palette 						"      ↳ Palette (0=IM 1/2=Pk 3=B&W 4=DMG 5/6=Lt 7=DMG2 8=D3)" 0.0 0.0 8.0 1.0
 #pragma parameter grey_balance 					"      ↳ Contrast wheel" 3.0 0.05 10.0 0.05
 #pragma parameter contrast 						"      ↳ Alpha" 0.95 0.0 1.0 0.05
 

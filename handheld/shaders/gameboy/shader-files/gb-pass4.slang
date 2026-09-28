@@ -62,7 +62,7 @@ layout(std140, set = 0, binding = 0) uniform UBO
     vec3 Accelerometer;
     vec3 AccelerometerRest;
     #endif
-    vec4 GameBoyDotMatrixAlphaBlendSize;
+    vec4 PassOutputSize1;
 } global;
 
   /////////////////////////////////////////////////////////////////////////
@@ -130,7 +130,7 @@ layout(location = 1) in vec2 texel;
 layout(location = 2) in vec2 shadow_offset;
 layout(location = 0) out vec4 FragColor;
 layout(set = 0, binding = 1) uniform sampler2D Source;
-layout(set = 0, binding = 2) uniform sampler2D GameBoyDotMatrixAlphaBlend;
+layout(set = 0, binding = 2) uniform sampler2D PassOutput1;
 layout(set = 0, binding = 3) uniform sampler2D BACKGROUND;
 layout(set = 0, binding = 4) uniform sampler2D COLOR_PALETTE;
 
@@ -150,8 +150,10 @@ vec4 get_bg_color() {
         return vec4(0.027, 0.729, 0.369, 1.0); // 5: #07BA5E
     } else if (registers.palette < 6.5) {
         return vec4(0.027, 0.729, 0.608, 1.0); // 6: #07BA9B
-    } else {
+    } else if (registers.palette < 7.5) {
         return vec4(vec3(217.0, 196.0, 37.0) / 255.0, 1.0); // 7: #D9C425
+    } else {
+        return vec4(0.824, 0.902, 0.651, 1.0); // 8: #D2E6A6
     }
 }
 
@@ -165,8 +167,8 @@ vec4 get_bg_color() {
 
 void main()
 {
-    vec2 tex = floor(global.GameBoyDotMatrixAlphaBlendSize.xy * vTexCoord);
-    tex = (tex + 0.5) * global.GameBoyDotMatrixAlphaBlendSize.zw;
+    vec2 tex = floor(global.PassOutputSize1.xy * vTexCoord);
+    tex = (tex + 0.5) * global.PassOutputSize1.zw;
 
     // Cache background color to avoid multiple function calls
     vec4 bg_color_cached = get_bg_color();
@@ -177,7 +179,7 @@ void main()
     );
 
     // Sample all the relevant textures
-    vec4 foreground = texture(GameBoyDotMatrixAlphaBlend, tex - screen_offset);
+    vec4 foreground = texture(PassOutput1, tex - screen_offset);
     vec4 background = texture(BACKGROUND, vTexCoord);
 	vec2 shadow_sample = vTexCoord - (shadow_offset + screen_offset);
 	vec2 shadow_coord = clamp(shadow_sample, vec2(0.0), vec2(1.0) - texel);

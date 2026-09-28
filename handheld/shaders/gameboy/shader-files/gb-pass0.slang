@@ -403,8 +403,10 @@ void main()
         foreground_color = vec3(0.0, 0.325, 0.200); // 5: #005333
     } else if (registers.palette < 6.5) {
         foreground_color = vec3(0.0, 0.325, 0.314); // 6: #005350
-    } else {
+    } else if (registers.palette < 7.5) {
         foreground_color = vec3(29.0, 106.0, 107.0) / 255.0; // 7: #1D6A6B
+    } else {
+        foreground_color = vec3(0.031, 0.094, 0.063); // 8: #081810
     }
 
     vec4 out_color;
