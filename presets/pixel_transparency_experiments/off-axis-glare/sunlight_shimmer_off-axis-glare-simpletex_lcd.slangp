@@ -1,0 +1,38 @@
+shaders = 5
+
+shader0 = ../../../handheld/shaders/pixel_transparency_experiments/pixel_transparency_new/pixel_transparency_before_grid.slang
+filter_linear0 = false
+scale_type0 = viewport
+
+shader1 = ../../../handheld/shaders/simpletex_lcd/simpletex_lcd.slang
+filter_linear1 = true
+wrap_mode1 = clamp_to_border
+mipmap_input1 = false
+float_framebuffer1 = false
+srgb_framebuffer1 = false
+scale_type1 = viewport
+
+shader2 = ../../../handheld/shaders/pixel_transparency_experiments/pixel_transparency_new/sunlight_shimmer_after_grid.slang
+filter_linear2 = false
+scale_type2 = viewport
+
+shader3 = ../../../handheld/shaders/pixel_transparency_experiments/off-axis.slang
+filter_linear3 = false
+scale_type3 = viewport
+
+shader4 = ../../../handheld/shaders/glare.slang
+filter_linear4 = false
+scale_type4 = viewport
+
+textures = "BACKGROUND"
+BACKGROUND = ../../../handheld/shaders/simpletex_lcd/png/2k/textured_paper.png
+BACKGROUND_linear = false
+
+GRID_INTENSITY = "0.65"
+GRID_WIDTH = "0.65"
+GRID_BIAS = "0.6"
+DARKEN_GRID = "0.0"
+DARKEN_COLOUR = "0.05"
+BACKGROUND_INTENSITY = "0.0"
+
+PT_GRID_ENABLE = "2.0"

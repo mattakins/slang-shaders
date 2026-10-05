@@ -1,0 +1,23 @@
+shaders = 5
+
+shader0 = ../../../handheld/shaders/pixel_transparency_experiments/pixel_transparency_new/pixel_transparency_before_grid.slang
+filter_linear0 = false
+scale_type0 = viewport
+
+shader1 = ../../../handheld/shaders/lcd1x.slang
+filter_linear1 = false
+scale_type1 = viewport
+
+shader2 = ../../../handheld/shaders/pixel_transparency_experiments/pixel_transparency_new/sunlight_shimmer_after_grid.slang
+filter_linear2 = false
+scale_type2 = viewport
+
+shader3 = ../../../handheld/shaders/pixel_transparency_experiments/off-axis.slang
+filter_linear3 = false
+scale_type3 = viewport
+
+shader4 = ../../../handheld/shaders/glare.slang
+filter_linear4 = false
+scale_type4 = viewport
+
+PT_GRID_ENABLE = "2.0"
