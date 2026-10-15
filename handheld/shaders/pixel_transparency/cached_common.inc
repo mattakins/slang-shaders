@@ -80,6 +80,9 @@ layout(std140, set = 0, binding = 0) uniform UBO {
 #pragma stage vertex
 #ifdef PT_SHIFTED_SHADOW_CACHE
 layout(location = 8) flat out ivec2 shadow_origin;
+#ifdef PT_VERTEX_SHADOW_OFFSET
+layout(location = 11) flat out vec2 shadow_offset_uv;
+#endif
 layout(location = 9) flat out vec2 shadow_phase_low;
 layout(location = 10) flat out vec2 shadow_phase_high;
 #endif
@@ -156,6 +159,10 @@ void main() {
     precise vec2 native_radius = param.PT_SHADOW_BLUR > 0.1
         ? param.PT_SHADOW_BLUR * shadow_scale_factor * texel * global.OriginalSize.xy : vec2(0.0);
     shadow_origin = ivec2(floor(native_offset));
+#ifdef PT_VERTEX_SHADOW_OFFSET
+    // The viewport-scaled offset is uniform across output pixels.
+    shadow_offset_uv = -shadow_offset_raw * shadow_scale_factor * texel;
+#endif
     vec2 fraction = fract(native_radius);
     shadow_phase_low = min(fraction, vec2(1.0) - fraction);
     shadow_phase_high = max(fraction, vec2(1.0) - fraction);
@@ -170,6 +177,9 @@ void main() {
 #pragma stage fragment
 #ifdef PT_SHIFTED_SHADOW_CACHE
 layout(location = 8) flat in ivec2 shadow_origin;
+#ifdef PT_VERTEX_SHADOW_OFFSET
+layout(location = 11) flat in vec2 shadow_offset_uv;
+#endif
 layout(location = 9) flat in vec2 shadow_phase_low;
 layout(location = 10) flat in vec2 shadow_phase_high;
 #endif
@@ -352,7 +362,11 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
 
     // Drop shadows (suppressed in debug mode 2)
     if (should_apply && pixel_alpha > 0.0 && param.PT_SHADOW_OPACITY > 0.0 && param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
+#ifdef PT_VERTEX_SHADOW_OFFSET
+        vec2 shadow_offset = shadow_offset_uv;
+#else
         vec2 shadow_offset = -shadow_offset_raw * shadow_scale_factor * texel;
+#endif
 
         float shadow_strength=cachedShadow(vTexCoord+shadow_offset)*param.PT_SHADOW_OPACITY;
 

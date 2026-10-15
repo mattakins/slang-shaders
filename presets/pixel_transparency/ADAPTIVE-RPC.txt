@@ -1,0 +1,62 @@
+Source-sized RPC Sunlight Shimmer profile
+=======================================
+
+sunlight_shimmer-adaptive-rpc-authentic_gbc_fast.slangp
+
+This profile keeps the adaptive fast pipeline's seven passes, source-sized
+shadow cache, full-precision buffers, full paper texture, seven rainbow colors
+and 256x256 light field. The Authentic GBC shaders remain separate and unchanged.
+Existing presets remain available; larger inputs do not bypass the effects.
+
+The viewport-scaled shadow offset is constant across the frame. This variant
+calculates it in the vertex stage and passes it flat to the compositor instead
+of rebuilding it for each output pixel. Per-pixel coordinate construction and
+shadow sampling stay in the fragment stage. No precision or quality setting
+is reduced. Keep the compositor last, as with the other adaptive profiles.
+
+Retroid Pocket Classic measurements (2026-10-15)
+-----------------------------------------------
+
+Vulkan, Adreno A12, RetroArch 1.22.2 (16734fe), unchanged quality defaults.
+Each value is the median of three run medians over frames 128-320, with audio,
+vsync, frame skipping and runahead off. Each run starts from the same copied
+save state. These are whole-application throughput measurements.
+
+Scene / viewport                      Adaptive Fast   Adaptive RPC
+Mario Tennis, fit 1200x1080               57.03 FPS      62.53 FPS
+Mario Tennis, integer 1120x1008           64.19 FPS      70.66 FPS
+Pokemon Lazarus, fit 1240x827             65.93 FPS      72.21 FPS
+Pokemon Lazarus, integer 1200x800         69.90 FPS      76.38 FPS
+
+Mario Tennis uses Gambatte and copied slot 9 on its title screen. Pokemon
+Lazarus uses mGBA and copied slot 0 in an outdoor town scene. The original
+GB-only RPC shimmer profile measured about 61.1 FPS at GBC screen fit in the
+same session. The source-sized profile therefore recovers that throughput
+without restoring its 160x144 input restriction.
+
+With audio and vsync enabled, both games and both scale modes measure about
+60 FPS in the matched scene window. GBC screen-fit playback no longer stays
+near 57 FPS as it did with the previous adaptive fast profile.
+
+Validation
+----------
+
+Vertex/fragment builds pass SPIR-V validation with sensors enabled and disabled.
+Parameter labels, ordering, defaults and ranges are unchanged. Existing shader
+entry points compile to identical stage binaries. Device comparisons use static
+images through RetroArch's built-in imageviewer, with motion disabled and two
+identical captures required for each preset. This isolates rendering changes
+from gameplay timing. All sixteen device comparisons match the adaptive fast
+profile pixel-for-pixel: native GB/GBA in both scale modes; 256x224, 320x288,
+640x480 and 257x161 inputs; plus Fast blur, zero offset, maximum blur/offset and
+no blur at native GB/GBA sizes. The pre-existing light-field interpolation and
+shadow cache behavior remain; this does not replace those algorithms.
+
+Performance figures describe these scenes, not every game or a long thermal
+soak. Physical tilt motion has not been exercised. Tests use isolated settings
+and copied save states, preserving the normal device configuration and saves.
+
+The installed RPC bundle is self-contained under
+RetroArch/shaders/pixel-transparency-adaptive-rpc/. Its top-level preset refers
+to the matching bundled sources, avoiding older experiments in the synced
+shader directory. Existing installed presets are preserved.
