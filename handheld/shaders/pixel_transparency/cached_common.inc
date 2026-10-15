@@ -78,6 +78,11 @@ layout(std140, set = 0, binding = 0) uniform UBO {
 } global;
 
 #pragma stage vertex
+#ifdef PT_SHIFTED_SHADOW_CACHE
+layout(location = 8) flat out ivec2 shadow_origin;
+layout(location = 9) flat out vec2 shadow_phase_low;
+layout(location = 10) flat out vec2 shadow_phase_high;
+#endif
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec2 TexCoord;
 layout(location = 0) out vec2 vTexCoord;
@@ -146,6 +151,15 @@ void main() {
     } else {
         shadow_offset_raw = vec2(param.PT_SHADOW_OFFSET_X, param.PT_SHADOW_OFFSET_Y);
     }
+#ifdef PT_SHIFTED_SHADOW_CACHE
+    vec2 native_offset = -shadow_offset_raw * shadow_scale_factor * texel * global.OriginalSize.xy;
+    precise vec2 native_radius = param.PT_SHADOW_BLUR > 0.1
+        ? param.PT_SHADOW_BLUR * shadow_scale_factor * texel * global.OriginalSize.xy : vec2(0.0);
+    shadow_origin = ivec2(floor(native_offset));
+    vec2 fraction = fract(native_radius);
+    shadow_phase_low = min(fraction, vec2(1.0) - fraction);
+    shadow_phase_high = max(fraction, vec2(1.0) - fraction);
+#endif
 #ifdef PT_LIGHT_FIELD
     light_pos=vec2(param.PT_LIGHT_X,param.PT_LIGHT_Y)
         +vec2(gravity.x,-gravity.y)*param.PT_LIGHT_RANGE;
@@ -154,6 +168,11 @@ void main() {
 }
 
 #pragma stage fragment
+#ifdef PT_SHIFTED_SHADOW_CACHE
+layout(location = 8) flat in ivec2 shadow_origin;
+layout(location = 9) flat in vec2 shadow_phase_low;
+layout(location = 10) flat in vec2 shadow_phase_high;
+#endif
 layout(location = 5) flat in vec3 backing_palette;
 layout(location = 6) flat in vec3 polarizer_color;
 
@@ -227,7 +246,9 @@ vec3 generateProceduralBackground(vec2 uv) {
     return baseColor + vec3(grainOffset);
 }
 
-#ifdef PT_ADAPTIVE_CACHE
+#ifdef PT_SHIFTED_SHADOW_CACHE
+#include "shifted_shadow_lookup.inc"
+#elif defined(PT_ADAPTIVE_CACHE)
 #include "adaptive_shadow_lookup.inc"
 #else
 // X packs three horizontal phases per native cell; RGB holds the vertical phases.

@@ -1,0 +1,36 @@
+Sunlight Shimmer adaptive performance candidate
+==============================================
+
+sunlight_shimmer-adaptive-fast-authentic_gbc_fast.slangp
+
+Use this as a separate comparison against the existing adaptive shimmer preset.
+It keeps the same seven passes, LCD stages, parameter defaults, full paper
+texture, seven rainbow colors, and 256x256 light field. Existing presets remain
+unchanged. The source-size bypass is not restored.
+
+The ordinary adaptive compositor includes a direct nine-sample shadow kernel
+for positions outside the source image. This variant caches a moving window
+of source cells, including those positions, before the final compositor runs.
+The final compositor uses one shadow fetch and no direct kernel. This aims to
+reduce the cost of combining transparency and sunlight in one large shader.
+
+The allocation is 6W by 2H, covering three horizontal phases for a (W+1) by
+(H+1) window even with very small inputs. Only the active window is shaded;
+other texels are discarded. Cache memory is four times the ordinary adaptive
+cache, so lower final-shader cost is a tradeoff, not a measured speed guarantee.
+As with the other adaptive profiles, keep the compositor last and preserve
+the configured nearest filtering and paired cache/compositor.
+
+Local shader builds and RetroArch Vulkan comparisons cover GB, GBA, bordered,
+upscaled and odd-sized inputs, both scaling modes, blur, offsets and bypass.
+Native GB/GBA captures match the ordinary adaptive preset exactly in these
+tests, including the tested GBA blur and offset changes. Integer kernel tap
+positions avoid unstable, very narrow phase intervals at larger sizes, but
+change rounding at some sampling boundaries. The tested 640x480 default
+differs by up to twelve 8-bit channel levels, and a zero-offset test reaches
+fifteen; the largest mean channel error is 0.028 levels. Keep the ordinary
+adaptive preset for comparison on upscaled sources. The existing sunlight
+field interpolation approximation also remains.
+
+The RPC was disconnected during development. Device performance and live tilt
+remain unverified. Compare FPS on the same game scene, scale and parameters.
