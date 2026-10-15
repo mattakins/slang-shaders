@@ -84,7 +84,9 @@ layout(location = 0) out vec2 vTexCoord;
 layout(location = 1) flat out vec2 texel;
 layout(location = 2) flat out float shadow_scale_factor;
 layout(location = 3) flat out vec2 shadow_offset_raw;
+#ifndef PT_ADAPTIVE_CACHE
 layout(location = 8) flat out float cache_supported;
+#endif
 #ifdef PT_LIGHT_FIELD
 layout(location = 4) flat out vec2 light_pos;
 layout(location = 7) out vec2 light_coord;
@@ -103,7 +105,9 @@ layout(location = 5) flat out vec3 backing_palette;
 layout(location = 6) flat out vec3 polarizer_color;
 void main() {
     gl_Position = global.MVP * Position;
+#ifndef PT_ADAPTIVE_CACHE
     cache_supported=float(all(lessThanEqual(global.OriginalSize.xy,vec2(160.0,144.0))));
+#endif
     if (global.PT_PALETTE < 1.5) backing_palette=vec3(0.651,0.675,0.518);
     else if (global.PT_PALETTE < 2.5) backing_palette=vec3(0.72,0.73,0.66);
     else if (global.PT_PALETTE < 3.5) backing_palette=vec3(0.766,0.73,0.763);
@@ -157,7 +161,9 @@ layout(location = 0) in vec2 vTexCoord;
 layout(location = 1) flat in vec2 texel;
 layout(location = 2) flat in float shadow_scale_factor;
 layout(location = 3) flat in vec2 shadow_offset_raw;
+#ifndef PT_ADAPTIVE_CACHE
 layout(location = 8) flat in float cache_supported;
+#endif
 #ifdef PT_LIGHT_FIELD
 layout(location = 4) flat in vec2 light_pos;
 layout(location = 7) in vec2 light_coord;
@@ -221,6 +227,9 @@ vec3 generateProceduralBackground(vec2 uv) {
     return baseColor + vec3(grainOffset);
 }
 
+#ifdef PT_ADAPTIVE_CACHE
+#include "adaptive_shadow_lookup.inc"
+#else
 // X packs three horizontal phases per native cell; RGB holds the vertical phases.
 // The paired cache includes a three-cell border for the supported handheld sizes.
 float cachedShadow(vec2 center) {
@@ -239,6 +248,7 @@ float cachedShadow(vec2 center) {
     vec4 values=texelFetch(PixelShadowCache,ivec2(3*(cell.x+3)+phase.x,cell.y+3),0);
     return values[phase.y];
 }
+#endif
 
 bool renderPixelTransparency(out vec3 original_pixel, out float original_brightness) {
     original_pixel=vec3(1.0);
@@ -247,7 +257,11 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
 
     vec4 output_color = lcd_color;
 
-    if (param.PT_ENABLE < 0.5 || cache_supported < 0.5) {
+    if (param.PT_ENABLE < 0.5
+#ifndef PT_ADAPTIVE_CACHE
+        || cache_supported < 0.5
+#endif
+    ) {
         FragColor = output_color;
         return false;
     }

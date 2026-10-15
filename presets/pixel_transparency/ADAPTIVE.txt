@@ -1,0 +1,46 @@
+Source-sized Pixel Transparency profiles
+=======================================
+
+pixel_transparency-adaptive-authentic_gbc_fast.slangp
+sunlight_shimmer-adaptive-authentic_gbc_fast.slangp
+
+These opt-in profiles support GB/GBC, GBA, bordered input and software-upscaled
+input without the RPC profiles' 160x144 bypass. Existing presets are unchanged.
+The Authentic GBC shader files and parameter settings are unchanged.
+
+The shadow cache now follows the core's input dimensions: three times its
+width and the same height. For example, GBA uses a 720x160 cache. Samples
+outside the image evaluate the original shadow kernel directly, including
+blur that reaches back across an edge. There is no fixed padded-size limit.
+As with other source-scaled shaders, GPU texture limits still apply.
+
+A native-resolution copy restores the original input before the separate LCD
+chain. That copy uses full precision to avoid introducing 8-bit rounding of
+RGB565 input. The complete pipelines contain five passes for transparency and
+seven for shimmer. The interpolated sunlight field remains 256x256.
+
+Keep these complete presets together and keep their compositor last. Original
+nearest filtering is required. Larger sources increase cache memory and work.
+These are separate test options, not replacements for the measured RPC profiles.
+Retroid Pocket Classic performance has not been measured for these profiles.
+
+Local validation
+----------------
+
+Shader stages compile and pass SPIR-V validation with sensors both enabled and
+disabled. Parameter labels, ordering, defaults and ranges match the original
+presets. Existing RPC stage binaries remain identical.
+
+RetroArch Vulkan captures on macOS exercise 160x144, 240x160, 256x224, 320x288,
+640x480 and odd-sized 257x161 test images. The cache dimensions and restored
+native input dimensions are checked in runtime logs. Comparisons use a direct
+uncached shadow kernel, plus existing RPC presets at GB size and LCD bypass at
+GBA size. Tests also cover cross blur, maximum blur and offsets, edge shadows
+disabled, and no blur. These checks validate rendering; they are not a Retroid
+frame-rate benchmark or a gameplay test with a GBA core.
+
+The GBA default captures match the uncached shadow reference exactly; the GB
+captures match the existing RPC profiles exactly. Across the other tested
+cases, differences are at most one channel level in one pixel per capture.
+This isolates source sizing and shadow caching. The existing sunlight-field
+interpolation approximation described in RPC.txt still applies.

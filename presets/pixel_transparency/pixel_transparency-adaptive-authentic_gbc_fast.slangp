@@ -1,0 +1,32 @@
+# Source-sized shadow cache for GB, GBC, GBA and larger inputs.
+# Keep the compositor last. Existing RPC and general presets are unchanged.
+shaders = 5
+
+shader0 = ../../handheld/shaders/pixel_transparency/shadow_cache_adaptive.slang
+filter_linear0 = false
+scale_type0 = source
+scale_x0 = 3.0
+scale_y0 = 1.0
+
+shader1 = ../../handheld/shaders/pixel_transparency/restore_original.slang
+filter_linear1 = false
+scale_type1 = source
+scale_x1 = 0.3333333333333333
+scale_y1 = 1.0
+
+shader2 = ../../handheld/shaders/authentic_gbc/to_lin_fast.slang
+filter_linear2 = false
+scale_type2 = source
+srgb_framebuffer2 = true
+
+shader3 = ../../handheld/shaders/authentic_gbc/authentic_gbc_fast.slang
+filter_linear3 = false
+scale_type3 = viewport
+alias3 = LCDInput
+
+shader4 = ../../handheld/shaders/pixel_transparency/pixel_transparency_adaptive.slang
+filter_linear4 = false
+
+PT_PALETTE = "1.0"
+PT_POLARIZER = "0.0"
+PT_HIGHLIGHTS = "0.0"
