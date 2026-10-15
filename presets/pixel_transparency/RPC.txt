@@ -1,0 +1,75 @@
+Retroid Pocket Classic profiles
+==============================
+
+pixel_transparency-rpc-authentic_gbc_fast.slangp
+sunlight_shimmer-rpc-authentic_gbc_fast.slangp
+
+Use these with native 160x144 GB/GBC input and keep the compositor last.
+Larger or software-upscaled input bypasses the added effects. Use the
+existing general presets for GBA, larger sources, or additional post-passes.
+The original presets and the Authentic GBC shader files are unchanged.
+
+Both profiles preserve the original parameter labels, ordering, defaults,
+ranges, and preset overrides. Full paper texture remains the default;
+Sunlight Shimmer retains all seven spectral colors.
+
+Pipeline
+--------
+
+The native linearization and full-resolution LCD passes remain separate.
+A small full-precision cache stores the nearest-filtered shadow kernel's
+three horizontal and three vertical sampling phases, including the screen
+edges and larger blur settings. The final pass reads the appropriate value.
+
+Shimmer also computes spectral tint and glare in a 256x256 RGBA16F field.
+The game image, LCD grid, compositing, and front-surface reflection remain
+at output resolution. Light-field coordinates and uniform palette values
+are calculated in the vertex stage. The final pass renders directly to the
+viewport and applies dither in viewport-local coordinates.
+
+The Vulkan pipelines execute four passes for transparency and six for
+shimmer. These counts include the hidden copy pass in the original presets:
+the new profiles replace expensive viewport work with smaller cache passes.
+
+Precision and scope
+-------------------
+
+The optical field is interpolated. At default settings, the tested shimmer
+captures differed from the original by at most one 8-bit channel level.
+Extreme film scale/noise, color shift, and close-light settings can differ
+more; the combined stress case reached twelve levels. Use the original
+Sunlight Shimmer preset when full-resolution optics are more important than
+throughput at such settings.
+
+The shadow cache assumes nearest original-image sampling, as configured by
+these presets. Its padded domain covers the supplied blur range at normal
+RPC viewport ratios. The cache and compositor must be kept together.
+
+Validation
+----------
+
+Retroid Pocket Classic, Adreno A12, RetroArch Vulkan, Gambatte, Mario Tennis,
+copied save slot 9. Uncapped comparisons sample the same title-screen frame
+window (128 through 320), with audio, vsync, frame skipping, and runahead off.
+Screen fit is 1200x1080; integer scaling is 1120x1008.
+
+Measured on 2026-10-15, with default quality settings:
+
+                              Screen fit        Integer
+Pixel Transparency             77.7 FPS         88.4 FPS
+Sunlight Shimmer               61.1 FPS         69.7 FPS
+
+Screen-fit results are medians of three run medians. Integer results are
+single matched-frame runs. Normal-speed playback was approximately 60 FPS;
+a longer shimmer observation ranged from 59.65 to 60.25 FPS. Shimmer has
+limited uncapped headroom at screen fit; integer scaling offers more margin.
+
+Final source builds passed vertex/fragment compilation and SPIR-V validation
+with sensor uniforms enabled and disabled. Parameter lists match the general
+presets. Device captures cover both scale modes, shadow edges and blur,
+brightness modes, transparency modes, zero contributions, bypass, reflection,
+debug output, and stronger optical settings.
+
+Performance numbers are whole-pipeline throughput for the tested scene,
+not isolated GPU pass times or a guarantee for every game and setting.
+Normal Game Boy Color playback targets approximately 59.73 Hz.

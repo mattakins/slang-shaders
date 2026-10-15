@@ -1,0 +1,41 @@
+# Retroid Pocket Classic profile with unchanged quality parameter defaults.
+# For native 160x144 GB/GBC input.
+# Larger or software-upscaled input bypasses these effects; use the general preset.
+# Keep this compositor last to avoid an additional final framebuffer copy.
+# The 256x256 optical field is interpolated; game and LCD detail stay full resolution.
+
+shaders = 6
+
+shader0 = ../../handheld/shaders/authentic_gbc/to_lin_fast.slang
+filter_linear0 = false
+scale_type0 = source
+srgb_framebuffer0 = true
+
+shader1 = ../../handheld/shaders/authentic_gbc/authentic_gbc_fast.slang
+filter_linear1 = false
+scale_type1 = viewport
+alias1 = LCDInput
+
+shader2 = ../../handheld/shaders/pixel_transparency/shadow_cache.slang
+filter_linear2 = false
+scale_type2 = absolute
+scale_x2 = 512
+scale_y2 = 160
+
+shader3 = ../../handheld/shaders/pixel_transparency/film_noise_cache.slang
+filter_linear3 = false
+scale_type3 = absolute
+scale_x3 = 128
+scale_y3 = 128
+
+shader4 = ../../handheld/shaders/pixel_transparency/light_cache.slang
+filter_linear4 = false
+scale_type4 = absolute
+scale_x4 = 256
+scale_y4 = 256
+
+shader5 = ../../handheld/shaders/pixel_transparency/sunlight_shimmer_cached.slang
+filter_linear5 = true
+wrap_mode5 = clamp_to_edge
+
+PT_DEFER_DITHER = "1.0"
