@@ -32,5 +32,28 @@ fifteen; the largest mean channel error is 0.028 levels. Keep the ordinary
 adaptive preset for comparison on upscaled sources. The existing sunlight
 field interpolation approximation also remains.
 
-The RPC was disconnected during development. Device performance and live tilt
-remain unverified. Compare FPS on the same game scene, scale and parameters.
+Retroid Pocket Classic measurements (2026-10-15)
+-----------------------------------------------
+
+Vulkan, Adreno A12, RetroArch 1.22.2 (16734fe). All quality settings retain their
+defaults: full paper texture, seven rainbow colors and Smooth shadow blur.
+Each result is the median of three run medians over frames 128-320 after loading
+the same copied save state. Audio, vsync, frame skipping and runahead are off
+for these uncapped whole-application throughput measurements.
+
+Scene / viewport                      Adaptive       Fast       Gain
+Mario Tennis, fit 1200x1080             54.23 FPS     57.07 FPS    5.2%
+Mario Tennis, integer 1120x1008         61.50 FPS     64.24 FPS    4.4%
+Pokemon Lazarus, fit 1240x827           64.27 FPS     65.87 FPS    2.5%
+Pokemon Lazarus, integer 1200x800       68.86 FPS     69.95 FPS    1.6%
+
+Mario Tennis uses Gambatte and copied slot 9 on its title screen. Pokemon
+Lazarus uses mGBA and copied slot 0 in an outdoor town scene. The original
+GB-only RPC shimmer profile reaches 61.12 FPS at Mario Tennis screen fit.
+
+With audio and vsync enabled, the fast profile measures approximately 60 FPS
+in both GBA modes and integer-scaled GBC; GBC screen fit remains near 57 FPS.
+The gain is modest and does not meet 60 FPS at GBC screen fit. These are
+scene-specific checks, not a long thermal soak or a guarantee for every game.
+Physical tilt remains unverified. Tests use isolated configuration and saves;
+the normal device settings and original save states are preserved.
