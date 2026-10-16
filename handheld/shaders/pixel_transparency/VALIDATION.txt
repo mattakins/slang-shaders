@@ -1,0 +1,45 @@
+Pixel Transparency v2.4 validation (2026-10-16)
+==============================================
+
+Mac RetroArch Vulkan, native saved-frame images rendered with the built-in
+imageviewer at frame 10, full quality defaults and motion disabled. Sources:
+Mario Tennis/Gambatte slot 9 thumbnail (160x144) and Pokemon Lazarus/mGBA slot 0
+thumbnail (240x160). These are static frame comparisons, not new RPC captures.
+
+- All 80 remaining related preset/reference chains resolve across the repository.
+- All 15 production presets preserve parameter IDs, ordering, labels, defaults
+  and ranges except the explicit v2.4 version heading.
+- Every production preset loads both native GB and GBA inputs: 30 captures.
+- The Authentic GBC Fast Shimmer profile matches Adaptive RPC exactly at fit
+  and integer scales on both inputs. Plain transparency matches the same RPC
+  compositor with sunlight disabled and the plain profile's color settings.
+  Eight promoted/reference image pairs are pixel-identical.
+- Four appended standalone/paired image pairs match exactly on GB and GBA.
+- All 22 archived presets reproduce their pre-promotion captures exactly at GB
+  screen fit. Archived shader expansions retain their original calculations
+  and metadata after path rebasing. The seven redundant historical shortcuts
+  were removed from the production preset catalog; archived profiles remain.
+- All 72 active/reference vertex and fragment compilations pass SPIR-V
+  validation, with sensor uniforms enabled and disabled. The promoted Shimmer
+  compositor and Authentic GBC Fast cache match the Adaptive RPC stage binaries
+  exactly in all eight stage/sensor combinations.
+- The standalone cache's 511x511 capacity boundary matches a larger-cache
+  reference. At 512x512 and 640x480, both standalone compositors match a direct
+  complete-kernel reference exactly. Six synthetic-input comparisons pass.
+- Thirteen shared LCD/other source or texture dependencies remain unchanged.
+- A repeated production Shimmer capture is identical.
+- Generic append chains load with Authentic GBC Fast, lcd1x, lcd3x, lcd-grid-v2,
+  simpletex_lcd, zfast-lcd and the four-pass lcd-shader preset. Plain transparency
+  uses the GB input and Shimmer the GBA input. The checks retain each grid's
+  original pass order, settings, aliases and textures: 14 saved-frame captures.
+- Four additional grid-only/append-disabled pairs preserve the grid image
+  exactly. A paired Authentic GBC Fast Shimmer capture with
+  the generic cache matches its LCD-specific wrapper exactly. These append
+  checks total 23 Mac Vulkan captures; they do not benchmark RPC performance
+  or verify the interactive Append Preset menu itself.
+
+No new Retroid throughput or physical-tilt measurements were taken for this
+promotion. Prior Adaptive RPC measurements apply to that unchanged rendering
+program; the append-compatible route and other LCD combinations have not been
+benchmarked on the Retroid. Native-cache allocations still scale with input
+size and remain subject to the device's texture and memory limits.

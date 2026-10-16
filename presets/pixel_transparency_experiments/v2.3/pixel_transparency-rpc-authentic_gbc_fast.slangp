@@ -5,23 +5,23 @@
 
 shaders = 4
 
-shader0 = ../../handheld/shaders/authentic_gbc/to_lin_fast.slang
+shader0 = ../../../handheld/shaders/authentic_gbc/to_lin_fast.slang
 filter_linear0 = false
 scale_type0 = source
 srgb_framebuffer0 = true
 
-shader1 = ../../handheld/shaders/authentic_gbc/authentic_gbc_fast.slang
+shader1 = ../../../handheld/shaders/authentic_gbc/authentic_gbc_fast.slang
 filter_linear1 = false
 scale_type1 = viewport
 alias1 = LCDInput
 
-shader2 = ../../handheld/shaders/pixel_transparency/shadow_cache.slang
+shader2 = ../../../handheld/shaders/pixel_transparency_experiments/v2.3/shadow_cache.slang
 filter_linear2 = false
 scale_type2 = absolute
 scale_x2 = 512
 scale_y2 = 160
 
-shader3 = ../../handheld/shaders/pixel_transparency/pixel_transparency_cached.slang
+shader3 = ../../../handheld/shaders/pixel_transparency_experiments/v2.3/pixel_transparency_cached.slang
 filter_linear3 = false
 
 PT_PALETTE = "1.0"

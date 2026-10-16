@@ -3,7 +3,7 @@
 // Size this first pass to three times the input width and one times its height.
 // X packs horizontal phases; RGB stores vertical phases. No fixed-size border.
 // Match the parameter ordering of the paired Authentic GBC presets.
-#include "../authentic_gbc/parameters.inc"
+#include "../../authentic_gbc/parameters.inc"
 #include "cached_parameters.inc"
 #pragma name PixelShadowCache
 #pragma format R32G32B32A32_SFLOAT

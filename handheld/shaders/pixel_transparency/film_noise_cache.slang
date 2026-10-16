@@ -11,7 +11,7 @@
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
                           |_|             FILM NOISE CACHE  |___/
-    v2.3 by mattakins
+    v2.4 by mattakins
     Copyright (C) 2025-2026 Matt Akins.
 
     Generates the four procedural film-noise corner values for each lattice cell.

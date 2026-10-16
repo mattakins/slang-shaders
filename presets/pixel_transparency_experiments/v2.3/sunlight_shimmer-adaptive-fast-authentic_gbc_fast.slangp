@@ -4,7 +4,7 @@
 # The interpolated optical field remains 256x256; game and LCD detail stay full size.
 shaders = 7
 
-shader0 = ../../handheld/shaders/pixel_transparency/shadow_cache_shifted.slang
+shader0 = ../../../handheld/shaders/pixel_transparency_experiments/v2.3/shadow_cache_shifted.slang
 filter_linear0 = false
 scale_type0 = source
 # Allow one extra source cell in each direction, including very small inputs.
@@ -12,35 +12,35 @@ scale_type0 = source
 scale_x0 = 6.0
 scale_y0 = 2.0
 
-shader1 = ../../handheld/shaders/pixel_transparency/restore_original.slang
+shader1 = ../../../handheld/shaders/pixel_transparency_experiments/v2.3/restore_original.slang
 filter_linear1 = false
 scale_type1 = source
 scale_x1 = 0.1666666666666667
 scale_y1 = 0.5
 
-shader2 = ../../handheld/shaders/authentic_gbc/to_lin_fast.slang
+shader2 = ../../../handheld/shaders/authentic_gbc/to_lin_fast.slang
 filter_linear2 = false
 scale_type2 = source
 srgb_framebuffer2 = true
 
-shader3 = ../../handheld/shaders/authentic_gbc/authentic_gbc_fast.slang
+shader3 = ../../../handheld/shaders/authentic_gbc/authentic_gbc_fast.slang
 filter_linear3 = false
 scale_type3 = viewport
 alias3 = LCDInput
 
-shader4 = ../../handheld/shaders/pixel_transparency/film_noise_cache.slang
+shader4 = ../../../handheld/shaders/pixel_transparency_experiments/v2.3/film_noise_cache.slang
 filter_linear4 = false
 scale_type4 = absolute
 scale_x4 = 128
 scale_y4 = 128
 
-shader5 = ../../handheld/shaders/pixel_transparency/light_cache.slang
+shader5 = ../../../handheld/shaders/pixel_transparency_experiments/v2.3/light_cache.slang
 filter_linear5 = false
 scale_type5 = absolute
 scale_x5 = 256
 scale_y5 = 256
 
-shader6 = ../../handheld/shaders/pixel_transparency/sunlight_shimmer_adaptive_fast.slang
+shader6 = ../../../handheld/shaders/pixel_transparency_experiments/v2.3/sunlight_shimmer_adaptive_fast.slang
 filter_linear6 = true
 wrap_mode6 = clamp_to_edge
 

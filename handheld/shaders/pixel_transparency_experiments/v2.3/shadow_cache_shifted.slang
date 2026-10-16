@@ -1,7 +1,7 @@
 #version 450
 // Copyright (C) 2025-2026 Matt Akins.
 // Cache a source-cell window around the current offset, including screen edges.
-#include "../authentic_gbc/parameters.inc"
+#include "../../authentic_gbc/parameters.inc"
 #include "cached_parameters.inc"
 #pragma name PixelShadowCache
 #pragma format R32G32B32A32_SFLOAT
