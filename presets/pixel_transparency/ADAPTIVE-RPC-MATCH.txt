@@ -1,0 +1,73 @@
+Source-sized RPC Sunlight Shimmer with matched presentation
+=========================================================
+
+sunlight_shimmer-adaptive-rpc-match-authentic_gbc_fast.slangp
+
+This separate profile keeps Adaptive RPC's cached shadows and sunlight,
+full paper texture, seven rainbow colors, full-precision shadow buffers and
+256x256 optical field. It renders the final compositor to a viewport-sized
+target before RetroArch's stock presentation copy, giving eight Vulkan passes
+instead of seven. It also emulates the original transparency pass's observed
+FP16 truncation before applying sunlight, within the combined compositor.
+The LCD stages, parameter defaults and existing presets are unchanged.
+
+Why matching needs these two changes
+-----------------------------------
+
+The original pipeline composites into an offscreen target. Rendering directly
+to a letterboxed viewport can produce slightly different interpolated texture
+coordinates. Near a native pixel boundary, this can choose a different source
+pixel; the procedural paper hash can also change. Matching the original target
+removes the large differences observed in the macOS comparison.
+
+The original transparency pass writes an FP16 target before sunlight. Combining
+the passes skips that storage conversion and produces a small brightness shift.
+The matching compositor reproduces the observed truncation with packed-half
+conversions, without restoring another full-resolution transparency pass.
+Shadow kernels and spectral calculations remain in the small cache passes.
+
+Image checks (2026-10-15)
+-------------------------
+
+Paired macOS RetroArch Vulkan captures use the same native saved-frame images:
+Mario Tennis slot 9 (160x144) and Pokemon Lazarus slot 0 (240x160), supplied by
+RetroArch's built-in imageviewer. Each capture ends at frame 10; motion is off
+in both presets. Screen fit uses 1200x1080 and 1240x827 viewports respectively;
+integer scaling uses 1120x1008 and 1200x800.
+
+All eight default/Fast-shadow comparisons differ from the original by at most
+one 8-bit channel level. This bound also holds at screen fit with shadows or
+sunlight disabled, maximum blur/offset, zero offset, Simple brightness,
+reflection enabled, zero backing brightness and complete bypass: twenty-four
+comparisons in total. Bypass matches exactly. With sunlight disabled, only one
+pixel differs by one level in each game. Default average luminance differs by
+less than 0.01 percent across the four game/scale combinations.
+
+The previous direct-output profile reached 85 levels at GBC screen fit and 23
+at GBA screen fit in these Mac captures. The LCD-only outputs already matched.
+
+This is not a bit-exact reconstruction of the original sunlight calculations.
+The 256x256 optical-field approximation remains. Combined extreme optical
+settings reach eleven levels on the GBC frame and three on the GBA frame.
+The existing shadow-cache rounding differences on larger inputs also remain.
+
+Keep the paired caches and compositor together. This profile does not restore
+the original RPC profile's 160x144 source restriction. The coordinate and FP16
+rounding match is validated on macOS Vulkan. Physical tilt, matching on the RPC,
+and RPC performance of this variant have not been tested; the device was
+disconnected during these checks.
+
+Local timing check (2026-10-15)
+------------------------------
+
+Three alternating runs per profile render 1,800 static Mario Tennis frames
+at 1200x1080, with audio, audio sync and vsync disabled. Median whole-process
+time is 15.675 seconds for Adaptive RPC and 15.680 seconds for this profile:
+no meaningful difference at this measurement's resolution. Timings include
+startup, screenshot and shutdown; these are not isolated GPU pass times.
+They are consistent with a 120 Hz presentation limit and cannot establish
+GPU headroom or predict the Retroid Pocket Classic's frame rate.
+
+Vertex and fragment shader builds pass SPIR-V validation with sensor uniforms
+both enabled and disabled. The 61 parameter definitions, their order, labels,
+defaults and ranges match the existing presets.
