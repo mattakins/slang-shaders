@@ -1,0 +1,50 @@
+# Pixel Transparency v2.4: generic append pipeline after separate LCD rendering.
+shaders = 6
+
+shader0 = ../../../handheld/shaders/lcd-cgwg/lcd-grid-v2.slang
+filter_linear0 = false
+scale_type0 = viewport
+scale0 = 1.0
+
+shader1 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/copy_lcd.slang
+filter_linear1 = false
+scale_type1 = viewport
+alias1 = LCDInput
+
+shader2 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/shadow_cache.slang
+filter_linear2 = false
+scale_type2 = absolute
+scale_x2 = 1536
+scale_y2 = 512
+
+shader3 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/film_noise_cache.slang
+filter_linear3 = false
+scale_type3 = absolute
+scale_x3 = 128
+scale_y3 = 128
+
+shader4 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/light_cache.slang
+filter_linear4 = false
+scale_type4 = absolute
+scale_x4 = 256
+scale_y4 = 256
+
+filter_linear5 = true
+wrap_mode5 = clamp_to_edge
+shader5 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/sunlight_shimmer.slang
+
+RSUBPIX_R = "0.750000"
+RSUBPIX_G = "0.000000"
+RSUBPIX_B = "0.000000"
+GSUBPIX_R = "0.000000"
+GSUBPIX_G = "0.750000"
+GSUBPIX_B = "0.000000"
+BSUBPIX_R = "0.000000"
+BSUBPIX_G = "0.000000"
+BSUBPIX_B = "0.750000"
+gain = "1.500000"
+gamma = "2.200000"
+blacklevel = "0.000000"
+ambient = "0.000000"
+BGR = "0.000000"
+PT_DEFER_DITHER = "1.0"

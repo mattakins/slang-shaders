@@ -1,0 +1,24 @@
+# Pixel Transparency v2.4: generic append pipeline after separate LCD rendering.
+shaders = 4
+
+shader0 = ../../../handheld/shaders/lcd3x.slang
+filter_linear0 = false
+scale_type0 = viewport
+
+shader1 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/copy_lcd.slang
+filter_linear1 = false
+scale_type1 = viewport
+alias1 = LCDInput
+
+shader2 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/shadow_cache.slang
+filter_linear2 = false
+scale_type2 = absolute
+scale_x2 = 1536
+scale_y2 = 512
+
+filter_linear3 = false
+shader3 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/pixel_transparency.slang
+
+PT_PALETTE = "1.0"
+PT_POLARIZER = "0.0"
+PT_HIGHLIGHTS = "0.0"

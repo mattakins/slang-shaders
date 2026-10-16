@@ -1,0 +1,21 @@
+# Pixel Transparency v2.4: cached shadows with separate LCD rendering.
+shaders = 3
+
+shader0 = ../../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/copy_lcd.slang
+filter_linear0 = false
+scale_type0 = viewport
+alias0 = LCDInput
+
+shader1 = ../../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/shadow_cache.slang
+filter_linear1 = false
+scale_type1 = absolute
+scale_x1 = 1536
+scale_y1 = 512
+
+shader2 = ../../../../handheld/shaders/pixel_transparency_experiments/v2.4-append/pixel_transparency.slang
+filter_linear2 = false
+
+PT_PALETTE = "1.0"
+PT_POLARIZER = "0.0"
+PT_HIGHLIGHTS = "0.0"
+PT_DEFER_DITHER = "0.0"

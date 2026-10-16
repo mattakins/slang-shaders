@@ -1,0 +1,37 @@
+All-append candidate validation (2026-10-16)
+==========================================
+
+Mac RetroArch Vulkan; built-in imageviewer; native saved-frame images rendered
+at frame 10, quality defaults and PT_ACCEL_ENABLE=0. Mario Tennis uses the
+Gambatte slot 9 thumbnail (160x144); Pokemon Lazarus uses the mGBA saved-frame
+thumbnail (240x160). These are static renders, not live gameplay or RPC tests.
+
+- All 15 candidate presets load with both GB and GBA inputs: 30 captures.
+- Controls, ordering, labels, defaults, ranges, explicit parameter values,
+  textures and pass counts match their corresponding standard presets.
+- Every one of the 42 original production files is restored byte-for-byte;
+  thirteen external LCD/other shaders and textures also remain unchanged.
+- All 95 related preset/reference chains and their include/texture paths resolve.
+- Twenty-four candidate vertex/fragment builds validate with sensor uniforms
+  enabled and disabled. Eight additional reference builds validate; all eight
+  compositor stage binaries match the existing generic append implementation.
+- Both families match the standard native-cache output exactly on Authentic
+  GBC Fast, lcd1x, lcd3x and lcd-grid-v2 at GB/GBA screen fit: sixteen pairs.
+- Authentic GBC Fast Shimmer also matches at GB/GBA integer scale. Its screen
+  fit capture repeats exactly and both final relocated preset paths render
+  the same images as their tested versions.
+- The standalone presets reproduce the existing generic append route exactly
+  for both inputs: four pairs. Their fixed cache and larger-input direct-kernel
+  fallback retain the existing append implementation.
+- Simpletex and zfast are not image-identical to the standard native-cache
+  versions. Their tested peak channel differences range from 16 to 82/255.
+- Frontlit also differs: peaks of 128/255 on GB and 76/255 on GBA. Glass remains
+  last. Its feedback shader explicitly samples PassFeedback0; the append
+  layout runs that shader as pass zero instead of pass two, changing which
+  previous-frame output it receives. No LCD or feedback shader was edited.
+
+These differences are why the candidate remains separate. Standard defaults
+and the measured native-cache pipeline are preserved. No Retroid throughput,
+physical-tilt test or live Append Preset menu interaction was measured here.
+Other graphics backends remain unverified. Launch/capture duration is not an
+isolated GPU benchmark.
