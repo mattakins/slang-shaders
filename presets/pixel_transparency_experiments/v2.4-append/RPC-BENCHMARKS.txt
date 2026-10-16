@@ -1,0 +1,84 @@
+All-append RPC measurements (2026-10-16)
+=======================================
+
+Retroid Pocket Classic, Adreno A12, Android 14, Vulkan, RetroArch 1.22.2
+(16734fe). Both routes use Authentic GBC Fast and full quality defaults: Full
+paper texture, seven rainbow colors and Smooth shadows. Sensor parameters
+retain their defaults for live-gameplay timing. No existing preset was replaced.
+
+Uncapped whole-application FPS
+------------------------------
+
+Scene / viewport                 Plain native  Plain append  Shimmer native  Shimmer append
+Mario Tennis, screen fit               78.67         60.44           62.60           46.07
+Mario Tennis, integer                  89.02         67.73           70.77           51.50
+Pokemon Lazarus, screen fit            90.06         70.27           72.19           53.88
+Pokemon Lazarus, integer               95.55         74.29           76.42           57.09
+
+Each cell is the median of three run medians, using frames 128-320 after
+loading the same copied save state. Native/append order alternates. Audio,
+VSync, frameskip and runahead are off. There are 48 timing runs. Mario Tennis
+uses Gambatte slot 9 at its title screen; Pokemon Lazarus uses mGBA slot 0
+in the outdoor town scene. Inputs and states match the prior benchmark set.
+Viewports: GB fit 1200x1080, GB integer 1120x1008, GBA fit 1240x827, and GBA
+integer 1200x800. Exact core options and source hashes are recorded with the
+private capture evidence. Device battery temperature ranged from 26 to 28 C.
+
+Normal playback with sound and VSync
+------------------------------------
+
+Append Shimmer, one matched scene-window run per case:
+  Mario Tennis, screen fit: 45.91 FPS
+  Mario Tennis, integer: 51.59 FPS
+  Pokemon Lazarus, screen fit: 53.25 FPS
+  Pokemon Lazarus, integer: 56.41 FPS
+  Mario Tennis screen fit, native-shimmer: 59.92 FPS
+  Mario Tennis screen fit, append-pt: 60.08 FPS
+
+These playback checks are single runs, not three-run medians. Plain append
+clears 60 FPS uncapped in all four cases, but has little margin at GB screen
+fit. Appended Shimmer misses 60 in every tested case.
+
+Why appending costs more
+------------------------
+
+The Authentic GBC Fast chains still use five passes for plain transparency
+or seven for Shimmer. The append route copies the full LCD output rather than
+the small native image: 1200x1080 versus 160x144 for the GB screen-fit case.
+Its RGBA32F shadow target is fixed at 1536x512 (12 MiB), compared with the
+native cache at 960x288 (4.22 MiB GB) or 1440x320 (7.03 MiB GBA). The generic
+compositor also carries a direct-kernel fallback for larger inputs.
+
+Bounded diagnostic tests at Mario Tennis screen fit were single runs:
+  small-cache: 48.09 FPS
+  no-fallback: 52.90 FPS
+  copy16: 48.33 FPS
+  copy8: 49.86 FPS
+  copy16-small: 50.66 FPS
+  copy8-small: 52.23 FPS
+  screen-copy32: 49.53 FPS
+  screen-copy8: 52.73 FPS
+
+These variants isolate cache allocation, copy precision and shader structure.
+The no-fallback variant cannot support arbitrary larger inputs, and an 8-bit
+copy cannot preserve HDR grid output. No diagnostic reached 60 FPS. The
+committed experiment retains its original full-precision copy, cache and
+fallback; diagnostic source files were removed from the checkout.
+
+Image validation and preservation
+---------------------------------
+
+Four paired RPC captures are pixel-identical: plain transparency and Shimmer
+on native GB/GBA saved-frame images at screen fit. This uses the built-in
+imageviewer with PT_ACCEL_ENABLE=0 and all other quality defaults. Each
+preset also produces two identical repeated captures. These images are static
+renders, not gameplay timing samples. Other LCD combinations were not compared
+on the device in this test; the Mac differences remain documented separately.
+
+Normal configuration hashes match before and after testing. Copied save states
+and isolated settings keep normal saves and presets separate. The existing
+production pipeline remains unchanged. The append candidate is installed in a
+separate test bundle under RetroArch/shaders/pixel-transparency-v2.4-append-test-gy0uoij4/.
+
+These are short, scene-specific comparisons, not a thermal soak or a claim
+about every game. Physical tilt and other graphics backends remain unverified.

@@ -22,9 +22,10 @@ rendering calculations as the existing generic append route.
 The append sequence adds three passes for transparency or five for Shimmer.
 With Authentic GBC Fast this is still five/seven passes total. The native-cache
 route copies a small native image before the LCD; this route copies the LCD's
-full-resolution result and allocates a fixed 1536x512 shadow target. Its RPC
-performance has not been measured. Prior 60+ FPS results apply to the standard
-native-cache profile, not this experiment.
+full-resolution result and allocates a fixed 1536x512 shadow target. On the RPC,
+Mario Tennis screen fit measures 60.44 FPS for plain transparency and 46.07 FPS
+for Shimmer, versus 78.67 and 62.60 FPS with the standard native-cache layout.
+See RPC-BENCHMARKS.txt for all scenes, playback checks and the test method.
 
 Mac saved-frame checks match the current pipeline exactly for Authentic GBC
 Fast, lcd1x, lcd3x and lcd-grid-v2 on both GB/GBA inputs. Simpletex, zfast and

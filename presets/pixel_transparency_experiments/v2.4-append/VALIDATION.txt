@@ -31,7 +31,8 @@ thumbnail (240x160). These are static renders, not live gameplay or RPC tests.
   previous-frame output it receives. No LCD or feedback shader was edited.
 
 These differences are why the candidate remains separate. Standard defaults
-and the measured native-cache pipeline are preserved. No Retroid throughput,
-physical-tilt test or live Append Preset menu interaction was measured here.
-Other graphics backends remain unverified. Launch/capture duration is not an
+and the measured native-cache pipeline are preserved. RPC-BENCHMARKS.txt records
+48 new Retroid timing runs, six normal-playback checks and four pixel-identical
+GB/GBA image pairs. Physical tilt and live Append Preset menu interaction remain
+unverified, as do other graphics backends. Launch/capture duration is not an
 isolated GPU benchmark.

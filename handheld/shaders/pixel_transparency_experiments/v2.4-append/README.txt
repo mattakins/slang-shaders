@@ -14,6 +14,7 @@ inputs fall back to direct shadow calculations. Rendering parameters retain
 their existing IDs, defaults, ranges and ordering.
 
 The standard production presets and programs remain unchanged. This experiment
-has not been benchmarked on Retroid Pocket Classic; its full-resolution copy
-and fixed cache have different costs from the measured native-cache pipeline.
-See the preset catalog's README.txt and VALIDATION.txt for observed differences.
+measures 46.07 FPS for Shimmer at Mario Tennis screen fit on Retroid Pocket
+Classic, versus 62.60 FPS with the native-cache baseline. The full-resolution
+copy, fixed cache and larger-input fallback have measurable costs. See the
+preset catalog's RPC-BENCHMARKS.txt, README.txt and VALIDATION.txt for evidence.
