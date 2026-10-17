@@ -1,0 +1,95 @@
+Cached integrated grid validation — 2026-10-17
+============================================
+
+Device: Retroid Pocket Classic, Adreno (TM) A12, Android Vulkan.
+RetroArch 1.22.2, Git 16734fe, package com.retroarch.aarch64.
+Production shader files, normal device configuration and existing presets were
+not changed. Test files were copied to a separate device directory.
+
+Performance
+-----------
+Mario Tennis.gbc, Gambatte, copied slot 9; live-core title-screen frames 128–320.
+Screen fit: 1200x1080 within the 1240x1080 display capture. Full paper texture,
+seven rainbow colours, Smooth shadows, black lines, strength 1, bias 0.
+Authentic display-subpixel option off. Sensor defaults retained for timing.
+Audio, VSync, frame skipping and runahead off; no fast-forward. FPS counter
+sampled every 32 frames, OCR read from device screenshots. Median per run,
+then median across three runs with alternating current/below/above order:
+
+                              Run A    Run B    Run C    Median FPS
+  Current fast                62.33    62.59    62.59       62.59
+  Cached grid below           64.75    64.99    64.75       64.75
+  Cached grid above           55.39    55.62    55.60       55.60
+  Above, fast paper           55.99    56.04    55.95       55.99
+
+Normal playback, one additional run each with audio/VSync enabled:
+  Current fast 59.69; cached below 60.03; cached above 54.95;
+  cached above with fast paper 55.87 FPS.
+
+The previous integrated version was rechecked in the initial diagnostic run:
+49.55 below, 37.69 above. Its previous three-run medians were 49.66 and 37.69.
+The stock-input, tiny-mask and stock-final diagnostics were isolation probes,
+not valid user presets. Early cache trials with sampling-boundary defects were
+rejected; their initial timings are not the final results above.
+
+This measures overall frame throughput, not isolated GPU time. It is a short
+repeatability check, not a thermal soak. No new GBA, integer-scale, plain-PT or
+subpixels-enabled throughput claims are made for the cached route.
+
+Images
+------
+26 paired RPC configurations compared to the previous integrated route:
+  16 default pairs: plain/Shimmer x below/above x GB/GBA x fit/integer.
+   8 Shimmer GB-fit pairs: below/above x all four display-subpixel layouts.
+   2 Shimmer GB-fit pairs: below/above with white lines.
+
+These render native save-state PNGs through the built-in imageviewer core;
+they are device captures but are not live gameplay. Motion was disabled on
+both sides (PT_ACCEL_ENABLE=0). Each candidate was captured twice and matched
+its repeat exactly. Original full-screen captures are retained; both sides
+use the same known viewport crop. No image rescaling or colour adjustment was
+used for measurements.
+
+Default below-grid cases: all eight within 1/255 per RGB channel.
+Default plain PT above: all four within 1/255.
+Default Shimmer above: GB fit max 7/255, GBA fit max 2/255, both integer max 1/255.
+Enabled subpixels: below max 1/255; above max 7–8/255, mean at most 0.0205/255.
+White lines: below max 2/255; above max 7/255, mean 0.0416/255 or less.
+
+These are encoded RGB differences, not perceptual thresholds. The new caches
+use FP32 axis overlaps and deterministic output-pixel centres rather than the
+previous interpolated full-screen FP16 coverage image. Matching is close but
+not pixel-exact. Paper and lighting retain full output resolution.
+
+Image source and crop context:
+  Mario Tennis, Gambatte slot 9, native 160x144.
+    fit crop (20,0,1200,1080); integer (60,36,1120,1008).
+  Pokemon Lazarus, mGBA slot 0, native 240x160.
+    fit crop (0,127,1240,827); integer (20,140,1200,800).
+Exact ROM/state hashes and parameters are recorded in the evidence manifest.
+
+Controls and compilation
+------------------------
+20 vertex/fragment stage builds passed glslangValidator and spirv-val, covering
+sensor uniforms enabled and disabled. The repository stages are byte-identical
+to the measured device snapshot after sharing the existing parameter include.
+All 49 plain-PT and 69 Shimmer parameter definitions, defaults, ranges and order
+match the previous integrated route. Both placement values use the same pass
+structure; no allocation or preset reload depends on the parameter.
+
+The actual Android menu switching gesture was not automated: injected keyboard
+and menu-button events did not open its menu. Both uniform values were tested
+through isolated presets; the existing live parameter remains in the source.
+Rotated, bordered and other-resolution content, nondefault brightness bias and
+hidden-content/bypass combinations were not newly image-tested in this run.
+
+Review
+------
+Interactive wipe, fade and zoom comparison:
+https://matts-mac-mini.tail9445f6.ts.net/rpc-grid-cache/compare.html
+
+Private logs, raw captures, manifests, hashes and scripts:
+/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-grid-speed-huh6c94m
+
+The normal device configuration hash was unchanged after testing. The test
+RetroArch process was stopped. No default shader selection was saved.
