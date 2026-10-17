@@ -1,0 +1,32 @@
+# Integrated grid experiment: live placement with full-resolution effects.
+shaders = 4
+
+shader0 = ../../../handheld/shaders/pixel_transparency/shadow_cache.slang
+filter_linear0 = false
+scale_type0 = source
+scale_x0 = 6.0
+scale_y0 = 2.0
+
+shader1 = ../../../handheld/shaders/pixel_transparency/restore_original.slang
+filter_linear1 = false
+scale_type1 = source
+scale_x1 = 0.1666666666666667
+scale_y1 = 0.5
+alias1 = PTNativeInput
+
+shader2 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-integrated-grids/input-lcd1x.slang
+filter_linear2 = false
+wrap_mode2 = clamp_to_border
+mipmap_input2 = false
+float_framebuffer2 = false
+srgb_framebuffer2 = false
+scale_type2 = viewport
+alias2 = LCDInput
+
+shader3 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-integrated-grids/pixel_transparency-lcd1x.slang
+filter_linear3 = false
+
+PT_PALETTE = "1.0"
+PT_POLARIZER = "0.0"
+PT_HIGHLIGHTS = "0.0"
+PT_FUSED_LAYER = "0.0"

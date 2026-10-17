@@ -1,0 +1,104 @@
+Integrated grids — RPC validation, 2026-10-17
+============================================
+
+Device: Retroid Pocket Classic.
+GPU: Adreno (TM) A12. Vulkan, RetroArch 1.22.2 (16734fe).
+Full paper and seven-colour rainbow defaults; screen subpixels off for timing.
+The production presets and normal device configuration were not modified.
+
+Uncapped live-core throughput, Mario Tennis, screen fit (1200 x 1080):
+
+Family                  Effect     Current     Below     Above
+authentic_gbc_fast      shimmer      62.59     64.88     55.46
+authentic_gbc_fast      pt           78.63     81.94     69.40
+lcd1x                   shimmer      88.51     87.49     85.65
+lcd1x                   pt          123.82    119.95    117.32
+lcd3x                   shimmer      86.05     84.55     82.56
+lcd3x                   pt          119.02    115.14    112.39
+lcd-grid-v2             shimmer      51.14     57.87     62.17
+lcd-grid-v2             pt           61.39     75.38     87.25
+simpletex_lcd           shimmer      82.69     84.32     82.09
+simpletex_lcd           pt          113.02    114.48    110.00
+zfast_lcd               shimmer      87.47     86.66     85.44
+zfast_lcd               pt          121.77    119.13    116.81
+
+Timing method
+-------------
+Gambatte, copied Mario Tennis slot 9; native 160 x 144. Same frame window
+128-384 after state load. Each result is the median of run medians; each
+run uses at least two OCR readings of RetroArch's FPS counter. Final runs
+are interleaved current/below/above, with reverse ordering in the second
+round where present. See benchmark-summary.json for run/sample counts and
+ranges, benchmark-runs.json for exact frames, logs, battery temperatures,
+and intermediate pilots. Superseded pilot artifact paths are marked. Only final-labelled runs appear
+in the table. Vsync, audio synchronization, frameskip and runahead disabled.
+These are short title-screen throughput checks, not a sustained thermal
+soak or guarantees for other games, resolutions, settings or hardware.
+
+Images
+------
+Actual device captures of static native state thumbnails using imageviewer:
+Mario Tennis / GBC at screen fit, and Pokemon Lazarus / GBA at integer scale.
+Every capture was repeated twice and required pixel equality. Captures use
+full quality defaults and fixed sensor-free lighting (PT_ACCEL_ENABLE=0).
+Matched viewport crops retain raw pixel values; no resampling or alignment
+adjustments. This is separate from the live-core timing evidence.
+
+Original fast versus integrated BELOW:
+lcd1x                  shimmer gbc/fit      max  0/255; mean 0.000000/255; within 1 100.00000%
+lcd1x                  shimmer gba/integer  max  0/255; mean 0.000000/255; within 1 100.00000%
+lcd1x                  pt      gbc/fit      max  0/255; mean 0.000000/255; within 1 100.00000%
+lcd1x                  pt      gba/integer  max  0/255; mean 0.000000/255; within 1 100.00000%
+lcd3x                  shimmer gbc/fit      max  0/255; mean 0.000000/255; within 1 100.00000%
+lcd3x                  shimmer gba/integer  max  0/255; mean 0.000000/255; within 1 100.00000%
+lcd3x                  pt      gbc/fit      max  0/255; mean 0.000000/255; within 1 100.00000%
+lcd3x                  pt      gba/integer  max  0/255; mean 0.000000/255; within 1 100.00000%
+simpletex_lcd          shimmer gbc/fit      max  0/255; mean 0.000000/255; within 1 100.00000%
+simpletex_lcd          shimmer gba/integer  max  0/255; mean 0.000000/255; within 1 100.00000%
+simpletex_lcd          pt      gbc/fit      max  0/255; mean 0.000000/255; within 1 100.00000%
+simpletex_lcd          pt      gba/integer  max  0/255; mean 0.000000/255; within 1 100.00000%
+zfast_lcd              shimmer gbc/fit      max  0/255; mean 0.000000/255; within 1 100.00000%
+zfast_lcd              shimmer gba/integer  max  0/255; mean 0.000000/255; within 1 100.00000%
+zfast_lcd              pt      gbc/fit      max  0/255; mean 0.000000/255; within 1 100.00000%
+zfast_lcd              pt      gba/integer  max  0/255; mean 0.000000/255; within 1 100.00000%
+authentic_gbc_fast     shimmer gbc/fit      max  1/255; mean 0.001013/255; within 1 100.00000%
+authentic_gbc_fast     shimmer gba/integer  max  1/255; mean 0.003118/255; within 1 100.00000%
+authentic_gbc_fast     pt      gbc/fit      max  1/255; mean 0.001112/255; within 1 100.00000%
+authentic_gbc_fast     pt      gba/integer  max  1/255; mean 0.003316/255; within 1 100.00000%
+lcd-grid-v2            shimmer gbc/fit      max  2/255; mean 0.002297/255; within 1 99.99992%
+lcd-grid-v2            shimmer gba/integer  max  1/255; mean 0.001296/255; within 1 100.00000%
+lcd-grid-v2            pt      gbc/fit      max  1/255; mean 0.002527/255; within 1 100.00000%
+lcd-grid-v2            pt      gba/integer  max  1/255; mean 0.001399/255; within 1 100.00000%
+
+Additional controls, original versus below:
+simpletex_lcd          max 0/255; mean 0.000000/255; {'BACKGROUND_INTENSITY': 0.65, 'DARKEN_GRID': 0.65, 'GRID_BIAS': 0.8}
+zfast_lcd              max 0/255; mean 0.000000/255; {'BORDERMULT': -24, 'GBAGAMMA': 1}
+lcd3x                  max 0/255; mean 0.000000/255; {'brighten_lcd': 1, 'brighten_scanlines': 2}
+authentic_gbc_fast     max 1/255; mean 0.000614/255; {'AUTH_GBC_SUBPX': 1, 'AUTH_GBC_SUBPX_ORIENTATION': 2}
+lcd-grid-v2            max 1/255; mean 0.000805/255; {'BGR': 1, 'RSUBPIX_G': 0.25, 'GSUBPIX_B': 0.15, 'BSUBPIX_R': 0.2, 'gain': 1.2, 'gamma': 2.4, 'blacklevel': 0.04, 'ambient': 0.04}
+
+Above intentionally changes placement and brightness. It preserves the
+full-resolution effects field rather than literally prepending at native
+resolution. Do not interpret its below/above differences as regressions.
+Authentic uses the existing verified axis-cache implementation, including
+its optional subpixel geometry and line-colour controls.
+
+Source checks: every new vertex/fragment stage compiled and passed SPIR-V
+validation with sensor uniforms both enabled and disabled. All 12 presets
+resolved their dependencies and preserved inherited parameter definitions
+and overrides. Device logs were checked for the expected shader names and
+rejected compilation, reflection, semantic and fallback errors.
+
+A combined single-pass prototype for the four simple grids was slower on
+RPC and was discarded. A separate native-colour cache for LCD Grid v2 also
+failed to improve its throughput and was removed. The retained shared implementation keeps the input
+pass separate. Geometry caches improve LCD Grid v2, but the
+live toggle does not guarantee no FPS loss for every family. In particular,
+Authentic above remains below the 60-FPS headroom target on this workload.
+
+Evidence directory:
+/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-all-grids-veagigy6
+
+Private comparison views:
+https://matts-mac-mini.tail9445f6.ts.net/rpc-all-grids/compare.html
+https://matts-mac-mini.tail9445f6.ts.net/rpc-all-grids/regression/compare.html
