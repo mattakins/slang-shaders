@@ -1,0 +1,48 @@
+Fixed grid placement validation — 2026-10-17
+==========================================
+
+Mac Apple M4; RetroArch 1.22.2; Vulkan through MoltenVK.
+Real RetroArch rendering of native save-state PNGs using imageviewer at frame 10.
+Mario Tennis: Gambatte slot 9 thumbnail, 160x144.
+Pokemon Lazarus: mGBA slot 0 thumbnail, 240x160.
+Static saved frames, not live gameplay or Retroid captures.
+
+All five LCD families, both Pixel Transparency and Sunlight Shimmer:
+- Ten grid-before captures were pixel-identical to the existing presets.
+- Forty grid-after captures rendered at GB/GBA fit and integer scale.
+- Ten effects-bypass captures rendered successfully.
+
+The window was 1240x1080. GB fit: 1200x1080; GB integer: 1120x1008;
+GBA fit: 1240x827; GBA integer: 1200x800. Five additional Shimmer captures
+used stretched GBA at 1240x1080. PT_ACCEL_ENABLE=0 for repeatability;
+other settings retained the existing preset defaults, including full paper,
+seven rainbow colours and Smooth shadows. Logs contained no shader errors
+or fallback. Runtime logs confirmed 16-bit float effects and LCD targets.
+
+Additional checks:
+- Repeated LCD1x and LCD Grid v2 Shimmer captures were pixel-identical.
+- LCD Grid v2 and Simpletex rendered with PT_HIDE_CONTENT enabled.
+- Plain transparency with final dither on versus off differed by at most
+  1/255 per channel (615254 changed pixels in the LCD1x GB fit capture).
+- Shimmer output was unchanged by PT_DEFER_DITHER, as intended: Shimmer
+  performs its own final dither. The effects bypass added no dither.
+- Shimmer rendered with sunlight disabled.
+
+Twenty vertex/fragment stage builds passed glslangValidator and spirv-val,
+covering sensor uniforms enabled and disabled for all five new shader entries.
+All twenty presets resolved their shader/texture dependencies. The original
+LCD files, twelve standard presets and existing shared shader files were
+unchanged (37 checked source/preset hashes).
+
+Grid-after intentionally changes presentation. The effects compositor is
+intermediate in these fixed-order variants, so raster coordinates/rounding
+can also change boundary sampling and paper-grain phase. These variants do
+not claim pixel parity with the standard presets or the separate Authentic
+integration, whose compositor remains final. LCD Grid v2 additionally avoids
+native-centre downsampling by using output-resolution colour samples.
+
+No RPC performance measurement or live-game timing was taken for these
+variants. More framebuffer bandwidth is required than the standard route.
+
+Private capture records, exact configs, logs and source snapshots:
+/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-grid-order-c7q0m0qk

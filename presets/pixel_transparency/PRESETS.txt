@@ -19,6 +19,39 @@ v2.4 program with their original LCD shaders and settings. Plain transparency
 uses 4 passes and Sunlight Shimmer 6 passes with these single-stage LCDs.
 The external authentic-gbc-frontlit preset also uses the new transparency path.
 
+Fixed grid placement variants
+-----------------------------
+
+The grid-before/ and grid-after/ subfolders each contain ten presets: plain
+Pixel Transparency and Sunlight Shimmer for lcd1x, lcd3x, lcd-grid-v2,
+simpletex_lcd and zfast_lcd. "Before/after" describes the grid's position
+relative to the transparency and sunlight effects.
+
+  grid-before/   Grid below the effects; references the unchanged standard
+                 presets. 4 passes for transparency, 6 for Shimmer.
+  grid-after/    Grid above the effects, retaining full-resolution paper and
+                 light detail. 5 passes for transparency, 7 for Shimmer.
+
+Choose the matching filename inside either folder. Placement is selected by
+preset, not by a live toggle. Existing filenames and defaults remain intact.
+Authentic GBC Fast's separate experiment retains its live placement control:
+  ../pixel_transparency_experiments/v2.4-integrated-authentic/
+
+Grid-after keeps the native shadow cache and adds final display dither after
+LCD rendering. Two viewport-sized 16-bit float intermediates preserve colour
+precision until that final pass. These variants require more framebuffer
+bandwidth than the standard presets; RPC performance has not been measured.
+They are alternate presentations, not replacements for the fast defaults.
+
+Four families use the original LCD shaders. LCD Grid v2 uses an adapter with
+its existing grid geometry/settings but samples effects at output resolution
+instead of four native pixel centres. That avoids downsampling paper and light
+detail. It is deliberately different from literally prepending the effects to
+unmodified LCD Grid v2. LCD gamma, darkening, colour and background controls
+now act on the completed effects image as well as the game in grid-after.
+Dithering remains last; the Shimmer optical field stays 256x256 and uses the
+displayed aspect ratio, including stretched content.
+
 Standalone / append workflow
 ----------------------------
 
@@ -42,7 +75,7 @@ Adaptive Fast, Adaptive RPC and Match, are archived under:
   presets/pixel_transparency_experiments/v2.3/
   handheld/shaders/pixel_transparency_experiments/v2.3/
 
-This folder contains only the 12 current v2.4 presets. Historical RPC,
+This folder retains the 12 standard v2.4 presets at its top level. Historical RPC,
 Adaptive, Adaptive Fast, Adaptive RPC and Match entries are available directly
 in presets/pixel_transparency_experiments/v2.3/. Saved references to their old
 locations in this folder must be updated to the archived paths. Earlier
