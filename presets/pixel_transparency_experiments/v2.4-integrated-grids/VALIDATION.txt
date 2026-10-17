@@ -102,3 +102,31 @@ Evidence directory:
 Private comparison views:
 https://matts-mac-mini.tail9445f6.ts.net/rpc-all-grids/compare.html
 https://matts-mac-mini.tail9445f6.ts.net/rpc-all-grids/regression/compare.html
+
+Authentic grid-above scaling follow-up, 2026-10-17
+------------------------------------------------
+The unchanged integrated Authentic GBC Fast Sunlight Shimmer preset was
+retested at full defaults with PT_FUSED_LAYER=1. Display subpixels remain
+off, as in the timing table above. Same device, core, slot 9, frame window
+and uncapped settings. Three interleaved runs per scale:
+
+Scale                    Viewport         Run A   Run B   Run C   Median
+Screen fit               1200 x 1080       55.57   55.61   55.53   55.57
+7x integer               1120 x 1008       62.99   63.04   62.97   62.99
+
+Integer scaling draws 12.89% fewer pixels. It changes the displayed image
+size, with full-resolution effects, original grid math and live placement
+controls retained. An additional integer-scale run with audio and VSync
+enabled measured 60.04 FPS (counter samples 59.86-60.23). These are short
+Mario Tennis title-screen checks, not sustained gameplay guarantees.
+
+Screen fit still misses the 60-FPS target. Separate final blending,
+black-line algebra simplification, conditional native-colour sampling and
+several grid-coverage cache arrangements failed to improve the baseline.
+A diagnostic with the final grid blend omitted measured 64.34 FPS, versus
+55.61 with it present; this isolates whole-pipeline impact, not a GPU timer.
+No trial shader or preset was retained. Normal device settings and the
+installed experiment pack remain unchanged.
+
+Follow-up evidence, including exact samples and discarded prototype sources:
+/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-auth-above-4xxgvukw
