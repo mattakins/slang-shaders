@@ -1,0 +1,31 @@
+Fused Authentic experiment — 2026-10-17
+======================================
+
+Status: retained investigation route; not the recommended grid-controls test.
+Matt reported about 22 FPS on Retroid Pocket Classic at default Shimmer grid
+settings (below effects, black). Device not connected for independent profiling.
+Register pressure is a plausible cause, not a measured diagnosis.
+
+The initial Mac default captures (same state PNG / imageviewer / frame 10,
+full quality / motion off) stayed within 1/255 in every channel for GB/GBA,
+fit and integer scale. Native-subpixel settings, stretched output, effects
+bypass and sunlight bypass were also checked. See the private evidence.
+
+Mac throughput was not predictive of the reported RPC regression. Initial
+current-fast / fused Shimmer runs at GB fit, final 2048 frame intervals:
+  current-shimmer      114.69 FPS (pilot)
+  fused-shimmer        115.94 FPS (pilot)
+  current-shimmer      115.79 FPS (suite-0)
+  fused-shimmer        115.90 FPS (suite-0)
+
+VSync/audio synchronization off; Vulkan IMMEDIATE presentation confirmed.
+These are rendered-frame throughput including frontend/presentation overhead,
+not isolated GPU timings. Frame-time deviations were high (about 55-60%).
+No statistically supported speed improvement is claimed.
+
+The retained shaders now share their grid coverage implementation with the
+separate-stage experiment. They compile with sensors enabled and disabled;
+the revised shared organization has not been rebenchmarked on RPC.
+
+Private evidence:
+/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-fused-authentic-np2bymuu

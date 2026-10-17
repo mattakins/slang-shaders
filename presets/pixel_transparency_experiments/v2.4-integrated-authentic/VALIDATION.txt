@@ -1,0 +1,52 @@
+Integrated Authentic grid validation — 2026-10-17
+================================================
+
+Platform: macOS, Apple M4, RetroArch Vulkan through MoltenVK.
+Captured the same native save-state PNG through imageviewer at frame 10.
+Mario Tennis: Gambatte slot 9 thumbnail, 160x144.
+Pokemon Lazarus: mGBA slot 0 thumbnail, 240x160.
+Static saved-frame rendering, not live gameplay or RPC captures.
+1240x1080 window; full paper, seven rainbow colours, Smooth shadows.
+PT_ACCEL_ENABLE=0 in both members of each pair; other preset defaults kept.
+
+Current fast paired pipeline versus integrated default (grid below, black):
+Case                         Max RGB delta /255    Changed pixels
+plain gbc fit                    1                     36
+plain gbc integer                0                      0
+plain gba fit                    1                      1
+plain gba integer                0                      0
+shimmer gbc fit                  1                     34
+shimmer gbc integer              0                      0
+shimmer gba fit                  0                      0
+shimmer gba integer              0                      0
+
+All eight pairs are within 1/255 in every channel. Five are pixel-identical.
+New controls captured: both placements, white lines, dark-pixel bias, zero
+strength, effects bypass, and hidden content. Repeated default and above
+Shimmer captures are byte-identical to their matching first captures.
+
+100 vertex/fragment stage builds passed glslangValidator and spirv-val,
+including sensor uniforms enabled/disabled. All 36 production before/after
+stage pairs are byte-identical. Standalone LCD shader files are unchanged.
+
+The final compositor remains on the final render target. An intermediate
+compositor trial changed edge sampling and procedural grain; it was excluded.
+
+Retroid Pocket Classic: not available for profiling this new route. The
+reported 22 FPS result belongs to the initial fused route, not this version.
+
+Private evidence:
+/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-fused-authentic-np2bymuu
+
+Mac runtime throughput check (one run per mode)
+----------------------------------------------
+  current-shimmer              115.96 FPS
+  integrated-shimmer           117.07 FPS
+  integrated-shimmer-above     115.73 FPS
+
+Mario Tennis static slot-9 image, screen fit 1200x1080. 4500 frames per run;
+last 2048 measured after warmup. Audio/VSync/VRR/frame-delay off; no fast-forward.
+Vulkan IMMEDIATE presentation confirmed in all logs. These are overall frame
+throughput, not GPU timings; high frame-time variation (48-53%) limits sensitivity.
+This check demonstrates successful runtime rendering, not RPC speed or a
+statistically established performance difference.
