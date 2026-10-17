@@ -1,6 +1,6 @@
 // Copyright (C) 2025-2026 Matt Akins.
 // Shared compositor for the paired native-cache presets.
-// Source sampling stays nearest; LCD rendering remains a separate pass.
+// Source sampling stays nearest; optional hooks supply a fused LCD renderer.
 
 #pragma name Pixel_Transparency
 #include "cached_parameters.inc"
@@ -46,6 +46,12 @@ layout(push_constant) uniform Push {
 layout(std140, set = 0, binding = 0) uniform UBO {
     mat4 MVP;
     vec4 OriginalSize;
+#ifdef PT_COMPOSITOR_UNIFORMS
+    PT_COMPOSITOR_UNIFORMS
+#endif
+#ifdef PT_CUSTOM_LCD
+    PT_LCD_UNIFORMS
+#endif
     #ifdef _HAS_SENSOR_UNIFORMS
     vec3 Gyroscope;
     vec3 Accelerometer;
@@ -100,6 +106,10 @@ layout(location = 4) flat out vec2 light_pos;
 layout(location = 7) out vec2 light_coord;
 #endif
 
+#ifdef PT_CUSTOM_LCD
+void prepareLCD();
+#endif
+
 // Extract tilt as a normalized 2D vector.
 // Returns values in -1 to 1 range. Returns vec2(0.0) if input is near-zero.
 vec2 getOrientedTilt(vec3 accel) {
@@ -113,6 +123,9 @@ layout(location = 5) flat out vec3 backing_palette;
 layout(location = 6) flat out vec3 polarizer_color;
 void main() {
     gl_Position = global.MVP * Position;
+#ifdef PT_CUSTOM_LCD
+    prepareLCD();
+#endif
 #ifndef PT_ADAPTIVE_CACHE
     cache_supported=float(all(lessThanEqual(global.OriginalSize.xy,vec2(160.0,144.0))));
 #endif
@@ -281,10 +294,18 @@ float cachedShadow(vec2 center) {
 }
 #endif
 
+#ifdef PT_CUSTOM_LCD
+vec4 sampleLCD();
+#endif
+
 bool renderPixelTransparency(out vec3 original_pixel, out float original_brightness) {
     original_pixel=vec3(1.0);
     original_brightness=1.0;
+#ifdef PT_CUSTOM_LCD
+    vec4 lcd_color = sampleLCD();
+#else
     vec4 lcd_color = texture(LCDInput, vTexCoord);
+#endif
 
     vec4 output_color = lcd_color;
 
@@ -423,9 +444,12 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
 
     // Anti-banding dither — breaks up 8-bit quantization artifacts in smooth gradients
     // Leave dither to the final light pass when used in the split Shimmer pipeline.
+#ifndef PT_CUSTOM_FINAL_DITHER
     if (param.PT_DEFER_DITHER < 0.5) {
         output_color.rgb += (hash(floor(vTexCoord*param.OutputSize.xy)+vec2(0.5)) - 0.5) / 255.0;
     }
+
+#endif
 
     FragColor = output_color;
     return true;

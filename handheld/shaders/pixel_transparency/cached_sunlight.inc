@@ -6,7 +6,9 @@ vec4 applyCachedSunlight(vec4 output_color, vec3 original_pixel, float original_
         (param.PT_RAINBOW_ENABLE < 0.5 && param.PT_GLARE_ENABLE < 0.5 &&
          global.PT_REFLECT_ENABLE < 0.5)) {
         // Keep final dither when the light effects are bypassed.
+#ifndef PT_CUSTOM_FINAL_DITHER
         output_color.rgb += (hash(floor(vTexCoord*param.OutputSize.xy)+vec2(0.5)) - 0.5) / 255.0;
+#endif
         return output_color;
     }
     {
@@ -64,7 +66,9 @@ vec4 applyCachedSunlight(vec4 output_color, vec3 original_pixel, float original_
     }
 
     // Anti-banding dither runs after light optics, before quantization.
+#ifndef PT_CUSTOM_FINAL_DITHER
     output_color.rgb += (hash(floor(vTexCoord*param.OutputSize.xy)+vec2(0.5)) - 0.5) / 255.0;
+#endif
 
     return output_color;
 }
