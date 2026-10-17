@@ -50,3 +50,13 @@ Vulkan IMMEDIATE presentation confirmed in all logs. These are overall frame
 throughput, not GPU timings; high frame-time variation (48-53%) limits sensitivity.
 This check demonstrates successful runtime rendering, not RPC speed or a
 statistically established performance difference.
+
+Retroid follow-up — 2026-10-17
+------------------------------
+RPC validation is now complete for the separate-pass integrated route.
+See RPC-BENCHMARK.txt for 45 uncapped trials, 3 normal-playback checks and
+38 on-device image configurations. All eight default below-grid pairs and
+four enabled-subpixel layout pairs were pixel-identical to the current preset.
+The integrated route does not meet the general 60 FPS target; the current fast
+presets remain the performance recommendation. Earlier Mac timings above do
+not predict this device's performance.

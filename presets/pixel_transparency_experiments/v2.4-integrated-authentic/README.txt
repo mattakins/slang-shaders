@@ -51,3 +51,11 @@ The earlier v2.4-fused-authentic route remains available for investigation.
 Matt reported about 22 FPS on RPC with its initial default Shimmer build. That
 report motivated separating grid work; it does not establish the cost or
 speed of this new route. See VALIDATION.txt for measured results and limits.
+
+RPC results (2026-10-17)
+------------------------
+Mario Tennis fit Shimmer: current fast 62.55 FPS, integrated below 49.66,
+integrated above 37.69. The default below-grid images match the current preset
+pixel-for-pixel in the tested GB/GBA cases; all four Authentic subpixel layouts
+are supported. Keep the current fast presets for RPC performance. See
+RPC-BENCHMARK.txt for repeated measurements, images and limitations.

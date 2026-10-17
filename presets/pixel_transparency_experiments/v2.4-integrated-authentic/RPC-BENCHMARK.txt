@@ -1,0 +1,86 @@
+Integrated Authentic grid: Retroid Pocket Classic — 2026-10-17
+=============================================================
+
+Conclusion
+----------
+The separate-pass integrated grid preserves the default image, but does not
+meet the general 60 FPS RPC target. Keep the current fast paired presets as
+the performance recommendation. This experiment has not been promoted.
+
+Uncapped live-game throughput (FPS)
+----------------------------------
+Effect / content / scale                 Current fast   Grid below   Grid above
+Shimmer / Mario Tennis / fit                 62.55         49.66        37.69
+Shimmer / Mario Tennis / integer             70.51         56.30        42.83
+Shimmer / Pokemon Lazarus / fit              72.12         58.30        44.92
+Shimmer / Pokemon Lazarus / integer          76.40         61.88        47.78
+Transparency / Mario Tennis / fit           78.63         59.04        43.86
+
+Each value is the median of three run medians, with profile order alternated.
+Default black lines, full grid strength, zero brightness bias, full paper,
+seven rainbow colours, Smooth shadows and default sensor parameters.
+Authentic's optional display-subpixel rendering is OFF for these timings.
+The simulated RGB cell geometry remains present with that option off.
+
+Normal audio/VSync playback, Mario Tennis fit, one additional run per profile:
+  current Shimmer: 60.11 FPS; grid below: 49.63; grid above: 37.70.
+
+Method
+------
+- Actual RPC, Vulkan, reported GPU "Adreno (TM) A12".
+- RetroArch 1.22.2, build 16734fe, com.retroarch.aarch64.
+- Mario Tennis/Gambatte: copied slot 9 auto-loaded at each launch.
+- Pokemon Lazarus/mGBA: copied slot 0 auto-loaded at each launch.
+- Sample the same frames 128-320 after loading, before the title scene changes.
+- Read the visible FPS/frame counter from device screenshots; retain each
+  screenshot, OCR result, frame number, log, config and preset snapshot.
+- Uncapped runs disable audio, VSync, frameskip and runahead. No fast-forward.
+- GB fit: 1200x1080; integer: 1120x1008. GBA fit: 1240x827;
+  integer: 1200x800. Device render surface: 1240x1080.
+- 45 uncapped runs plus 3 normal-playback checks. One initial reader warmup
+  attempt missed the sampling window and was discarded.
+- Battery readings during the reported runs were 23-24 C. These are not GPU
+  temperatures; the Android thermal service exposed no temperature readings.
+
+These are short matched-scene throughput measurements, not isolated GPU pass
+timings or a thermal soak. Plain transparency timings cover GB fit only.
+No performance claim is made for white lines or enabled subpixel rendering.
+The earlier reported 22 FPS belongs to the fused experiment, not this build.
+The new grid stages and framebuffer traffic need profiling before attributing
+the slowdown to any single pass or promising an optimization gain.
+
+Image comparisons and subpixel controls
+--------------------------------------
+38 unique on-device configurations, each checked with two identical raw
+captures. Static native save-state PNGs rendered by RetroArch imageviewer;
+these image comparisons are separate from the live-game benchmarks above.
+PT_ACCEL_ENABLE=0 for deterministic lighting. Preset defaults otherwise kept,
+except the explicitly selected grid placement, white lines or subpixel layout.
+
+- All eight default grid-below pairs are pixel-identical to the current fast
+  preset: both effects, both games, fit and integer scaling.
+- Authentic's RGB cell geometry is retained in both placements.
+- Enable subpixel rendering and all four layouts (RGB, RGB vertical, BGR,
+  BGR vertical) render successfully in both placements. The four Shimmer GB
+  fit grid-below captures also match the current preset pixel-for-pixel.
+- Grid-above intentionally places the RGB pattern over paper and lighting;
+  it looks different and is not expected to match grid-below.
+- Both placements render with white lines. These retain Authentic's geometry,
+  not Simpletex's line shape. Fine paper/lighting remain at output resolution.
+- Final dither remains enabled. Paired screenshots use identical measured
+  viewport crops; no resampling, recolouring or brightness normalization.
+
+Interactive viewer: wipe, opacity fade, zoom, pixel crops and source images:
+https://matts-mac-mini.tail9445f6.ts.net/rpc-integrated-grid/compare.html
+
+Evidence and restoration
+------------------------
+/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-integrated-rpc-spswht8s
+
+benchmark-runs.json contains samples and per-run logs; benchmark-summary.json
+contains aggregates. visual-runs.json, image-metrics.json and comparison/
+contain capture context, raw-image references and 26 comparison cases.
+context.json records exact source hashes, ROM/core/state paths and settings.
+The tested source snapshot still matched the repository at verification.
+Normal RetroArch configuration and copied auto-state hashes were unchanged;
+the test app was stopped. Production presets and shader code were not edited.
