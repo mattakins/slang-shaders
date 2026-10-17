@@ -4,8 +4,10 @@ Pixel Transparency v2.4
 The standard presets now use the Adaptive RPC shadow-cache pipeline. Sunlight
 Shimmer retains its 256x256 optical field, full paper texture, seven rainbow
 colors and final anti-banding dither. LCD rendering remains a separate stage.
-Parameter defaults, ranges and ordering are preserved; the version heading is
-now v2.4. This release does not enable the optional Match presentation path.
+Parameter defaults and ranges are preserved; the version heading is v2.4.
+Paired presets share one shadow_cache.slang entry point; transparency controls
+now appear before LCD controls. This release does not enable the optional Match
+presentation path.
 
 Recommended Authentic GBC Fast entries:
 

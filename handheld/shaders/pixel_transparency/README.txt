@@ -11,14 +11,11 @@ input, and alias the final LCD stage as LCDInput. The compositor stays last
 except in the existing front-surface preset, which retains its final surface
 shader. Keep all cache, restore, alias, scale and filtering settings together.
 
-shadow_cache.inc contains the cache algorithm. The shadow_cache_<lcd>.slang
-entry points preload the selected LCD's parameter declarations because
-RetroArch reflects this pass before compiling the LCD chain. Keep those
-metadata declarations consistent with the LCD sources when updating them;
-they preserve the existing control order without modifying the LCD shaders.
-shadow_cache.slang declares only the shared transparency controls. The LCD
-wrappers preserve the paired presets' control order; rendering does not require
-one wrapper per LCD.
+shadow_cache.slang is the shared entry point for every paired preset and the
+standalone append presets. shadow_cache.inc contains the cache algorithm.
+No LCD-specific cache files or copied LCD parameter declarations are needed.
+RetroArch discovers controls in pass order, so the shared transparency controls
+appear before the LCD controls in paired presets. LCD rendering stays separate.
 
 To append after another grid/LCD preset, load that preset, choose Append Preset,
 and select handheld/pixel_transparency.slangp or handheld/sunlight_shimmer.slangp.

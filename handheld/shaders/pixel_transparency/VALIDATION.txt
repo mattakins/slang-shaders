@@ -43,3 +43,21 @@ promotion. Prior Adaptive RPC measurements apply to that unchanged rendering
 program; the append-compatible route and other LCD combinations have not been
 benchmarked on the Retroid. Native-cache allocations still scale with input
 size and remain subject to the device's texture and memory limits.
+
+Shared cache entry-point cleanup (2026-10-16)
+--------------------------------------------
+
+- All 13 paired presets now use shadow_cache.slang. Seven LCD-specific metadata
+  wrappers were removed; their rendering code was already shared.
+- Parameter IDs, labels, defaults, ranges and explicit preset overrides remain
+  unchanged. Transparency controls now precede LCD controls in the menu.
+- Pass order, pass counts, formats, scaling, filtering and LCD sources are
+  unchanged. Frontlit retains reflective glass last.
+- All 32 old-wrapper/shared vertex and fragment builds validate with sensor
+  uniforms enabled and disabled. Every one of the 28 old-wrapper stage binaries
+  is byte-identical to its corresponding shared-cache binary.
+- All 95 related preset/reference chains and their shader includes resolve.
+- Authentic GBC Fast Shimmer and frontlit before/after pairs are pixel-identical
+  on both native saved-frame inputs above: four pairs, eight Mac Vulkan captures
+  at frame 10, screen fit in a 1240x1080 viewport, motion disabled. These are
+  static imageviewer checks; no new device throughput measurements were taken.

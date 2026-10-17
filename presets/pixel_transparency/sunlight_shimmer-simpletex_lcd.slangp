@@ -1,7 +1,7 @@
 # Pixel Transparency v2.4: cached shadows with separate LCD rendering.
 shaders = 6
 
-shader0 = ../../handheld/shaders/pixel_transparency/shadow_cache_simpletex_lcd.slang
+shader0 = ../../handheld/shaders/pixel_transparency/shadow_cache.slang
 filter_linear0 = false
 scale_type0 = source
 scale_x0 = 6.0
