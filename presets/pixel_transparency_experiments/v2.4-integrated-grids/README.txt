@@ -10,7 +10,8 @@ Load a preset from this folder, then change this shader parameter:
 
 Both positions use the same preset and pass structure. No preset reload or
 reordering is required when changing the parameter. Below is the default.
-The production presets and all earlier experiments remain unchanged.
+The production presets remain unchanged. See ../README.txt for the retained
+experiments and the records of retired routes.
 
 Below applies the LCD before transparency and lighting. Above applies it to
 the finished full-resolution effects, so paper grain and rainbow detail

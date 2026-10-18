@@ -34,8 +34,10 @@ relative to the transparency and sunlight effects.
 
 Choose the matching filename inside either folder. Placement is selected by
 preset, not by a live toggle. Existing filenames and defaults remain intact.
-Authentic GBC Fast's separate experiment retains its live placement control:
-  ../pixel_transparency_experiments/v2.4-integrated-authentic/
+Authentic GBC Fast and the other five families have live-placement presets:
+  ../pixel_transparency_experiments/v2.4-integrated-grids/
+For live grid-style selection too, use:
+  ../pixel_transparency_experiments/v2.4-live-grid/
 
 Grid-after keeps the native shadow cache and adds final display dither after
 LCD rendering. Two viewport-sized 16-bit float intermediates preserve colour
@@ -78,8 +80,9 @@ Adaptive Fast, Adaptive RPC and Match, are archived under:
 This folder retains the 12 standard v2.4 presets at its top level. Historical RPC,
 Adaptive, Adaptive Fast, Adaptive RPC and Match entries are available directly
 in presets/pixel_transparency_experiments/v2.3/. Saved references to their old
-locations in this folder must be updated to the archived paths. Earlier
-experiments remain in their existing experimental folders.
+locations in this folder must be updated to the archived paths. See
+../pixel_transparency_experiments/README.txt for retained experiments and
+the notes archive for retired routes.
 
 Performance context
 -------------------

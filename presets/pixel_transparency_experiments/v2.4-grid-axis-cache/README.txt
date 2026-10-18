@@ -11,8 +11,9 @@ Paper, rainbow/glare and dithering remain at their existing quality defaults.
   sunlight_shimmer-authentic_gbc_fast.slangp    9 passes
   pixel_transparency-authentic_gbc_fast.slangp  7 passes
 
-This is a separate experiment. The production fast presets, previous integrated
-route and initial fused route are preserved. Standalone LCD shaders are unchanged.
+This is a separate experiment. Production fast presets and standalone LCD
+shaders are unchanged. The slower full-screen integrated and initial fused
+routes have been retired; their records remain in ../archive-notes/.
 
 What changed
 ------------
@@ -34,7 +35,8 @@ weights so half-cell rounding cannot select a different neighbouring texel.
 The heavy effects compositor stays last. Grid-above applies coverage after
 paper and sunlight without reducing their resolution. Dither is added once,
 after the selected grid placement. The usual effect bypass and hidden-content
-controls still apply. Shared control definitions come from the previous route.
+controls still apply. Shared Authentic control definitions are local to this
+route and are also reused by the live-grid experiment.
 
 RPC performance
 ---------------

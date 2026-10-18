@@ -24,7 +24,8 @@ all existing parameters are retained. PT_HIDE_CONTENT hides the game while
 leaving this separate grid visible over the effects.
 
 These are fixed-placement alternatives, not live-toggle presets. Authentic
-GBC Fast's live toggle remains in the separate integrated Authentic experiment.
+GBC Fast and the other families retain live placement in
+../../pixel_transparency_experiments/v2.4-integrated-grids/.
 
 More framebuffer bandwidth is required than the standard fast presets.
 RPC speed has not been measured. See ../PRESETS.txt and VALIDATION.txt.
