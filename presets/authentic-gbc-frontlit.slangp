@@ -13,8 +13,9 @@ scale_type1 = source
 scale_x1 = 0.1666666666666667
 scale_y1 = 0.5
 
-shader2 = "../motionblur/shaders/feedback.slang"
+shader2 = ../handheld/shaders/motionblur-feedback.slang
 filter_linear2 = false
+alias2 = MotionBlur
 
 shader3 = ../handheld/shaders/authentic_gbc/to_lin_fast.slang
 filter_linear3 = false
