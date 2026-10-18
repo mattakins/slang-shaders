@@ -52,7 +52,7 @@ void main() {
     vec3 tr = gridLinear(texture(PTNativeInput, (origin + vec2(1.5, 0.5)) * global.OriginalSize.zw).rgb);
     vec3 color = tl * left.rgb * vertical.x + br * right.rgb * vertical.y
                + bl * left.rgb * vertical.y + tr * right.rgb * vertical.x;
-    FragColor = vec4(gridEncode(color), 0.0);
+    FragColor = vec4(gridEncodeLines(color, left, right, vertical), 0.0);
 #else
 #if defined(PT_GRID_SIMPLETEX_LCD) || defined(PT_GRID_ZFAST_LCD)
     vec2 coord = (floor(vTexCoord * global.OriginalSize.xy) + vec2(0.5)) * global.OriginalSize.zw;

@@ -23,12 +23,14 @@
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
     float BRIGHTEN_SCANLINES; \
-    float BRIGHTEN_LCD;
+    float BRIGHTEN_LCD; \
+    float PT_FUSED_BRIGHTNESS;
 #elif defined(PT_GRID_LCD3X)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
     float brighten_scanlines; \
-    float brighten_lcd;
+    float brighten_lcd; \
+    float PT_FUSED_BRIGHTNESS;
 #elif defined(PT_GRID_SIMPLETEX_LCD)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
@@ -42,7 +44,8 @@
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
     float BORDERMULT; \
-    float GBAGAMMA;
+    float GBAGAMMA; \
+    float PT_FUSED_BRIGHTNESS;
 #elif defined(PT_GRID_LCD_GRID_V2)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
@@ -59,7 +62,8 @@
     float gamma; \
     float blacklevel; \
     float ambient; \
-    float BGR;
+    float BGR; \
+    float PT_FUSED_BRIGHTNESS;
 #else
 #error Select an integrated grid family
 #endif

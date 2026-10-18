@@ -12,3 +12,4 @@
 #pragma parameter blacklevel "Black level"            0.05 0.0 0.5 0.01
 #pragma parameter ambient    "Ambient"                 0.0 0.0 0.5 0.01
 #pragma parameter BGR        "BGR"                     0 0 1 1
+#pragma parameter PT_FUSED_BRIGHTNESS "Grid line brightness (0=Dark, 1=Light)" 0.0 0.0 1.0 0.05

@@ -22,12 +22,14 @@
 layout(location = 12) flat out vec3 grid_red;
 layout(location = 13) flat out vec3 grid_green;
 layout(location = 14) flat out vec3 grid_blue;
+layout(location = 15) flat out float grid_line_linear;
 #endif
 void prepareLCD() {
 #ifdef PT_GRID_LCD_GRID_V2
     grid_red = pow(vec3(global.RSUBPIX_R, global.RSUBPIX_G, global.RSUBPIX_B), vec3(2.2));
     grid_green = pow(vec3(global.GSUBPIX_R, global.GSUBPIX_G, global.GSUBPIX_B), vec3(2.2));
     grid_blue = pow(vec3(global.BSUBPIX_R, global.BSUBPIX_G, global.BSUBPIX_B), vec3(2.2));
+    grid_line_linear = pow(global.PT_FUSED_BRIGHTNESS, 2.2);
 #endif
 }
 #pragma stage fragment
@@ -35,6 +37,7 @@ void prepareLCD() {
 layout(location = 12) flat in vec3 grid_red;
 layout(location = 13) flat in vec3 grid_green;
 layout(location = 14) flat in vec3 grid_blue;
+layout(location = 15) flat in float grid_line_linear;
 #endif
 
 // LCD1x: jdgleaver, adapted from Gigaherz's public-domain LCD3x.
@@ -54,6 +57,16 @@ vec3 gridLinear(vec3 color) {
 }
 vec3 gridEncode(vec3 color) {
     return pow(mat3(grid_red, grid_green, grid_blue) * color, vec3(1.0 / 2.2));
+}
+// Fill only the uncovered subpixel area; retain the original dark-line path.
+vec3 gridEncodeLines(vec3 color, vec4 left, vec4 right, vec4 vertical) {
+    if (global.PT_FUSED_BRIGHTNESS > 0.0) {
+        vec3 coverage = (left.rgb + right.rgb) * (vertical.x + vertical.y);
+        vec3 gaps = clamp(vec3(1.0) - coverage, 0.0, 1.0);
+        vec3 linear = mat3(grid_red, grid_green, grid_blue) * color;
+        return pow(linear + grid_line_linear * gaps, vec3(1.0 / 2.2));
+    }
+    return gridEncode(color);
 }
 void gridWeights(vec2 uv, out vec4 left, out vec4 right, out vec4 vertical) {
     ivec2 extent = ivec2(textureSize(PTIntegratedX, 0).x, textureSize(PTIntegratedY, 0).y);
@@ -77,7 +90,8 @@ vec3 applyGrid(vec3 color, vec2 uv, vec2 outputSize) {
     float y = (global.brighten_scanlines + sin(angle.y)) / (global.brighten_scanlines + 1.0);
     vec3 x = (global.brighten_lcd + sin(angle.x + offsets)) / (global.brighten_lcd + 1.0);
 #endif
-    return y * x * color;
+    return y * x * (color - vec3(global.PT_FUSED_BRIGHTNESS))
+         + vec3(global.PT_FUSED_BRIGHTNESS);
 #elif defined(PT_GRID_SIMPLETEX_LCD) || defined(PT_GRID_ZFAST_LCD)
     vec2 coordinate = uv * global.OriginalSize.xy;
     vec2 distance = abs(floor(coordinate) + vec2(0.5) - coordinate);
@@ -98,7 +112,9 @@ vec3 applyGrid(vec3 color, vec2 uv, vec2 outputSize) {
     }
 #else
     float d6 = d4 * d2;
-    color *= 1.0 - global.BORDERMULT * (d4 - 2.7 * d6);
+    float lineWeight = global.BORDERMULT * (d4 - 2.7 * d6);
+    color = (color - vec3(global.PT_FUSED_BRIGHTNESS)) * (1.0 - lineWeight)
+          + vec3(global.PT_FUSED_BRIGHTNESS);
     if (global.GBAGAMMA > 0.5) color *= 0.6 + 0.4 * color;
 #endif
     return color;
@@ -109,6 +125,6 @@ vec3 applyGrid(vec3 color, vec2 uv, vec2 outputSize) {
     // Preserve the source shader's summation order, including non-diagonal matrices.
     vec3 weighted = linearColor * left.rgb * vertical.x + linearColor * right.rgb * vertical.y
                   + linearColor * left.rgb * vertical.y + linearColor * right.rgb * vertical.x;
-    return gridEncode(weighted);
+    return gridEncodeLines(weighted, left, right, vertical);
 #endif
 }

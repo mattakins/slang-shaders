@@ -52,6 +52,15 @@ grids/authentic_gbc_fast/
   conversion, shared geometry and parameters remain in the external
   authentic_gbc/ shader folder.
 
+Line shade controls
+  All six families support dark and light lines in both placements.
+  Authentic, LCD1x, LCD3x, LCD Grid v2 and zfast use Grid line brightness:
+  0=Dark (the existing default), 1=Light, with intermediate shades.
+  Simpletex keeps its existing DARKEN_GRID setting and light default:
+  Grid line shade is 0=Light, 1=Dark. Existing saved values still work.
+  Authentic also retains RGB line tint. LCD Grid v2's subpixel colours remain
+  separate from line brightness. No passes or texture reads are added.
+
 The Simpletex paper texture also remains an external grid asset. All Pixel
 Transparency implementation code is local, including the integrated grid
 adaptations; no preset here depends on an older Pixel Transparency pipeline.
@@ -69,6 +78,23 @@ grid selection, parameter defaults or live above/below placement.
 The 2026-10-18 reorganizations relocated or copied code, updated paths,
 added descriptive headers and inlined single-use includes without changing
 the compiled shaders.
+Line shade validation (2026-10-18): 68 changed stage variants compiled and
+passed SPIR-V validation. All 28 matched original/default Mac captures were
+pixel-identical: both effects and placements for all six GBC grids, plus
+LCD3x and LCD Grid v2 Sunlight Shimmer on GBA. Sixteen alternate-shade
+captures also exercised both placements. These were static saved-frame
+renders in RetroArch imageviewer, Vulkan/MoltenVK, screen fit, frame 10,
+full quality with sensor motion disabled.
+
+Mac Sunlight Shimmer timing, grid Above, 1200x1080 Mario Tennis saved frame:
+                          Original     Default      Light lines
+  LCD3x                   119.005117   119.146908    119.104335
+  LCD Grid v2             119.189511   119.175307    118.990957
+Values are RetroArch's Average monitor Hz counter, not isolated GPU FPS.
+Each run used 5000 frames and the final 2048 samples. Mean differences were
+under 0.2%, with substantial frame-time variation. No RPC was connected;
+these Mac results cannot establish performance on that device.
+
 This prepares an independent effect pipeline without promoting it to production.
 Existing preset filenames remain valid. External custom presets that directly
 reference former shader paths must use the current root or grids/<family>/
