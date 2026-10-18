@@ -1,8 +1,10 @@
 Authentic GBC Fast: compact shadow cache
 ========================================
 
-Load either preset directly. They match the production fast presets in
-../../pixel_transparency/ except for the shadow cache size.
+Promoted: all v2.4 presets using the shared shadow cache now use this sizing,
+except ../../authentic-gbc-frontlit.slangp (its motion-blur pass reads pass 0
+feedback, which is the shadow cache; that needs a separate fix). These two
+presets are now identical to the production fast presets.
 
   pixel_transparency-authentic_gbc_fast.slangp  5 passes
   sunlight_shimmer-authentic_gbc_fast.slangp    7 passes
