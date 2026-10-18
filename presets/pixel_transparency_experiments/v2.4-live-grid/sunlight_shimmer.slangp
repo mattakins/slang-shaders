@@ -1,0 +1,86 @@
+# Live grid style and placement; all paper and lighting stay at output resolution.
+shaders = 9
+
+shader0 = ../../../handheld/shaders/pixel_transparency/shadow_cache.slang
+filter_linear0 = false
+scale_type0 = source
+scale_x0 = 6.0
+scale_y0 = 2.0
+
+shader1 = ../../../handheld/shaders/pixel_transparency/restore_original.slang
+filter_linear1 = false
+scale_type1 = source
+scale_x1 = 0.1666666666666667
+scale_y1 = 0.5
+alias1 = PTNativeInput
+
+shader2 = ../../../handheld/shaders/authentic_gbc/to_lin_fast.slang
+filter_linear2 = false
+scale_type2 = source
+srgb_framebuffer2 = true
+alias2 = PTNativeColour
+
+shader3 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-live-grid/grid_x.slang
+filter_linear3 = false
+scale_type_x3 = viewport
+scale_x3 = 1.0
+scale_type_y3 = absolute
+scale_y3 = 6
+
+shader4 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-live-grid/grid_y.slang
+filter_linear4 = false
+scale_type_y4 = viewport
+scale_y4 = 1.0
+scale_type_x4 = absolute
+scale_x4 = 6
+
+shader5 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-live-grid/input.slang
+filter_linear5 = false
+scale_type5 = viewport
+alias5 = LCDInput
+
+shader6 = ../../../handheld/shaders/pixel_transparency/film_noise_cache.slang
+filter_linear6 = false
+scale_type6 = absolute
+scale_x6 = 128
+scale_y6 = 128
+
+shader7 = ../../../handheld/shaders/pixel_transparency/light_cache.slang
+filter_linear7 = false
+scale_type7 = absolute
+scale_x7 = 256
+scale_y7 = 256
+
+shader8 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-live-grid/sunlight_shimmer.slang
+filter_linear8 = true
+wrap_mode8 = clamp_to_edge
+
+PT_DEFER_DITHER = "1.0"
+
+PT_FUSED_LAYER = "0.0"
+
+PT_GRID_STYLE = "0.0"
+
+RSUBPIX_R = "0.750000"
+RSUBPIX_G = "0.000000"
+RSUBPIX_B = "0.000000"
+GSUBPIX_R = "0.000000"
+GSUBPIX_G = "0.750000"
+GSUBPIX_B = "0.000000"
+BSUBPIX_R = "0.000000"
+BSUBPIX_G = "0.000000"
+BSUBPIX_B = "0.750000"
+gain = "1.500000"
+gamma = "2.200000"
+blacklevel = "0.000000"
+ambient = "0.000000"
+BGR = "0.000000"
+textures = "BACKGROUND"
+BACKGROUND = ../../../handheld/shaders/simpletex_lcd/png/2k/textured_paper.png
+BACKGROUND_linear = false
+GRID_INTENSITY = "0.65"
+GRID_WIDTH = "0.65"
+GRID_BIAS = "0.6"
+DARKEN_GRID = "0.0"
+DARKEN_COLOUR = "0.05"
+BACKGROUND_INTENSITY = "0.0"

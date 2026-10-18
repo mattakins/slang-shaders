@@ -1,0 +1,93 @@
+Live grid selector validation — 2026-10-17
+========================================
+
+Scope
+-----
+One new experimental preset with live style and placement uniforms. Existing
+production presets, separate-style experiments and shared shaders are unchanged.
+No RPC device was detected by ADB during this validation.
+
+Compilation and controls
+------------------------
+All nine passes compile for vertex and fragment stages with sensor uniforms
+both disabled and enabled: 36 stage builds and SPIR-V validations passed.
+All six existing presets' effective control values are present and retain
+their defaults, including the Grid v2 and Simpletex preset overrides.
+
+Mac image comparisons
+---------------------
+Platform: Apple M4, RetroArch 1.22.2 / 366b3d90a1, Vulkan / MoltenVK 1.3.0.
+Method: imageviewer renders of native saved-frame PNGs at frame 10. These
+are actual shader renders of static frames, not live gameplay or RPC captures.
+
+Sources:
+  Mario Tennis: Gambatte slot 9, 160x144 native image.
+  Pokemon Lazarus: mGBA slot 0, 240x160 native image.
+
+Screen-fit viewports: GB 1200x1080; GBA 1240x827.
+Integer viewports: GB 1120x1008; GBA 1200x800.
+Full paper, seven rainbow colours and Smooth shadows; PT_ACCEL_ENABLE=0
+for matched lighting. Each pair uses the same frame, scale and controls.
+
+48 default pairs: six styles x two placements x two sources x two scales.
+  30 pairs are pixel-identical.
+  All eight Authentic pairs and all eight Grid v2 pairs are pixel-identical.
+  The remaining pairs differ by no more than 1/255 per RGB channel.
+  Worst mean absolute RGB error: 0.000550412 on the 0..255 scale.
+  Largest changed-pixel count: 2,121 of 1,296,000 (LCD3x, GB fit, below).
+
+21 additional pairs exercise Authentic display subpixels (all four
+orientations, both placements), coloured line strength/bias, a non-diagonal
+Grid v2 matrix and BGR, Simpletex's paper texture, zfast gamma, sunlight off,
+effects off, and repetition of the largest default difference.
+  18 pairs are pixel-identical; the other three stay within 1/255 per channel.
+  All Authentic subpixel and coloured-line pairs are pixel-identical.
+  Both sides of the repeated LCD3x pair reproduce their earlier pixels exactly.
+
+These are encoded RGB differences, not a general perceptual threshold.
+Static comparisons do not establish motion, physical display-subpixel
+alignment, sensor behaviour, live-gameplay behaviour or device performance.
+
+Mac timing check
+----------------
+One matched Authentic-below pair: the separate-style preset and this preset
+each ran 6,000 static imageviewer frames. RetroArch's final 2,048-sample
+"Average monitor Hz" was 100.010001 for both. Frame-time deviation was
+2.161% and 2.329%, respectively. These are local frame-pacing observations,
+not isolated GPU timings or a demonstration of equal GPU cost.
+
+Cocoa resized both windows early in the run; both settled at the same
+1240x1116 content viewport and initialized the same requested pipeline twice.
+The final timing window followed the resize. The first attempt lacked the
+debug timing summary and was excluded. Audio was disabled; an audio-driver
+error was logged during shutdown. No shader compilation failures occurred.
+The checked pair is retained in benchmark-checked/runs.json and its raw logs.
+
+This limited Mac check does not establish performance for other styles,
+grid-above, live gameplay, or the RPC. No no-cost or 60-FPS device claim is
+made for the universal preset. The separate-style presets remain available.
+
+Interaction limitations
+-----------------------
+The two selectors are uniform parameters consumed by the grid caches, LCD
+input and final compositor. The same compiled preset renders all tested
+styles and placements. Each capture sets parameters before loading it.
+An attempt to change them in the running Mac menu was not verified because
+the native UI-control tool timed out. In-session menu switching remains a
+manual acceptance check; it is not claimed as tested here.
+
+The interactive comparison page was generated with wipe, fade and zoom.
+Static comparisons were inspected. Browser policy blocked the local-file
+preview, so browser interaction was not verified in this run.
+
+Evidence
+--------
+Local review directory:
+  /Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-live-grid-rpoqhfle
+
+default-comparisons.json, controls-comparisons.json, repeatability.json,
+plan.json, compiled/results.json, context.json, runtime.json and captures/
+retain metrics, source hashes, exact configurations, commands and raw images.
+comparison/compare.html contains the interactive review and source-image links.
+The final LCD1x/LCD3x menu captions were disambiguated after captures; a
+stage-source comparison confirms that only metadata and blank lines changed.
