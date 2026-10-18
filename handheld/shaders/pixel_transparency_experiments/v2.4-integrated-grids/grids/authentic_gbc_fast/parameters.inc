@@ -2,7 +2,7 @@
 #include "../../../../authentic_gbc/parameters.inc"
 #pragma parameter PT_FUSED_SETTINGS "=== Integrated grid experiment ===" 0.0 0.0 1.0 1.0
 #pragma parameter PT_FUSED_STRENGTH "Grid strength" 1.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_BRIGHTNESS "Grid line brightness (0=Black, 1=White)" 0.0 0.0 1.0 0.05
+#pragma parameter PT_FUSED_BRIGHTNESS "Grid line brightness (0=Dark, 1=Light)" 0.0 0.0 1.0 0.05
 #pragma parameter PT_FUSED_RED "Grid tint: Red" 1.0 0.0 1.0 0.05
 #pragma parameter PT_FUSED_GREEN "Grid tint: Green" 1.0 0.0 1.0 0.05
 #pragma parameter PT_FUSED_BLUE "Grid tint: Blue" 1.0 0.0 1.0 0.05
