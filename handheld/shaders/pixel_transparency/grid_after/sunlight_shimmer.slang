@@ -17,6 +17,8 @@ void main() {
     bool enabled = renderPixelTransparency(original_pixel, original_brightness);
     if (enabled)
         FragColor = applyCachedSunlight(FragColor, original_pixel, original_brightness);
+    // Preserve HDR highlights, but keep signed backing tint out of LCD gamma.
+    FragColor.rgb = max(FragColor.rgb, vec3(0.0));
     // Alpha carries the dither flag to the final pass; it is not display alpha.
     FragColor.a = enabled ? 1.0 : 0.0;
 }

@@ -411,7 +411,8 @@ vec3 grid_paper_backing = vec3(0.0);
 vec3 applyPaperGridBelow(vec4 color);
 vec3 paperGridLine(vec3 line) {
     float amount = global.PT_FUSED_TRANSPARENCY * step(0.5, param.PT_ENABLE);
-    return mix(line, grid_paper_backing, amount);
+    // Tint intensity can extrapolate below zero; line colour must stay nonnegative.
+    return max(mix(line, grid_paper_backing, amount), vec3(0.0));
 }
 #endif
 
