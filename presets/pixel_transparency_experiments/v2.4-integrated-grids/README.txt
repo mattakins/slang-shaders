@@ -41,18 +41,24 @@ The five non-Authentic families share input, compositor and grid code.
 Thin entries select a family at compile time so unused styles do not burden
 the fragment shader. LCD1x/LCD3x share the sine implementation; Simpletex
 and zfast share distance and polynomial calculations while retaining their
-different constants and colour operations. Authentic reuses the existing
-v2.4-grid-axis-cache shaders rather than duplicating their implementation.
+different constants and colour operations. Authentic's geometry caches, input,
+grid helpers and effect compositors live locally in grids/authentic_gbc_fast/.
+They preserve the previously verified axis-cache implementation.
 
-Shader sources are organized into common/ for shared rendering and
-grids/<family>/ for each family's input, effect entries and settings. The
-original external LCD shaders are unchanged. Preset filenames are unchanged;
-only internal shader paths were updated. Custom presets referencing the old
-shader files directly must follow the new paths; preset references still work.
+Shared rendering and all Pixel Transparency effect dependencies are in the
+integrated shader folder's root. grids/<family>/ holds each family's entries
+and settings. Only the original Authentic LCD's conversion, shared geometry
+and parameters, plus Simpletex's texture, remain external references. There
+are no dependencies on older Pixel Transparency pipelines. Original production
+and external LCD sources are unchanged.
+The local effect code is an independent snapshot; this is not a promotion.
+Preset filenames are unchanged; internal shader paths were updated. Custom
+presets referencing moved shader files directly must follow the new paths;
+preset references still work.
 
 This is integrated shader code, not a single rendering pass. A combined
 single-pass prototype for the four simple grids ran slower on RPC and was
-not retained. The production shadow cache and sunlight fields are unchanged.
+not retained. Local shadow-cache and sunlight-field calculations are unchanged.
 Final dithering remains after the grid and lighting, once per output pixel.
 
 Declared passes                Transparency   Shimmer

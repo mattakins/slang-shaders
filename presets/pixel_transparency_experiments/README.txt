@@ -11,7 +11,7 @@ v2.4-integrated-grids/
 
 v2.4-grid-axis-cache/
   Authentic GBC Fast's dedicated live-placement presets and shared grid caches.
-  Also used by the Authentic presets in v2.4-integrated-grids/.
+  The newer integrated presets own a separate copy of these grid helpers.
 
 v2.4-live-grid/
   One Sunlight Shimmer preset with live grid-style and above/below selection.
