@@ -4,12 +4,12 @@
 #define PT_CUSTOM_FINAL_DITHER
 #define PT_CUSTOM_LCD
 #include "parameters.inc"
-#include "../../pixel_transparency/cached_common.inc"
+#include "../../../pixel_transparency/cached_common.inc"
 #include "vertex.inc"
 #pragma stage fragment
 #include "grid.inc"
 #ifdef PT_LIGHT_FIELD
-#include "../../pixel_transparency/cached_sunlight.inc"
+#include "../../../pixel_transparency/cached_sunlight.inc"
 #endif
 vec4 sampleLCD() { return texture(LCDInput, vTexCoord); }
 void main() {

@@ -44,6 +44,12 @@ and zfast share distance and polynomial calculations while retaining their
 different constants and colour operations. Authentic reuses the existing
 v2.4-grid-axis-cache shaders rather than duplicating their implementation.
 
+Shader sources are organized into common/ for shared rendering and
+grids/<family>/ for each family's input, effect entries and settings. The
+original external LCD shaders are unchanged. Preset filenames are unchanged;
+only internal shader paths were updated. Custom presets referencing the old
+shader files directly must follow the new paths; preset references still work.
+
 This is integrated shader code, not a single rendering pass. A combined
 single-pass prototype for the four simple grids ran slower on RPC and was
 not retained. The production shadow cache and sunlight fields are unchanged.

@@ -20,7 +20,7 @@ void main() { gl_Position = global.MVP * Position; prepareLCD(); }
 #pragma stage fragment
 layout(location = 0) out vec4 FragColor;
 #include "../v2.4-grid-axis-cache/grid.inc"
-#include "../v2.4-integrated-grids/grid_v2_integral.inc"
+#include "../v2.4-integrated-grids/grids/lcd-grid-v2/integral.inc"
 #pragma stage fragment
 void main() {
     if (global.PT_GRID_STYLE > 2.5 && global.PT_GRID_STYLE < 3.5) {

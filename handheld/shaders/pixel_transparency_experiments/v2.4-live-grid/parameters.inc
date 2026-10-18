@@ -5,9 +5,9 @@
 #pragma parameter BRIGHTEN_LCD "LCD1x: Brighten LCD" 4.0 1.0 12.0 0.1
 #pragma parameter brighten_scanlines "LCD3x: Brighten Scanlines" 16.0 1.0 32.0 0.5
 #pragma parameter brighten_lcd "LCD3x: Brighten LCD" 4.0 1.0 12.0 0.1
-#include "../v2.4-integrated-grids/parameters-lcd-grid-v2.inc"
-#include "../v2.4-integrated-grids/parameters-simpletex_lcd.inc"
-#include "../v2.4-integrated-grids/parameters-zfast_lcd.inc"
+#include "../v2.4-integrated-grids/grids/lcd-grid-v2/parameters.inc"
+#include "../v2.4-integrated-grids/grids/simpletex_lcd/parameters.inc"
+#include "../v2.4-integrated-grids/grids/zfast_lcd/parameters.inc"
 
 #undef PT_LCD_UNIFORMS
 #define PT_LCD_UNIFORMS \

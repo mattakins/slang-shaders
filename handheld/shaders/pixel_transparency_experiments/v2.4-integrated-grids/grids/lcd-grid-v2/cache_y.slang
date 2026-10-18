@@ -2,8 +2,8 @@
 #pragma name PTIntegratedY
 #pragma format R32G32B32A32_SFLOAT
 #define PT_GRID_LCD_GRID_V2
-#include "parameters-lcd-grid-v2.inc"
 #include "parameters.inc"
+#include "../../common/parameters.inc"
 layout(std140, set = 0, binding = 0) uniform UBO {
     mat4 MVP;
     vec4 OriginalSize;
@@ -16,7 +16,7 @@ layout(location = 1) in vec2 TexCoord;
 void main() { gl_Position = global.MVP * Position; }
 #pragma stage fragment
 layout(location = 0) out vec4 FragColor;
-#include "grid_v2_integral.inc"
+#include "integral.inc"
 void main() {
     float coordinate = gl_FragCoord.y / global.FinalViewportSize.y / global.OriginalSize.w - 0.4999;
     float origin = floor(coordinate);
