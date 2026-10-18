@@ -58,4 +58,16 @@ matches Authentic, adds one helper pass compared with LCD Grid v2, and adds
 three compared with the four simpler grids. Unused calculations are skipped,
 but the pass overhead remains. A larger runtime-selectable shader can also
 cost more than a style-specific shader. Fewer preset files do not imply
-equal FPS. Device measurements are required before adopting this version.
+equal FPS.
+
+RPC measurements show a 9.2-27.0% throughput loss versus the dedicated
+integrated-style presets at full-quality screen fit. Authentic measured
+54.66 FPS below / 46.67 above, versus 64.84 / 55.47 for its dedicated preset.
+LCD1x, LCD3x, Simpletex and zfast stayed around 62-64 FPS in this short test;
+Authentic and Grid v2 did not reach 60. See VALIDATION.txt for exact scope.
+
+For RPC performance, prefer ../v2.4-integrated-grids/ and choose the style
+by preset. Those presets retain the live above/below control. Use this
+experiment when live style selection is worth the measured overhead.
+All 22 RPC image pairs matched exactly, including Authentic subpixel cases.
+Both live controls were verified without reloading the running preset.

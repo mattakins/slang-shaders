@@ -5,7 +5,8 @@ Scope
 -----
 One new experimental preset with live style and placement uniforms. Existing
 production presets, separate-style experiments and shared shaders are unchanged.
-No RPC device was detected by ADB during this validation.
+The initial Mac checks ran without an RPC. The RPC follow-up below adds
+device throughput, image comparisons and live-menu verification.
 
 Compilation and controls
 ------------------------
@@ -73,8 +74,9 @@ The two selectors are uniform parameters consumed by the grid caches, LCD
 input and final compositor. The same compiled preset renders all tested
 styles and placements. Each capture sets parameters before loading it.
 An attempt to change them in the running Mac menu was not verified because
-the native UI-control tool timed out. In-session menu switching remains a
-manual acceptance check; it is not claimed as tested here.
+the native UI-control tool timed out. The later RPC follow-up verifies
+in-session switching with imageviewer; live-gameplay menu switching was
+not separately exercised.
 
 The interactive comparison page was generated with wipe, fade and zoom.
 Static comparisons were inspected. Browser policy blocked the local-file
@@ -91,3 +93,75 @@ retain metrics, source hashes, exact configurations, commands and raw images.
 comparison/compare.html contains the interactive review and source-image links.
 The final LCD1x/LCD3x menu captions were disambiguated after captures; a
 stage-source comparison confirms that only metadata and blank lines changed.
+
+RPC follow-up
+-------------
+Retroid Pocket Classic, Adreno A12, Vulkan, RetroArch 1.22.2 (16734fe).
+The universal preset preserves the tested images and supports live style
+and placement changes. It reduces uncapped throughput by 9.2-27.0% versus
+the dedicated integrated-style presets in this matrix. Prefer those
+presets for RPC headroom; they already support live placement switching.
+No shader or preset math was changed during this device validation.
+
+Sunlight Shimmer, Mario Tennis / Gambatte, screen fit at 1200x1080:
+  Grid                  Dedicated below   Live below   Dedicated above   Live above
+  Authentic GBC Fast            64.84        54.66             55.47        46.67
+  LCD1x                         87.50        63.91             85.65        63.35
+  LCD3x                         84.57        62.19             82.65        62.04
+  LCD Grid v2                   57.78        52.47             62.23        54.26
+  Simpletex LCD                 84.31        62.45             82.06        61.77
+  zfast LCD                     86.63        64.16             85.38        63.50
+
+Each table value is the median of two run medians. The second round reverses
+both family and route order. Every run starts from a copied slot 9 and uses
+FPS readings within title-screen frames 128-384 (at least two readings).
+Full paper, seven rainbow colours and Smooth shadows; PT_ACCEL_ENABLE=0.
+Vsync, audio synchronization, frameskip and runahead disabled. Battery
+temperature reported 23 C throughout the matrix. These are short uncapped
+live-core measurements, not a thermal soak or a guarantee across gameplay.
+
+The production fast Authentic preset measured 62.55 FPS in one pilot run.
+At 7x integer scale (1120x1008), Authentic above measured 63.01 FPS in the
+dedicated preset and 53.47 FPS in the universal preset (two runs each).
+The same nine declared passes serve both Authentic routes, so additional
+pass count alone does not explain that regression. Register pressure is a
+possible cause, not a measured finding. Simpler styles also incur three
+extra passes in the universal layout; Grid v2 incurs one extra pass.
+
+Device image comparisons:
+  12 pairs: six styles, above and below, Mario Tennis saved frame, screen fit.
+   2 pairs: Authentic above and below, Pokemon Lazarus saved frame, screen fit.
+   8 pairs: Authentic display subpixels enabled, four orientations, both layers.
+All 22 pairs are pixel-identical (maximum and mean RGB difference both zero).
+Every capture repeats twice and checks identical RGB pixels. These are
+actual RPC renders of static native saved-frame PNGs through imageviewer;
+they are separate from the live-core FPS runs. Identical centered viewport
+crops remove only the unused black borders; full raw screenshots remain.
+Subpixel image equality does not establish alignment with the physical panel.
+
+Live controls:
+In one running imageviewer session, the MaterialUI Shader Parameters menu
+switched Authentic -> Grid v2 -> LCD1x -> LCD3x -> Simpletex -> zfast ->
+Authentic, then Authentic below -> above -> below. All eight resulting
+images exactly match their separately loaded reference captures. The PID
+stayed unchanged, the log retained one preset load and nine initial shader
+compilations, and no reload or Apply Changes action was used. This verifies
+live uniforms in a running renderer; game-menu interaction was not tested.
+
+The normal RetroArch configuration was not edited; its hash stayed unchanged.
+Test frames, save states, shader dependencies and configurations were copied
+into an isolated device directory. Existing installed shader packs remain.
+
+RPC evidence
+------------
+Local review directory:
+  /Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-live-grid-rpc-yvymqmfd
+
+benchmark-runs.json and benchmark-summary.json retain samples and medians.
+context.json records ROM/core/state hashes, viewport sizes and parameters.
+source-hashes.json records the exact tested shader dependency snapshot.
+visual-comparisons.json, visual-runs.json, captures/ and live-ui/ retain the
+image comparisons, raw screens, menu steps, logs and no-reload checks.
+comparison/compare.html contains all 22 pairs; comparison/fps.html contains
+the timing table. The RPC viewer's fade, zoom and case selection were checked
+in the browser. Earlier Mac viewer interaction remains unverified as noted.
