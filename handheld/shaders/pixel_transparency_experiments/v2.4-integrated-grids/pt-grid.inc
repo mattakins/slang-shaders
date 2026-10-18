@@ -60,6 +60,20 @@ vec3 gridEncode(vec3 color) {
 }
 // Fill only the uncovered subpixel area; retain the original dark-line path.
 vec3 gridEncodeLines(vec3 color, vec4 left, vec4 right, vec4 vertical) {
+#ifndef PT_GRID_TRANSPARENT_LINES
+    // Defer optional paper-line fill until the full-resolution backing exists.
+    if (global.PT_FUSED_TRANSPARENCY > 0.0 && global.PT_ENABLE > 0.5)
+        return gridEncode(color);
+#endif
+#ifdef PT_GRID_TRANSPARENT_LINES
+    if (global.PT_FUSED_TRANSPARENCY > 0.0 && param.PT_ENABLE > 0.5) {
+        vec3 coverage = (left.rgb + right.rgb) * (vertical.x + vertical.y);
+        vec3 gaps = clamp(vec3(1.0) - coverage, 0.0, 1.0);
+        vec3 linear = mat3(grid_red, grid_green, grid_blue) * color;
+        vec3 line = paperGridLine(vec3(global.PT_FUSED_BRIGHTNESS));
+        return pow(linear + pow(line, vec3(2.2)) * gaps, vec3(1.0 / 2.2));
+    }
+#endif
     if (global.PT_FUSED_BRIGHTNESS > 0.0) {
         vec3 coverage = (left.rgb + right.rgb) * (vertical.x + vertical.y);
         vec3 gaps = clamp(vec3(1.0) - coverage, 0.0, 1.0);
@@ -90,8 +104,11 @@ vec3 applyGrid(vec3 color, vec2 uv, vec2 outputSize) {
     float y = (global.brighten_scanlines + sin(angle.y)) / (global.brighten_scanlines + 1.0);
     vec3 x = (global.brighten_lcd + sin(angle.x + offsets)) / (global.brighten_lcd + 1.0);
 #endif
-    return y * x * (color - vec3(global.PT_FUSED_BRIGHTNESS))
-         + vec3(global.PT_FUSED_BRIGHTNESS);
+    vec3 line = vec3(global.PT_FUSED_BRIGHTNESS);
+#ifdef PT_GRID_TRANSPARENT_LINES
+    line = paperGridLine(line);
+#endif
+    return y * x * (color - line) + line;
 #elif defined(PT_GRID_SIMPLETEX_LCD) || defined(PT_GRID_ZFAST_LCD)
     vec2 coordinate = uv * global.OriginalSize.xy;
     vec2 distance = abs(floor(coordinate) + vec2(0.5) - coordinate);
@@ -104,7 +121,11 @@ vec3 applyGrid(vec3 color, vec2 uv, vec2 outputSize) {
     weight *= (weight + (1.0 - weight) * global.GRID_WIDTH) * global.GRID_INTENSITY;
     float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
     weight *= luma + (1.0 - luma) * (1.0 - global.GRID_BIAS);
-    color = mix(color, vec3(1.0 - global.DARKEN_GRID), weight);
+    vec3 line = vec3(1.0 - global.DARKEN_GRID);
+#ifdef PT_GRID_TRANSPARENT_LINES
+    line = paperGridLine(line);
+#endif
+    color = mix(color, line, weight);
     if (global.BACKGROUND_INTENSITY > 0.0) {
         vec2 paper = (floor(uv * outputSize) + vec2(0.5)) / 2048.0;
         vec3 background = texture(BACKGROUND, paper).rgb * color;
@@ -113,8 +134,11 @@ vec3 applyGrid(vec3 color, vec2 uv, vec2 outputSize) {
 #else
     float d6 = d4 * d2;
     float lineWeight = global.BORDERMULT * (d4 - 2.7 * d6);
-    color = (color - vec3(global.PT_FUSED_BRIGHTNESS)) * (1.0 - lineWeight)
-          + vec3(global.PT_FUSED_BRIGHTNESS);
+    vec3 line = vec3(global.PT_FUSED_BRIGHTNESS);
+#ifdef PT_GRID_TRANSPARENT_LINES
+    line = paperGridLine(line);
+#endif
+    color = (color - line) * (1.0 - lineWeight) + line;
     if (global.GBAGAMMA > 0.5) color *= 0.6 + 0.4 * color;
 #endif
     return color;

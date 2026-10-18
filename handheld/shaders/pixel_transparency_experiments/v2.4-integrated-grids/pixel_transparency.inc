@@ -366,6 +366,55 @@ float cachedShadow(vec2 center) {
 vec4 sampleLCD();
 #endif
 
+vec4 renderPaperBacking() {
+    vec4 background = vec4(generateProceduralBackground(vTexCoord), 1.0);
+
+    // Drop shadows (suppressed in debug mode 2)
+    if (param.PT_SHADOW_OPACITY > 0.0 && param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
+#ifdef PT_VERTEX_SHADOW_OFFSET
+        vec2 shadow_offset = shadow_offset_uv;
+#else
+        vec2 shadow_offset = -shadow_offset_raw * shadow_scale_factor * texel;
+#endif
+
+        float shadow_strength=cachedShadow(vTexCoord+shadow_offset)*param.PT_SHADOW_OPACITY;
+
+        // Deadzone — suppress faint shadows from near-white pixels
+        float deadzone = (1.0 - param.PT_THRESHOLD) * param.PT_SHADOW_OPACITY;
+        if (deadzone > 0.001) {
+            shadow_strength = smoothstep(0.0, deadzone, shadow_strength) * shadow_strength;
+        }
+
+        background.rgb = mix(background.rgb, background.rgb * 0.2, shadow_strength);
+    }
+
+    // Background tinting
+    if (global.PT_PALETTE > 0.5) {
+        vec3 bg_palette_color = backing_palette;
+
+        vec3 tinted_background = clamp(
+                vec3(
+                    bg_palette_color.r + mix(-1.0, 1.0, background.r),
+                    bg_palette_color.g + mix(-1.0, 1.0, background.g),
+                    bg_palette_color.b + mix(-1.0, 1.0, background.b)
+                ), 0.0, 1.0
+            );
+
+        background.rgb = mix(background.rgb, tinted_background, global.PT_PALETTE_INTENSITY);
+    }
+
+    return background;
+}
+
+#ifdef PT_GRID_TRANSPARENT_LINES
+vec3 grid_paper_backing = vec3(0.0);
+vec3 applyPaperGridBelow(vec4 color);
+vec3 paperGridLine(vec3 line) {
+    float amount = global.PT_FUSED_TRANSPARENCY * step(0.5, param.PT_ENABLE);
+    return mix(line, grid_paper_backing, amount);
+}
+#endif
+
 bool renderPixelTransparency(out vec3 original_pixel, out float original_brightness) {
     original_pixel=vec3(1.0);
     original_brightness=1.0;
@@ -394,6 +443,18 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
         original_pixel = vec3(1.0);
         output_color = lcd_color;
     }
+
+#ifdef PT_GRID_TRANSPARENT_LINES
+    bool paper_lines = global.PT_FUSED_TRANSPARENCY > 0.0;
+    if (paper_lines) {
+        grid_paper_backing = renderPaperBacking().rgb;
+        if (global.PT_FUSED_LAYER < 0.5 && global.PT_HIDE_CONTENT < 0.5) {
+            lcd_color.rgb = applyPaperGridBelow(lcd_color);
+            lcd_color.a = 1.0;
+            output_color = lcd_color;
+        }
+    }
+#endif
 
     float original_luma=getPerceptualBrightness(original_pixel);
     original_brightness=param.PT_BRIGHTNESS_MODE<0.5
@@ -446,41 +507,12 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
 
     vec4 background = vec4(0.0);
     if (should_apply && pixel_alpha > 0.0) {
-        background = vec4(generateProceduralBackground(vTexCoord), 1.0);
-    }
-
-    // Drop shadows (suppressed in debug mode 2)
-    if (should_apply && pixel_alpha > 0.0 && param.PT_SHADOW_OPACITY > 0.0 && param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
-#ifdef PT_VERTEX_SHADOW_OFFSET
-        vec2 shadow_offset = shadow_offset_uv;
-#else
-        vec2 shadow_offset = -shadow_offset_raw * shadow_scale_factor * texel;
+#ifdef PT_GRID_TRANSPARENT_LINES
+        if (paper_lines)
+            background = vec4(grid_paper_backing, 1.0);
+        else
 #endif
-
-        float shadow_strength=cachedShadow(vTexCoord+shadow_offset)*param.PT_SHADOW_OPACITY;
-
-        // Deadzone — suppress faint shadows from near-white pixels
-        float deadzone = (1.0 - param.PT_THRESHOLD) * param.PT_SHADOW_OPACITY;
-        if (deadzone > 0.001) {
-            shadow_strength = smoothstep(0.0, deadzone, shadow_strength) * shadow_strength;
-        }
-
-        background.rgb = mix(background.rgb, background.rgb * 0.2, shadow_strength);
-    }
-
-    // Background tinting
-    if (should_apply && pixel_alpha > 0.0 && global.PT_PALETTE > 0.5) {
-        vec3 bg_palette_color = backing_palette;
-
-        vec3 tinted_background = clamp(
-                vec3(
-                    bg_palette_color.r + mix(-1.0, 1.0, background.r),
-                    bg_palette_color.g + mix(-1.0, 1.0, background.g),
-                    bg_palette_color.b + mix(-1.0, 1.0, background.b)
-                ), 0.0, 1.0
-            );
-
-        background.rgb = mix(background.rgb, tinted_background, global.PT_PALETTE_INTENSITY);
+            background = renderPaperBacking();
     }
 
     if (should_apply && pixel_alpha > 0.0) {

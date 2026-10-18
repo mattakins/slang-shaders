@@ -19,21 +19,25 @@
 
 // Preserve each LCD family's native controls and defaults.
 #pragma parameter PT_FUSED_LAYER "Grid Placement: 0 Below / 1 Above" 0.0 0.0 1.0 1.0
+#pragma parameter PT_FUSED_TRANSPARENCY "Grid lines: reveal paper (0=Off, 1=Transparent)" 0.0 0.0 1.0 0.05
 #if defined(PT_GRID_LCD1X)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
+    float PT_FUSED_TRANSPARENCY; \
     float BRIGHTEN_SCANLINES; \
     float BRIGHTEN_LCD; \
     float PT_FUSED_BRIGHTNESS;
 #elif defined(PT_GRID_LCD3X)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
+    float PT_FUSED_TRANSPARENCY; \
     float brighten_scanlines; \
     float brighten_lcd; \
     float PT_FUSED_BRIGHTNESS;
 #elif defined(PT_GRID_SIMPLETEX_LCD)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
+    float PT_FUSED_TRANSPARENCY; \
     float GRID_INTENSITY; \
     float GRID_WIDTH; \
     float GRID_BIAS; \
@@ -43,12 +47,14 @@
 #elif defined(PT_GRID_ZFAST_LCD)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
+    float PT_FUSED_TRANSPARENCY; \
     float BORDERMULT; \
     float GBAGAMMA; \
     float PT_FUSED_BRIGHTNESS;
 #elif defined(PT_GRID_LCD_GRID_V2)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
+    float PT_FUSED_TRANSPARENCY; \
     float RSUBPIX_R; \
     float RSUBPIX_G; \
     float RSUBPIX_B; \

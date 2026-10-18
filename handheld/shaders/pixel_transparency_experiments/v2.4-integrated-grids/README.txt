@@ -61,6 +61,53 @@ Line shade controls
   Authentic also retains RGB line tint. LCD Grid v2's subpixel colours remain
   separate from line brightness. No passes or texture reads are added.
 
+Transparent paper lines
+  Grid lines: reveal paper (PT_FUSED_TRANSPARENCY) blends the existing line
+  shade into the Pixel Transparency paper backing: 0=Off, 1=Transparent.
+  Intermediate values retain some dark/light line colour. The default is 0;
+  saved brightness, Simpletex shade, Authentic tint and placement values keep
+  their existing meanings. This is paper visible through the gaps, not a
+  fade that removes the grid over the game image.
+
+  Both effects and both placements support it. Paper, palette tint and
+  shadows are calculated once at output resolution and shared with the
+  transparency compositor. Below placement fills the grid before pixel
+  transparency and sunlight; Above fills it after sunlight. Dither remains
+  last. Turning Pixel Transparency off also bypasses this optional paper fill.
+
+  The four simpler grids defer their grid styling to the compositor only
+  while paper lines are enabled. Authentic and LCD Grid v2 retain native
+  reconstruction, colour conversion and RGB coverage in the input stage;
+  the compositor fills their gaps without applying the colour transform
+  again. Authentic uses the existing input alpha channel for optional
+  native-colour bias strength (8-bit only when bias is nonzero).
+
+  No passes, framebuffers or texture assets are added. Enabled Below placement
+  needs four existing axis-cache reads for Authentic, three for LCD Grid v2;
+  Above reuses its existing grid reads. Paper must also be generated under
+  otherwise opaque pixels when their grid gaps reveal it. These are real
+  optional costs; unchanged pass counts do not prove unchanged GPU time.
+  Device performance must be checked on the target hardware.
+
+  Paper-line validation (2026-10-18): 88 shader stage variants passed compile
+  and SPIR-V validation. Thirty original/default pairs and twelve alternate
+  dark/light pairs were pixel-identical. Twelve disabled-effect checks and
+  twelve fully-transparent dark/light endpoint checks were also identical.
+  Fifty-two intentional appearance comparisons exercised both effects and
+  placements, GBC/GBA, fit/integer, subpixels, custom strength/bias and both
+  shadow modes. Captures use static native saved frames, not live gameplay.
+
+  Mac Sunlight Shimmer timing (same 5000-frame method described below):
+                            Before       Option off   Transparent
+    Authentic Below         118.877794   118.863663    118.990957
+    Authentic Above         119.033448   118.976800    119.033448
+    LCD Grid v2 Below       118.891927   119.061793    118.962646
+  These are presentation-limited Average monitor Hz readings, with substantial
+  frame-time variation, not isolated GPU FPS. Differences were below 0.15%;
+  no slowdown was observed in these capped Mac runs. RPC FPS remains untested.
+  Reproducible evidence and an 18-case comparison viewer are saved under:
+    /Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-transparent-lines-zbygiy_8/
+
 The Simpletex paper texture also remains an external grid asset. All Pixel
 Transparency implementation code is local, including the integrated grid
 adaptations; no preset here depends on an older Pixel Transparency pipeline.
