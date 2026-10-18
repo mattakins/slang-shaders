@@ -1,4 +1,4 @@
 #version 450
 #define PT_GRID_ZFAST_LCD
 #include "parameters.inc"
-#include "../../compositor.inc"
+#include "../../pt-compositor.inc"

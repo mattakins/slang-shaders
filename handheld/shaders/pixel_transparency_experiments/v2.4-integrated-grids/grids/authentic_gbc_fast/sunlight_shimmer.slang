@@ -14,12 +14,12 @@
     float PT_FUSED_BLUE;
 #define PT_LIGHT_FIELD
 #include "parameters.inc"
-#include "../../cached_common.inc"
-#include "../../cached_light_parameters.inc"
+#include "../../pixel_transparency.inc"
+#include "../../pt-params-sunlight.inc"
 
 #pragma stage fragment
 #include "composite_grid.inc"
-#include "../../cached_sunlight.inc"
+#include "../../sunlight_shimmer.inc"
 void main() {
     vec3 original_pixel;
     float original_brightness;

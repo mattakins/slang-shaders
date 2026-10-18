@@ -1,15 +1,34 @@
+/*
+  ____  _          _
+ |  _ \(_)_  _____| |
+ | |_) | \ \/ / _ \ |
+ |  __/| |>  <  __/ |
+ |_|___|_/_/\_\___|_|
+ |_   _| __ __ _ _ __  ___ _ __   __ _ _ __ ___ _ __   ___ _   _
+   | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
+   | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
+   |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
+                          |_|                               |___/
+
+    PT | FINAL COMPOSITOR
+    v2.4 integrated grid pipeline
+
+    Final-pass entry logic for the five non-Authentic grid families.
+    Combines transparency, optional sunlight, Above placement and final dither.
+*/
+
 #define PT_ADAPTIVE_CACHE
 #define PT_SHIFTED_SHADOW_CACHE
 #define PT_VERTEX_SHADOW_OFFSET
 #define PT_CUSTOM_FINAL_DITHER
 #define PT_CUSTOM_LCD
-#include "parameters.inc"
-#include "cached_common.inc"
-#include "vertex.inc"
+#include "pt-grid-parameters.inc"
+#include "pixel_transparency.inc"
+#include "pt-grid.inc"
 #pragma stage fragment
-#include "grid.inc"
+
 #ifdef PT_LIGHT_FIELD
-#include "cached_sunlight.inc"
+#include "sunlight_shimmer.inc"
 #endif
 vec4 sampleLCD() { return texture(LCDInput, vTexCoord); }
 void main() {

@@ -1,10 +1,4 @@
-// Copyright (C) 2025-2026 Matt Akins.
-// Interpolate the optical field; game and LCD detail remain at output resolution.
-#include "cached_parameters.inc"
-#include "cached_light_parameters.inc"
-#pragma name LightField
-#pragma format R16G16B16A16_SFLOAT
-
+#version 450
 /*
   ____  _          _
  |  _ \(_)_  _____| |
@@ -15,24 +9,23 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|     SUNLIGHT SHIMMER EDITION  |___/
-    v2.4 by mattakins
-    Copyright (C) 2025-2026 Matt Akins.
+                          |_|                               |___/
 
-    Grid shaders look great on Game Boy Color games - except for one glaring issue.
+    PT 4 | LIGHT CACHE
+    v2.4 integrated grid pipeline
 
-    With no backlight, the original devices didn't render white pixels. Light pixels
-    appeared as transparent areas where the backing material of the screen showed through.
-    Many games relied on this effect for transparent backgrounds that now render on modern
-    displays as eye-searing white pixels. No more! Pixel Transparency simulates this unique effect.
-
-    SUNLIGHT SHIMMER EDITION: Light and shadows move with your device!
-    Tilt your device and shadows shift with it. Glare sweeps across your screen. And just like the
-    Game Boy Color in sunlight, you see a brilliant rainbow shimmer in the background.
-
-    Just append the preset to your favorite LCD shader as the last pass to reduce eye strain and maximize nostalgia.
-
+    Generates the smooth sunlight rainbow and glare field.
+    Sunlight Shimmer only; the preset uses a 256 x 256 floating-point texture.
 */
+
+// Copyright (C) 2025-2026 Matt Akins.
+// Interpolate the optical field; game and LCD detail remain at output resolution.
+#include "pt-params.inc"
+#include "pt-params-sunlight.inc"
+#pragma name LightField
+#pragma format R16G16B16A16_SFLOAT
+
+
 
 
 

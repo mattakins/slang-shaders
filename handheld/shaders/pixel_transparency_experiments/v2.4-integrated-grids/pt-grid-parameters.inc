@@ -1,3 +1,22 @@
+/*
+  ____  _          _
+ |  _ \(_)_  _____| |
+ | |_) | \ \/ / _ \ |
+ |  __/| |>  <  __/ |
+ |_|___|_/_/\_\___|_|
+ |_   _| __ __ _ _ __  ___ _ __   __ _ _ __ ___ _ __   ___ _   _
+   | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
+   | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
+   |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
+                          |_|                               |___/
+
+    PT | GRID PARAMETERS
+    v2.4 integrated grid pipeline
+
+    Shared placement control and uniform layouts for the five non-Authentic grids.
+    Each family supplies its original LCD control declarations.
+*/
+
 // Preserve each LCD family's native controls and defaults.
 #pragma parameter PT_FUSED_LAYER "Grid Placement: 0 Below / 1 Above" 0.0 0.0 1.0 1.0
 #if defined(PT_GRID_LCD1X)

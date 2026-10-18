@@ -2,5 +2,5 @@
 #define PT_GRID_LCD3X
 #include "parameters.inc"
 #define PT_LIGHT_FIELD
-#include "../../compositor.inc"
-#include "../../cached_light_parameters.inc"
+#include "../../pt-compositor.inc"
+#include "../../pt-params-sunlight.inc"

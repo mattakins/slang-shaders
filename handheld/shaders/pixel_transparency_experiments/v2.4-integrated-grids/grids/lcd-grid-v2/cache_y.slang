@@ -3,7 +3,7 @@
 #pragma format R32G32B32A32_SFLOAT
 #define PT_GRID_LCD_GRID_V2
 #include "parameters.inc"
-#include "../../parameters.inc"
+#include "../../pt-grid-parameters.inc"
 layout(std140, set = 0, binding = 0) uniform UBO {
     mat4 MVP;
     vec4 OriginalSize;

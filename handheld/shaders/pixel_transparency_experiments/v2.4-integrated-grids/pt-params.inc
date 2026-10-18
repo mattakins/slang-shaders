@@ -1,3 +1,22 @@
+/*
+  ____  _          _
+ |  _ \(_)_  _____| |
+ | |_) | \ \/ / _ \ |
+ |  __/| |>  <  __/ |
+ |_|___|_/_/\_\___|_|
+ |_   _| __ __ _ _ __  ___ _ __   __ _ _ __ ___ _ __   ___ _   _
+   | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
+   | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
+   |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
+                          |_|                               |___/
+
+    PT | TRANSPARENCY PARAMETERS
+    v2.4 integrated grid pipeline
+
+    Shared Pixel Transparency controls used by the cache and compositor stages.
+    Preserves parameter identifiers, ordering, defaults and ranges.
+*/
+
 // Copyright (C) 2025-2026 Matt Akins.
 
 #pragma parameter PT_ENABLE 			"=== Pixel Transparency v2.4 === (OFF/ON)" 1.0 0.0 1.0 1.0

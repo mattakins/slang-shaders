@@ -1,3 +1,22 @@
+/*
+  ____  _          _
+ |  _ \(_)_  _____| |
+ | |_) | \ \/ / _ \ |
+ |  __/| |>  <  __/ |
+ |_|___|_/_/\_\___|_|
+ |_   _| __ __ _ _ __  ___ _ __   __ _ _ __ ___ _ __   ___ _   _
+   | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
+   | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
+   |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
+                          |_|                               |___/
+
+    PT | SUNLIGHT COMPOSITING
+    v2.4 integrated grid pipeline
+
+    Applies the cached optical field to the full-resolution transparency result.
+    Keeps reflection handling and final-dither hooks in the output stage.
+*/
+
 // Copyright (C) 2025-2026 Matt Akins.
 
 // Apply optical tint to full-resolution game pixels and LCD detail.

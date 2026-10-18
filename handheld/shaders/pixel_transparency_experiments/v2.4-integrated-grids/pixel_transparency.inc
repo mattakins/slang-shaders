@@ -1,9 +1,28 @@
+/*
+  ____  _          _
+ |  _ \(_)_  _____| |
+ | |_) | \ \/ / _ \ |
+ |  __/| |>  <  __/ |
+ |_|___|_/_/\_\___|_|
+ |_   _| __ __ _ _ __  ___ _ __   __ _ _ __ ___ _ __   ___ _   _
+   | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
+   | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
+   |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
+                          |_|                               |___/
+
+    PT | TRANSPARENCY COMPOSITOR
+    v2.4 integrated grid pipeline
+
+    Shared transparency rendering: paper backing, pixel alpha, shadows and tint.
+    Used by every integrated grid family, including Authentic GBC Fast.
+*/
+
 // Copyright (C) 2025-2026 Matt Akins.
 // Shared compositor for the paired native-cache presets.
 // Source sampling stays nearest; optional hooks supply a fused LCD renderer.
 
 #pragma name Pixel_Transparency
-#include "cached_parameters.inc"
+#include "pt-params.inc"
 
 
 
@@ -270,9 +289,58 @@ vec3 generateProceduralBackground(vec2 uv) {
 }
 
 #ifdef PT_SHIFTED_SHADOW_CACHE
-#include "shifted_shadow_lookup.inc"
+// The cache window includes every shifted source cell, even beyond screen edges.
+#ifdef PT_BOUNDED_CACHE
+#define PT_CACHE_BRIGHTNESS param.PT_BRIGHTNESS_MODE
+#define PT_CACHE_BLUR param.PT_SHADOW_BLUR
+#define PT_CACHE_SMOOTH param.PT_SHADOW_FAST_BLUR
+#include "pt-shadow-kernel.inc"
+#endif
+
+float cachedShadow(vec2 center) {
+    ivec2 size = ivec2(global.OriginalSize.xy);
+    vec2 native = center * global.OriginalSize.xy;
+#ifdef PT_BOUNDED_CACHE
+    ivec2 capacity = textureSize(PixelShadowCache, 0);
+    if (capacity.x < 3 * (size.x + 1) || capacity.y < size.y + 1) {
+        vec2 radius = param.PT_SHADOW_BLUR > 0.1
+            ? param.PT_SHADOW_BLUR * shadow_scale_factor * texel * vec2(size) : vec2(0.0);
+        return adaptiveShadowKernel(native, radius, size);
+    }
+#endif
+    ivec2 cell = clamp(ivec2(floor(native)) - shadow_origin, ivec2(0), size);
+    vec2 position = fract(native);
+    ivec2 phase = ivec2(greaterThanEqual(position, shadow_phase_low))
+        + ivec2(greaterThanEqual(position, shadow_phase_high));
+    vec4 values = texelFetch(PixelShadowCache, ivec2(3 * cell.x + phase.x, cell.y), 0);
+    return values[phase.y];
+}
 #elif defined(PT_ADAPTIVE_CACHE)
-#include "adaptive_shadow_lookup.inc"
+#define PT_CACHE_BRIGHTNESS param.PT_BRIGHTNESS_MODE
+#define PT_CACHE_BLUR param.PT_SHADOW_BLUR
+#define PT_CACHE_SMOOTH param.PT_SHADOW_FAST_BLUR
+#include "pt-shadow-kernel.inc"
+
+float cachedShadow(vec2 center) {
+    ivec2 size = textureSize(Original, 0);
+    vec2 native = center * vec2(size);
+    ivec2 cell = ivec2(floor(native));
+    vec2 radius = param.PT_SHADOW_BLUR > 0.1
+        ? param.PT_SHADOW_BLUR * shadow_scale_factor * texel * vec2(size) : vec2(0.0);
+
+    // Outside cells still need the full kernel: blur can reach back into the image.
+    if (any(lessThan(cell, ivec2(0))) || any(greaterThanEqual(cell, size)))
+        return adaptiveShadowKernel(native, radius, size);
+
+    vec2 fraction = fract(radius);
+    vec2 low = min(fraction, vec2(1.0) - fraction);
+    vec2 high = max(fraction, vec2(1.0) - fraction);
+    vec2 position = fract(native);
+    ivec2 phase = ivec2(greaterThanEqual(position, low))
+        + ivec2(greaterThanEqual(position, high));
+    vec4 values = texelFetch(PixelShadowCache, ivec2(3 * cell.x + phase.x, cell.y), 0);
+    return values[phase.y];
+}
 #else
 // X packs three horizontal phases per native cell; RGB holds the vertical phases.
 // The paired cache includes a three-cell border for the supported handheld sizes.

@@ -1,3 +1,22 @@
+/*
+  ____  _          _
+ |  _ \(_)_  _____| |
+ | |_) | \ \/ / _ \ |
+ |  __/| |>  <  __/ |
+ |_|___|_/_/\_\___|_|
+ |_   _| __ __ _ _ __  ___ _ __   __ _ _ __ ___ _ __   ___ _   _
+   | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
+   | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
+   |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
+                          |_|                               |___/
+
+    PT | LIGHT PARAMETERS
+    v2.4 integrated grid pipeline
+
+    Shared Sunlight Shimmer controls for the lighting cache and compositor.
+    Preserves parameter identifiers, ordering, defaults and ranges.
+*/
+
 // Copyright (C) 2025-2026 Matt Akins.
 
 #pragma parameter PT_RAINBOW_COLORS 	"      • Rainbow colors (3=Fast, 7=Full)" 7.0 3.0 7.0 2.0

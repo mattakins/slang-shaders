@@ -1,5 +1,4 @@
 #version 450
-
 /*
   ____  _          _
  |  _ \(_)_  _____| |
@@ -10,14 +9,18 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|             FILM NOISE CACHE  |___/
-    v2.4 by mattakins
+                          |_|                               |___/
+
+    PT 3 | FILM NOISE CACHE
+    v2.4 integrated grid pipeline
     Copyright (C) 2025-2026 Matt Akins.
 
-    Generates the four procedural film-noise corner values for each lattice cell.
-    The final Sunlight Shimmer pass interpolates these values at output resolution.
-
+    Caches four procedural noise corners per lattice cell for the sunlight field.
+    Sunlight Shimmer only; the preset uses a 128 x 128 floating-point texture.
 */
+
+
+
 
 #pragma name FilmNoiseCache
 

@@ -46,8 +46,13 @@ grid helpers and effect compositors live locally in grids/authentic_gbc_fast/.
 They preserve the previously verified axis-cache implementation.
 
 Shared rendering and all Pixel Transparency effect dependencies are in the
-integrated shader folder's root. grids/<family>/ holds each family's entries
-and settings. Only the original Authentic LCD's conversion, shared geometry
+integrated shader folder's root. Root .slang files carry their logical stage
+number; shared .inc files have descriptive, unnumbered names. The shadow and
+light cache implementations live directly in their .slang files. Numbers
+are not fixed shaderN indices, and includes add no passes. See the shader
+folder's README.txt for the file map.
+grids/<family>/ holds each family's entries and settings.
+Only the original Authentic LCD's conversion, shared geometry
 and parameters, plus Simpletex's texture, remain external references. There
 are no dependencies on older Pixel Transparency pipelines. Original production
 and external LCD sources are unchanged.

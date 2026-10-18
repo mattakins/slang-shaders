@@ -1,3 +1,42 @@
+/*
+  ____  _          _
+ |  _ \(_)_  _____| |
+ | |_) | \ \/ / _ \ |
+ |  __/| |>  <  __/ |
+ |_|___|_/_/\_\___|_|
+ |_   _| __ __ _ _ __  ___ _ __   __ _ _ __ ___ _ __   ___ _   _
+   | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
+   | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
+   |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
+                          |_|                               |___/
+
+    PT | GRID SETUP AND FUNCTIONS
+    v2.4 integrated grid pipeline
+
+    Shared vertex setup, LCD coverage and colour functions for input and output.
+    Original grid authors and licences are retained below.
+*/
+
+#pragma stage vertex
+#ifdef PT_GRID_LCD_GRID_V2
+layout(location = 12) flat out vec3 grid_red;
+layout(location = 13) flat out vec3 grid_green;
+layout(location = 14) flat out vec3 grid_blue;
+#endif
+void prepareLCD() {
+#ifdef PT_GRID_LCD_GRID_V2
+    grid_red = pow(vec3(global.RSUBPIX_R, global.RSUBPIX_G, global.RSUBPIX_B), vec3(2.2));
+    grid_green = pow(vec3(global.GSUBPIX_R, global.GSUBPIX_G, global.GSUBPIX_B), vec3(2.2));
+    grid_blue = pow(vec3(global.BSUBPIX_R, global.BSUBPIX_G, global.BSUBPIX_B), vec3(2.2));
+#endif
+}
+#pragma stage fragment
+#ifdef PT_GRID_LCD_GRID_V2
+layout(location = 12) flat in vec3 grid_red;
+layout(location = 13) flat in vec3 grid_green;
+layout(location = 14) flat in vec3 grid_blue;
+#endif
+
 // LCD1x: jdgleaver, adapted from Gigaherz's public-domain LCD3x.
 // Simpletex: jdgleaver, using Greg Hogan's line-weight equation.
 // zfast_lcd: Copyright (C) 2017 Greg Hogan (SoltanGris42).
