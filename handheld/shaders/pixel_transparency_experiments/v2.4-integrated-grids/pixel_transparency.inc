@@ -366,63 +366,6 @@ float cachedShadow(vec2 center) {
 vec4 sampleLCD();
 #endif
 
-vec4 renderPaperBacking() {
-    vec4 background = vec4(generateProceduralBackground(vTexCoord), 1.0);
-
-    // Drop shadows (suppressed in debug mode 2)
-    if (param.PT_SHADOW_OPACITY > 0.0 && param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
-#ifdef PT_VERTEX_SHADOW_OFFSET
-        vec2 shadow_offset = shadow_offset_uv;
-#else
-        vec2 shadow_offset = -shadow_offset_raw * shadow_scale_factor * texel;
-#endif
-
-        float shadow_strength=cachedShadow(vTexCoord+shadow_offset)*param.PT_SHADOW_OPACITY;
-
-        // Deadzone — suppress faint shadows from near-white pixels
-        float deadzone = (1.0 - param.PT_THRESHOLD) * param.PT_SHADOW_OPACITY;
-        if (deadzone > 0.001) {
-            shadow_strength = smoothstep(0.0, deadzone, shadow_strength) * shadow_strength;
-        }
-
-        background.rgb = mix(background.rgb, background.rgb * 0.2, shadow_strength);
-    }
-
-    // Background tinting
-    if (global.PT_PALETTE > 0.5) {
-        vec3 bg_palette_color = backing_palette;
-
-        vec3 tinted_background = clamp(
-                vec3(
-                    bg_palette_color.r + mix(-1.0, 1.0, background.r),
-                    bg_palette_color.g + mix(-1.0, 1.0, background.g),
-                    bg_palette_color.b + mix(-1.0, 1.0, background.b)
-                ), 0.0, 1.0
-            );
-
-        background.rgb = mix(background.rgb, tinted_background, global.PT_PALETTE_INTENSITY);
-    }
-
-    return background;
-}
-
-#ifdef PT_GRID_TRANSPARENT_LINES
-vec3 grid_paper_backing = vec3(0.0);
-vec3 applyPaperGridBelow(vec4 color);
-vec3 paperGridLine(vec3 line) {
-    float amount = global.PT_FUSED_TRANSPARENCY * step(0.5, param.PT_ENABLE);
-    // Tint intensity can extrapolate below zero; line colour must stay nonnegative.
-    return max(mix(line, grid_paper_backing, amount), vec3(0.0));
-}
-// Above placement runs after Sunlight. Rebuild the backing there instead of
-// keeping it live through the lighting code, which costs mobile GPUs heavily.
-void preparePaperGridAbove() {
-    grid_paper_backing = vec3(0.0);
-    if (global.PT_FUSED_TRANSPARENCY > 0.0 && param.PT_ENABLE > 0.5)
-        grid_paper_backing = renderPaperBacking().rgb;
-}
-#endif
-
 bool renderPixelTransparency(out vec3 original_pixel, out float original_brightness) {
     original_pixel=vec3(1.0);
     original_brightness=1.0;
@@ -453,32 +396,6 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
     }
 
     float original_luma=getPerceptualBrightness(original_pixel);
-    bool current_is_white = (original_luma > param.PT_THRESHOLD && min(min(original_pixel.r,original_pixel.g),original_pixel.b) > param.PT_THRESHOLD*0.9);
-    bool should_apply = (param.PT_PIXEL_MODE < 0.5) ? current_is_white : true;
-
-    // One call site keeps the paper backing inlined once; extra live
-    // registers from a second copy cost more than the work on mobile GPUs.
-#ifdef PT_GRID_TRANSPARENT_LINES
-    bool paper_lines = global.PT_FUSED_TRANSPARENCY > 0.0;
-    bool need_backing = should_apply || paper_lines;
-#else
-    bool need_backing = should_apply;
-#endif
-    vec4 background = vec4(0.0);
-    if (need_backing)
-        background = renderPaperBacking();
-
-#ifdef PT_GRID_TRANSPARENT_LINES
-    if (paper_lines) {
-        if (global.PT_FUSED_LAYER < 0.5 && global.PT_HIDE_CONTENT < 0.5) {
-            grid_paper_backing = background.rgb;
-            lcd_color.rgb = applyPaperGridBelow(lcd_color);
-            lcd_color.a = 1.0;
-            output_color = lcd_color;
-        }
-    }
-#endif
-
     original_brightness=param.PT_BRIGHTNESS_MODE<0.5
         ? getGameBoyRGBSum(original_pixel) : original_luma;
     // Highlight adjustment — negative dims lcd_color before compositing
@@ -487,6 +404,9 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
         lcd_color.rgb *= max(1.0 + global.PT_HIGHLIGHTS * luma, 0.0);
         output_color.rgb = lcd_color.rgb;
     }
+
+    bool current_is_white = (original_luma > param.PT_THRESHOLD && min(min(original_pixel.r,original_pixel.g),original_pixel.b) > param.PT_THRESHOLD*0.9);
+    bool should_apply = (param.PT_PIXEL_MODE < 0.5) ? current_is_white : true;
 
     // Resolve transparency early so zero grid mix skips LCD brightness work.
     float grid_mix = current_is_white ? global.PT_GRID_WHITE_MIX : global.PT_GRID_COLOR_MIX;
@@ -522,6 +442,45 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
             }
             pixel_alpha = clamp(mix(no_grid_alpha, grid_alpha, grid_mix), 0.0, 1.0);
         }
+    }
+
+    vec4 background = vec4(0.0);
+    if (should_apply && pixel_alpha > 0.0) {
+        background = vec4(generateProceduralBackground(vTexCoord), 1.0);
+    }
+
+    // Drop shadows (suppressed in debug mode 2)
+    if (should_apply && pixel_alpha > 0.0 && param.PT_SHADOW_OPACITY > 0.0 && param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
+#ifdef PT_VERTEX_SHADOW_OFFSET
+        vec2 shadow_offset = shadow_offset_uv;
+#else
+        vec2 shadow_offset = -shadow_offset_raw * shadow_scale_factor * texel;
+#endif
+
+        float shadow_strength=cachedShadow(vTexCoord+shadow_offset)*param.PT_SHADOW_OPACITY;
+
+        // Deadzone — suppress faint shadows from near-white pixels
+        float deadzone = (1.0 - param.PT_THRESHOLD) * param.PT_SHADOW_OPACITY;
+        if (deadzone > 0.001) {
+            shadow_strength = smoothstep(0.0, deadzone, shadow_strength) * shadow_strength;
+        }
+
+        background.rgb = mix(background.rgb, background.rgb * 0.2, shadow_strength);
+    }
+
+    // Background tinting
+    if (should_apply && pixel_alpha > 0.0 && global.PT_PALETTE > 0.5) {
+        vec3 bg_palette_color = backing_palette;
+
+        vec3 tinted_background = clamp(
+                vec3(
+                    bg_palette_color.r + mix(-1.0, 1.0, background.r),
+                    bg_palette_color.g + mix(-1.0, 1.0, background.g),
+                    bg_palette_color.b + mix(-1.0, 1.0, background.b)
+                ), 0.0, 1.0
+            );
+
+        background.rgb = mix(background.rgb, tinted_background, global.PT_PALETTE_INTENSITY);
     }
 
     if (should_apply && pixel_alpha > 0.0) {

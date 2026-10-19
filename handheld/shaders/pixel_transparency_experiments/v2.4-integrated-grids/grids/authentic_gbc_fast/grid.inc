@@ -119,12 +119,8 @@ vec4 sampleLCD() {
 #else
     bool above = global.PT_FUSED_LAYER > 0.5 && param.PT_ENABLE > 0.5;
 #endif
-    bool paper_input = false;
-#ifdef PT_GRID_INPUT_ONLY
-    paper_input = global.PT_FUSED_TRANSPARENCY > 0.0 && global.PT_ENABLE > 0.5;
-#endif
     if (!above && global.PT_FUSED_STRENGTH == 1.0 &&
-        (global.PT_FUSED_BRIGHTNESS == 0.0 || paper_input) && global.PT_FUSED_BIAS == 0.0)
+        global.PT_FUSED_BRIGHTNESS == 0.0 && global.PT_FUSED_BIAS == 0.0)
         return vec4(quantizeLCD(sqrt(res)), 1.0);
 
     vec3 coverage = clamp((w0 + w1 + w2 + w3) / area, 0.0, 1.0);
@@ -140,17 +136,11 @@ vec4 sampleLCD() {
         strength *= mix(1.0, getPerceptualBrightness(sqrt(max(native_color, vec3(0.0)))), global.PT_FUSED_BIAS);
     lcd_coverage = mix(vec3(1.0), coverage, strength);
     vec3 line = global.PT_FUSED_BRIGHTNESS * vec3(global.PT_FUSED_RED, global.PT_FUSED_GREEN, global.PT_FUSED_BLUE);
-    if (paper_input) line = vec3(0.0);
     lcd_line_color = line * line;
     if (above)
         return vec4(quantizeLCD(sqrt(max(native_color, vec3(0.0)))), 1.0);
     vec3 colored = native_color * lcd_coverage + lcd_line_color * (vec3(1.0) - lcd_coverage);
-    float alpha = 1.0;
-#ifdef PT_GRID_INPUT_ONLY
-    if (paper_input)
-        alpha = strength;
-#endif
-    return vec4(quantizeLCD(sqrt(max(colored, vec3(0.0)))), alpha);
+    return vec4(quantizeLCD(sqrt(max(colored, vec3(0.0)))), 1.0);
 }
 
 #ifndef PT_GRID_INPUT_ONLY
