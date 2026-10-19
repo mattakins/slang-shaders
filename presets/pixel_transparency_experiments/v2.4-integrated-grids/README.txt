@@ -67,9 +67,9 @@ not retained. Local shadow-cache and sunlight-field calculations are unchanged.
 Final dithering remains after the grid and lighting, once per output pixel.
 
 Declared passes                Transparency   Shimmer
-  LCD1x / LCD3x / Simpletex / zfast     4           6
-  LCD Grid v2                          6           8
-  Authentic GBC Fast                   7           9
+  LCD1x / LCD3x / Simpletex / zfast     3           5
+  LCD Grid v2                          5           7
+  Authentic GBC Fast                   6           8
 
 LCD Grid v2 caches horizontal weights in viewport-width x 2 and vertical
 weights in 1 x viewport-height RGBA32F textures. Native indices travel with

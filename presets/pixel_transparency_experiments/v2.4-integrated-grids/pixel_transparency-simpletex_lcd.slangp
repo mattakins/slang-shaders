@@ -1,5 +1,5 @@
 # Integrated grid experiment: live placement with full-resolution effects.
-shaders = 4
+shaders = 3
 
 shader0 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-integrated-grids/pt-0-shadow-cache.slang
 filter_linear0 = false
@@ -7,24 +7,17 @@ scale_type0 = source
 scale_x0 = 3.1
 scale_y0 = 1.1
 
-shader1 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-integrated-grids/pt-1-restore-original.slang
-filter_linear1 = false
-scale_type1 = source
-scale_x1 = 0.3225806451612903
-scale_y1 = 0.9090909090909091
-alias1 = PTNativeInput
+shader1 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-integrated-grids/grids/simpletex_lcd/input.slang
+filter_linear1 = true
+wrap_mode1 = clamp_to_border
+mipmap_input1 = false
+float_framebuffer1 = false
+srgb_framebuffer1 = false
+scale_type1 = viewport
+alias1 = LCDInput
 
-shader2 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-integrated-grids/grids/simpletex_lcd/input.slang
-filter_linear2 = true
-wrap_mode2 = clamp_to_border
-mipmap_input2 = false
-float_framebuffer2 = false
-srgb_framebuffer2 = false
-scale_type2 = viewport
-alias2 = LCDInput
-
-shader3 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-integrated-grids/grids/simpletex_lcd/pixel_transparency.slang
-filter_linear3 = false
+shader2 = ../../../handheld/shaders/pixel_transparency_experiments/v2.4-integrated-grids/grids/simpletex_lcd/pixel_transparency.slang
+filter_linear2 = false
 
 textures = "BACKGROUND"
 BACKGROUND = ../../../handheld/shaders/simpletex_lcd/png/2k/textured_paper.png

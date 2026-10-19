@@ -3,17 +3,20 @@ Integrated grid shader layout
 
 Root pass shaders: pt-<stage>-<name>.slang
   pt-0-shadow-cache.slang          Build the source-cell shadow cache.
-  pt-1-restore-original.slang      Restore native game pixels for the LCD.
-  pt-3-film-noise-cache.slang      Cache film-noise corners for sunlight.
-  pt-4-light-cache.slang           Render the smooth rainbow/glare field.
+  pt-2-film-noise-cache.slang      Cache film-noise corners for sunlight.
+  pt-3-light-cache.slang           Render the smooth rainbow/glare field.
 
   Each contains its pass implementation. The shadow and light caches no
   longer have a separate implementation include behind an empty entry file.
 
-  Numbers start at zero and describe the logical pipeline. Stage 2 (grid
-  input) and stage 5 (final composition) use the entries in grids/<family>/.
-  These are not fixed shaderN indices: plain transparency omits stages 3/4,
+  Numbers start at zero and describe the logical pipeline. Stage 1 (grid
+  input) and stage 4 (final composition) use the entries in grids/<family>/.
+  These are not fixed shaderN indices: plain transparency omits stages 2/3,
   and Authentic and LCD Grid v2 expand the grid stage into several passes.
+  Authentic runs its native colour conversion before the shadow cache.
+
+  No restore pass: grid inputs read Original (or Authentic's converted
+  colour) directly, so nothing after the shadow cache consumes it as Source.
 
 Shared includes: unnumbered .inc files
   pt-shadow-kernel.inc            Shared cache and fallback sampling.

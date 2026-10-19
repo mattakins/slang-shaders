@@ -34,22 +34,22 @@ void main() { gl_Position = global.MVP * Position; vTexCoord = TexCoord; prepare
 #pragma stage fragment
 layout(location = 0) in vec2 vTexCoord;
 layout(location = 0) out vec4 FragColor;
-layout(set = 0, binding = 2) uniform sampler2D PTNativeInput;
+layout(set = 0, binding = 2) uniform sampler2D Original;
 
 void main() {
     if (global.PT_FUSED_LAYER > 0.5) {
         vec2 center = (floor(vTexCoord * global.OriginalSize.xy) + vec2(0.5)) * global.OriginalSize.zw;
-        FragColor = vec4(texture(PTNativeInput, center).rgb, 1.0);
+        FragColor = vec4(texture(Original, center).rgb, 1.0);
         return;
     }
 #ifdef PT_GRID_LCD_GRID_V2
     vec4 left, right, vertical;
     gridWeights(vTexCoord, left, right, vertical);
     vec2 origin = vec2(left.a, vertical.z);
-    vec3 tl = gridLinear(texture(PTNativeInput, (origin + vec2(0.5, 0.5)) * global.OriginalSize.zw).rgb);
-    vec3 br = gridLinear(texture(PTNativeInput, (origin + vec2(1.5, 1.5)) * global.OriginalSize.zw).rgb);
-    vec3 bl = gridLinear(texture(PTNativeInput, (origin + vec2(0.5, 1.5)) * global.OriginalSize.zw).rgb);
-    vec3 tr = gridLinear(texture(PTNativeInput, (origin + vec2(1.5, 0.5)) * global.OriginalSize.zw).rgb);
+    vec3 tl = gridLinear(texture(Original, (origin + vec2(0.5, 0.5)) * global.OriginalSize.zw).rgb);
+    vec3 br = gridLinear(texture(Original, (origin + vec2(1.5, 1.5)) * global.OriginalSize.zw).rgb);
+    vec3 bl = gridLinear(texture(Original, (origin + vec2(0.5, 1.5)) * global.OriginalSize.zw).rgb);
+    vec3 tr = gridLinear(texture(Original, (origin + vec2(1.5, 0.5)) * global.OriginalSize.zw).rgb);
     vec3 color = tl * left.rgb * vertical.x + br * right.rgb * vertical.y
                + bl * left.rgb * vertical.y + tr * right.rgb * vertical.x;
     FragColor = vec4(gridEncodeLines(color, left, right, vertical), 0.0);
@@ -59,6 +59,6 @@ void main() {
 #else
     vec2 coord = vTexCoord;
 #endif
-    FragColor = vec4(applyGrid(texture(PTNativeInput, coord).rgb, vTexCoord, param.OutputSize.xy), 1.0);
+    FragColor = vec4(applyGrid(texture(Original, coord).rgb, vTexCoord, param.OutputSize.xy), 1.0);
 #endif
 }
