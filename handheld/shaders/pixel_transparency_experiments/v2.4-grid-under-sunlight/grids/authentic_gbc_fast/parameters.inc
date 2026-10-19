@@ -21,4 +21,4 @@
     float PT_FUSED_GREEN; \
     float PT_FUSED_BLUE; \
     float PT_FUSED_BIAS;
-#pragma parameter PT_FUSED_LAYER "Grid placement (0=Below effects, 1=Over paper, under light)" 0.0 0.0 1.0 1.0
+#pragma parameter PT_FUSED_LAYER "Grid placement (0=Below effects, 1=Physical order)" 0.0 0.0 1.0 1.0

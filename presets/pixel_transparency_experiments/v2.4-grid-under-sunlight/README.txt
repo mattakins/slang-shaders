@@ -1,9 +1,9 @@
 Grid under sunlight (experiment)
 ================================
 
-Integrated grid presets where placement 1 puts the grid over the paper and
-shadows but under the glare and rainbow, matching a real Game Boy Color
-screen. Placement 0 (Below) is unchanged. Shaders:
+Integrated grid presets where placement 1 follows a real Game Boy Color
+screen's optical order: paper and shadows, pixel colour, rainbow, grid gaps,
+then front sheen and glare. Placement 0 (Below) is unchanged. Shaders:
 handheld/shaders/pixel_transparency_experiments/v2.4-grid-under-sunlight/.
 
   pixel_transparency-<grid>.slangp

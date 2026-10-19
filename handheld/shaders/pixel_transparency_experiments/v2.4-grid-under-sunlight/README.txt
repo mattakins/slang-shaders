@@ -1,25 +1,31 @@
 Grid under sunlight (experiment)
 ================================
 
-Copy of the integrated grids (2026-10-19) where placement 1 puts the grid
-over the paper and shadows but under Sunlight (glare, rainbow, reflection),
-instead of over everything:
-  0 = Below effects               grid baked into the LCD image (unchanged)
-  1 = Over paper, under light     integrated's Above blend, moved before Sunlight
+Copy of the integrated grids (2026-10-19) where placement 1 follows the
+real GBC optical order instead of drawing the grid over everything:
+  0 = Below effects     grid baked into the LCD image (unchanged)
+  1 = Physical order    paper and shadows -> pixel colour -> rainbow ->
+                        grid gaps -> front sheen and glare
 
-This follows the real GBC stack: the dark pixel gaps sit in the LCD plane, in
-front of the reflector (paper, shadows) and behind the front polarizer and
-screen lens (glare, film rainbow). The existing blend moves; no code is added.
+Why: the dark pixel gaps sit in the LCD plane, in front of the reflector
+(paper, shadows). The rainbow is film interference in light that passes
+through the pixels, so the opaque gaps block it. Sheen and glare come off
+the front surfaces and sit over the grid. Sunlight now places the grid at a
+single call site between the rainbow and the front-surface light.
 
-RPC cost (GBC fit, live Mario Tennis, 3 interleaved rounds), even though the
-compiled size is unchanged; the earlier blend position changes register use:
+Checks (Mac, static frames): Below is pixel-identical to integrated for all
+12 presets. Plain Pixel Transparency placement 1, and Shimmer placement 1
+with only the rainbow or with Sunlight off, are pixel-identical to
+integrated Above.
+
+RPC cost (GBC fit, live Mario Tennis, 3 interleaved rounds):
                                      Integrated   This experiment
-  Authentic Shimmer, Below             66.6         65.6
-  Authentic Shimmer, placement 1       56.6 Above   56.2 under light
-  LCD1x Shimmer, Below                 90.0         88.2
-Evidence: /Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-moved-grid-rpc-zkkoa1ni/
-Plain Pixel Transparency has no Sunlight, so its placement 1 matches
-integrated Above exactly.
+  Authentic Shimmer, Below             66.6         65.8
+  Authentic Shimmer, placement 1       56.6 Above   56.4 physical
+  LCD1x Shimmer, Below                 90.0         88.4
+Evidence: /Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-physical-order-rpc-zp0ph0b0/
+An earlier version that put the grid under all Sunlight measured 65.6 /
+56.2 / 88.2 (pixel-transparency-moved-grid-rpc-zkkoa1ni).
 
 A version offering Below, Above and this placement as three options cost
 about 4 FPS on the RPC even in Below (Authentic Sunlight Shimmer 66.6 -> 62.4)
