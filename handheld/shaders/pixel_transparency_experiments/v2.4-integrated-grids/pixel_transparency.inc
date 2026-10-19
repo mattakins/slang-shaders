@@ -153,7 +153,9 @@ void main() {
     else if (global.PT_PALETTE < 3.5) backing_palette=vec3(0.766,0.73,0.763);
     else backing_palette=vec3(0.76);
     backing_palette*=0.675/max(backing_palette.r,max(backing_palette.g,backing_palette.b));
-    polarizer_color=mix(vec3(1.0),vec3(0.94,1.0,0.865),global.PT_POLARIZER_TINT);
+    // Single-pass front polarizer tint, chosen over the physical double pass
+    // (0.94, 1.0, 0.865) for appearance.
+    polarizer_color=mix(vec3(1.0),vec3(0.97,1.0,0.93),global.PT_POLARIZER_TINT);
 
     vTexCoord = TexCoord;
     texel = param.OutputSize.zw;
@@ -490,9 +492,8 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
     // === Shared post-compositing ===
 
     // === Polarizer Tint ===
-    // Iodine-PVA front polarizer — double-pass (0.94, 1.0, 0.865) for reflective display.
-    // Light passes through the polarizer twice (in and out), so values are squared from
-    // single-pass (0.97, 1.0, 0.93).
+    // Iodine-PVA front polarizer, single-pass tint (0.97, 1.0, 0.93). Light
+    // physically crosses it twice; the lighter single pass is the chosen look.
     if (global.PT_POLARIZER > 0.5 && global.PT_POLARIZER_TINT > 0.001) {
         vec3 polarizer = polarizer_color;
         output_color.rgb *= polarizer;

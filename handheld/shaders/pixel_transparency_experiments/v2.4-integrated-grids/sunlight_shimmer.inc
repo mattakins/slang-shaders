@@ -20,21 +20,17 @@
 // Copyright (C) 2025-2026 Matt Akins.
 
 // Apply optical tint to full-resolution game pixels and LCD detail.
-vec4 applyCachedSunlight(vec4 output_color, vec3 original_pixel, float original_brightness) {
-    if (global.PT_SUNLIGHT_ENABLE < 0.5 ||
-        (param.PT_RAINBOW_ENABLE < 0.5 && param.PT_GLARE_ENABLE < 0.5 &&
-         global.PT_REFLECT_ENABLE < 0.5)) {
-        // Keep final dither when the light effects are bypassed.
-#ifndef PT_CUSTOM_FINAL_DITHER
-        output_color.rgb += (hash(floor(vTexCoord*param.OutputSize.xy)+vec2(0.5)) - 0.5) / 255.0;
-#endif
-        return output_color;
-    }
-    {
-        vec4 light_sample = texture(LightField, light_coord);
+// Screen order: the rainbow tints light that passes through the pixels, the
+// opaque grid gaps block it, and the front sheen and glare sit on top.
+vec4 applyCachedSunlight(vec4 output_color, vec3 original_pixel, float original_brightness, bool effects_enabled) {
+    bool lit = effects_enabled && global.PT_SUNLIGHT_ENABLE > 0.5 &&
+        (param.PT_RAINBOW_ENABLE > 0.5 || param.PT_GLARE_ENABLE > 0.5 || global.PT_REFLECT_ENABLE > 0.5);
+    vec4 light_sample = vec4(0.0);
+    float dist_sq = 0.0;
+    if (lit) {
+        light_sample = texture(LightField, light_coord);
         float aspect_ratio = param.OutputSize.x / param.OutputSize.y;
         vec2 to_light = (vTexCoord - light_pos) * vec2(aspect_ratio, 1.0);
-        float dist_sq = 0.0;
         if (global.PT_REFLECT_ENABLE > 0.5) {
             dist_sq = dot(to_light, to_light);
         }
@@ -51,9 +47,10 @@ vec4 applyCachedSunlight(vec4 output_color, vec3 original_pixel, float original_
             float reflectivity = mix(0.03, 1.0, original_brightness);
             tint_strength *= reflectivity;
 
-            // Color filter — rainbow light double-passes through RGB sub-pixel color filters
-            // (in and out), so pixel color is squared for physical two-pass attenuation
-            tint *= original_pixel * original_pixel;
+            // Color filter: the rainbow light is tinted by the pixel colour once.
+            // Physically it crosses the filter twice; single pass keeps more
+            // rainbow on coloured pixels, the chosen look.
+            tint *= original_pixel;
 
             // Luminance-preserving tint blend:
             // Multiply by the spectral tint (shifts color), then restore original luminance.
@@ -65,7 +62,11 @@ vec4 applyCachedSunlight(vec4 output_color, vec3 original_pixel, float original_
             }
             output_color.rgb = tinted;
         }
+    }
 
+    output_color = finishGrid(output_color);
+
+    if (lit) {
         // Ambient front-surface reflection — broad sheen centered on the light source.
         if (global.PT_REFLECT_ENABLE > 0.5) {
             float spread_sq = global.PT_REFLECT_SPREAD * global.PT_REFLECT_SPREAD;

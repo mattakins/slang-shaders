@@ -24,9 +24,8 @@ void main() {
     vec3 original_pixel;
     float original_brightness;
     bool effects_enabled = renderPixelTransparency(original_pixel, original_brightness);
-    if (effects_enabled)
-        FragColor = applyCachedSunlight(FragColor, original_pixel, original_brightness);
-    FragColor = finishGrid(FragColor);
+    // Sunlight places the grid between the rainbow and the front-surface glare.
+    FragColor = applyCachedSunlight(FragColor, original_pixel, original_brightness, effects_enabled);
     if (effects_enabled)
         FragColor.rgb += (hash(floor(vTexCoord * param.OutputSize.xy) + vec2(0.5)) - 0.5) / 255.0;
 }

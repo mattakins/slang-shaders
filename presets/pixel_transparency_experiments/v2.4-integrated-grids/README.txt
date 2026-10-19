@@ -6,19 +6,29 @@ Fast, LCD1x, LCD3x, LCD Grid v2, Simpletex LCD, and zfast LCD.
 
 Load a preset from this folder, then change this shader parameter:
 
-  Grid Placement: 0 Below / 1 Above
+  Grid Placement: 0 Below / 1 Physical order
 
 Both positions use the same preset and pass structure. No preset reload or
 reordering is required when changing the parameter. Below is the default.
 The production presets remain unchanged. See ../README.txt for the retained
 experiments and the records of retired routes.
 
-Below applies the LCD before transparency and lighting. Above applies it to
-the finished full-resolution effects, so paper grain and rainbow detail
-are not downsampled to the game's native resolution. Above is a distinct
-presentation, not a pixel-identical simulation of literally prepending an
-effects preset. Moving the grid also changes the LCD colour used by the
-transparency controls that mix grid brightness into pixel alpha.
+Below applies the LCD before transparency and lighting. Physical order
+follows a real Game Boy Color screen, front to back: glare and front sheen,
+grid gaps, rainbow, pixel colour, then paper and pixel shadows. The grid is
+applied at full resolution over the paper, after the rainbow (which tints
+light passing through the pixels) and before the front-surface sheen and
+glare. Plain Pixel Transparency has no Sunlight, so there the grid is simply
+drawn over the finished effects. Moving the grid also changes the LCD colour
+used by the transparency controls that mix grid brightness into pixel alpha.
+Physical order replaced the earlier "Above" placement (grid over everything,
+including glare) on 2026-10-19.
+
+Front polarizer tint: single pass (0.97, 1.0, 0.93), chosen for appearance
+over the physical double pass (0.94, 1.0, 0.865) used before 2026-10-19.
+Rainbow: tinted by the pixel colour once (single pass) instead of squared,
+which keeps slightly more rainbow on coloured pixels. Its brightness gating
+through the LC layer is unchanged.
 
 Each preset retains its LCD's parameter names, defaults, ranges and saved
 values. Simpletex retains its paper texture, bias and white/black lines;
@@ -28,9 +38,9 @@ screen subpixels in all four orientations, and the integrated line-colour,
 strength and bias controls from the axis-cache experiment.
 
 For LCD1x, LCD3x, Simpletex and zfast, native pixels are reconstructed before
-the effects. Above then applies that family's LCD operation to the finished
+the effects. Physical order then applies that family's LCD operation to the finished
 colour, including Simpletex darkening/paper and zfast gamma. LCD Grid v2
-retains four-native-pixel reconstruction below; above evaluates its colour
+retains four-native-pixel reconstruction below; physical order evaluates its colour
 transfer, matrix and grid coverage on the finished effects colour. Authentic
 keeps its existing normalized reconstruction and grid-overlay behaviour.
 

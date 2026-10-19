@@ -27,6 +27,16 @@
 #include "pt-grid.inc"
 #pragma stage fragment
 
+vec4 finishGrid(vec4 color) {
+    if (global.PT_FUSED_LAYER > 0.5) {
+        // Gamma-based grids require nonnegative display colour.
+        color.rgb = applyGrid(max(color.rgb, vec3(0.0)), vTexCoord, param.OutputSize.xy);
+#ifdef PT_GRID_LCD_GRID_V2
+        color.a = 1.0;
+#endif
+    }
+    return color;
+}
 #ifdef PT_LIGHT_FIELD
 #include "sunlight_shimmer.inc"
 #endif
@@ -36,16 +46,11 @@ void main() {
     float original_brightness;
     bool effects_enabled = renderPixelTransparency(original_pixel, original_brightness);
 #ifdef PT_LIGHT_FIELD
-    if (effects_enabled)
-        FragColor = applyCachedSunlight(FragColor, original_pixel, original_brightness);
+    // Sunlight places the grid between the rainbow and the front-surface glare.
+    FragColor = applyCachedSunlight(FragColor, original_pixel, original_brightness, effects_enabled);
+#else
+    FragColor = finishGrid(FragColor);
 #endif
-    if (global.PT_FUSED_LAYER > 0.5) {
-        // Gamma-based grids require nonnegative display colour.
-        FragColor.rgb = applyGrid(max(FragColor.rgb, vec3(0.0)), vTexCoord, param.OutputSize.xy);
-#ifdef PT_GRID_LCD_GRID_V2
-        FragColor.a = 1.0;
-#endif
-    }
 #ifdef PT_LIGHT_FIELD
     if (effects_enabled)
 #else
