@@ -28,4 +28,4 @@ separate-stage experiment. They compile with sensors enabled and disabled;
 the revised shared organization has not been rebenchmarked on RPC.
 
 Private evidence:
-/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-fused-authentic-np2bymuu
+/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-fused-authentic-np2bymuu

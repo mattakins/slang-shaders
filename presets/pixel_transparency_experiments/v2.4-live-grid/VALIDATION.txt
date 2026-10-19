@@ -85,7 +85,7 @@ preview, so browser interaction was not verified in this run.
 Evidence
 --------
 Local review directory:
-  /Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-live-grid-rpoqhfle
+  /Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-live-grid-rpoqhfle
 
 default-comparisons.json, controls-comparisons.json, repeatability.json,
 plan.json, compiled/results.json, context.json, runtime.json and captures/
@@ -155,7 +155,7 @@ into an isolated device directory. Existing installed shader packs remain.
 RPC evidence
 ------------
 Local review directory:
-  /Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-live-grid-rpc-yvymqmfd
+  /Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-live-grid-rpc-yvymqmfd
 
 benchmark-runs.json and benchmark-summary.json retain samples and medians.
 context.json records ROM/core/state hashes, viewport sizes and parameters.

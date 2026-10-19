@@ -89,7 +89,7 @@ Interactive wipe, fade and zoom comparison:
 https://matts-mac-mini.tail9445f6.ts.net/rpc-grid-cache/compare.html
 
 Private logs, raw captures, manifests, hashes and scripts:
-/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-grid-speed-huh6c94m
+/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-grid-speed-huh6c94m
 
 The normal device configuration hash was unchanged after testing. The test
 RetroArch process was stopped. No default shader selection was saved.

@@ -36,7 +36,7 @@ Retroid Pocket Classic: not available for profiling this new route. The
 reported 22 FPS result belongs to the initial fused route, not this version.
 
 Private evidence:
-/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-fused-authentic-np2bymuu
+/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-fused-authentic-np2bymuu
 
 Mac runtime throughput check (one run per mode)
 ----------------------------------------------

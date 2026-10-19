@@ -75,7 +75,7 @@ https://matts-mac-mini.tail9445f6.ts.net/rpc-integrated-grid/compare.html
 
 Evidence and restoration
 ------------------------
-/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-integrated-rpc-spswht8s
+/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-integrated-rpc-spswht8s
 
 benchmark-runs.json contains samples and per-run logs; benchmark-summary.json
 contains aggregates. visual-runs.json, image-metrics.json and comparison/

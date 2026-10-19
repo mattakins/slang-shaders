@@ -45,4 +45,4 @@ No RPC performance measurement or live-game timing was taken for these
 variants. More framebuffer bandwidth is required than the standard route.
 
 Private capture records, exact configs, logs and source snapshots:
-/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-grid-order-c7q0m0qk
+/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-grid-order-c7q0m0qk

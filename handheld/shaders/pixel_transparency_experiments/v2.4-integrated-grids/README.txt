@@ -106,7 +106,7 @@ Transparent paper lines
   frame-time variation, not isolated GPU FPS. Differences were below 0.15%;
   no slowdown was observed in these capped Mac runs. RPC FPS remains untested.
   Reproducible evidence and an 18-case comparison viewer are saved under:
-    /Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-transparent-lines-zbygiy_8/
+    /Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-transparent-lines-zbygiy_8/
 
 The Simpletex paper texture also remains an external grid asset. All Pixel
 Transparency implementation code is local, including the integrated grid

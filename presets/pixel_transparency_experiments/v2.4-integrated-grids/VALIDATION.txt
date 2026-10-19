@@ -97,7 +97,7 @@ live toggle does not guarantee no FPS loss for every family. In particular,
 Authentic above remains below the 60-FPS headroom target on this workload.
 
 Evidence directory:
-/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-all-grids-veagigy6
+/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-all-grids-veagigy6
 
 Private comparison views:
 https://matts-mac-mini.tail9445f6.ts.net/rpc-all-grids/compare.html
@@ -129,4 +129,4 @@ No trial shader or preset was retained. Normal device settings and the
 installed experiment pack remain unchanged.
 
 Follow-up evidence, including exact samples and discarded prototype sources:
-/Volumes/Ensemble/Retro/Screenshots/Reviews/pixel-transparency-auth-above-4xxgvukw
+/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-auth-above-4xxgvukw
