@@ -414,6 +414,13 @@ vec3 paperGridLine(vec3 line) {
     // Tint intensity can extrapolate below zero; line colour must stay nonnegative.
     return max(mix(line, grid_paper_backing, amount), vec3(0.0));
 }
+// Above placement runs after Sunlight. Rebuild the backing there instead of
+// keeping it live through the lighting code, which costs mobile GPUs heavily.
+void preparePaperGridAbove() {
+    grid_paper_backing = vec3(0.0);
+    if (global.PT_FUSED_TRANSPARENCY > 0.0 && param.PT_ENABLE > 0.5)
+        grid_paper_backing = renderPaperBacking().rgb;
+}
 #endif
 
 bool renderPixelTransparency(out vec3 original_pixel, out float original_brightness) {
@@ -445,11 +452,26 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
         output_color = lcd_color;
     }
 
+    float original_luma=getPerceptualBrightness(original_pixel);
+    bool current_is_white = (original_luma > param.PT_THRESHOLD && min(min(original_pixel.r,original_pixel.g),original_pixel.b) > param.PT_THRESHOLD*0.9);
+    bool should_apply = (param.PT_PIXEL_MODE < 0.5) ? current_is_white : true;
+
+    // One call site keeps the paper backing inlined once; extra live
+    // registers from a second copy cost more than the work on mobile GPUs.
 #ifdef PT_GRID_TRANSPARENT_LINES
     bool paper_lines = global.PT_FUSED_TRANSPARENCY > 0.0;
+    bool need_backing = should_apply || paper_lines;
+#else
+    bool need_backing = should_apply;
+#endif
+    vec4 background = vec4(0.0);
+    if (need_backing)
+        background = renderPaperBacking();
+
+#ifdef PT_GRID_TRANSPARENT_LINES
     if (paper_lines) {
-        grid_paper_backing = renderPaperBacking().rgb;
         if (global.PT_FUSED_LAYER < 0.5 && global.PT_HIDE_CONTENT < 0.5) {
+            grid_paper_backing = background.rgb;
             lcd_color.rgb = applyPaperGridBelow(lcd_color);
             lcd_color.a = 1.0;
             output_color = lcd_color;
@@ -457,7 +479,6 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
     }
 #endif
 
-    float original_luma=getPerceptualBrightness(original_pixel);
     original_brightness=param.PT_BRIGHTNESS_MODE<0.5
         ? getGameBoyRGBSum(original_pixel) : original_luma;
     // Highlight adjustment — negative dims lcd_color before compositing
@@ -466,9 +487,6 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
         lcd_color.rgb *= max(1.0 + global.PT_HIGHLIGHTS * luma, 0.0);
         output_color.rgb = lcd_color.rgb;
     }
-
-    bool current_is_white = (original_luma > param.PT_THRESHOLD && min(min(original_pixel.r,original_pixel.g),original_pixel.b) > param.PT_THRESHOLD*0.9);
-    bool should_apply = (param.PT_PIXEL_MODE < 0.5) ? current_is_white : true;
 
     // Resolve transparency early so zero grid mix skips LCD brightness work.
     float grid_mix = current_is_white ? global.PT_GRID_WHITE_MIX : global.PT_GRID_COLOR_MIX;
@@ -504,16 +522,6 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
             }
             pixel_alpha = clamp(mix(no_grid_alpha, grid_alpha, grid_mix), 0.0, 1.0);
         }
-    }
-
-    vec4 background = vec4(0.0);
-    if (should_apply && pixel_alpha > 0.0) {
-#ifdef PT_GRID_TRANSPARENT_LINES
-        if (paper_lines)
-            background = vec4(grid_paper_backing, 1.0);
-        else
-#endif
-            background = renderPaperBacking();
     }
 
     if (should_apply && pixel_alpha > 0.0) {

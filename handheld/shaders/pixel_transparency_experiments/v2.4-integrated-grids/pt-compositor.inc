@@ -56,6 +56,7 @@ void main() {
         FragColor = applyCachedSunlight(FragColor, original_pixel, original_brightness);
 #endif
     if (global.PT_FUSED_LAYER > 0.5) {
+        preparePaperGridAbove();
         // Gamma-based grids require nonnegative display colour.
         FragColor.rgb = applyGrid(max(FragColor.rgb, vec3(0.0)), vTexCoord, param.OutputSize.xy);
 #ifdef PT_GRID_LCD_GRID_V2

@@ -26,6 +26,7 @@ vec3 applyPaperGridBelow(vec4 color) {
 vec4 finishGrid(vec4 color) {
     if (global.PT_FUSED_LAYER > 0.5 &&
         (global.PT_HIDE_CONTENT < 0.5 || param.PT_ENABLE < 0.5)) {
+        preparePaperGridAbove();
         vec3 coverage = gridCoverage();
         float strength = global.PT_FUSED_STRENGTH;
         if (global.PT_FUSED_BIAS > 0.0)
