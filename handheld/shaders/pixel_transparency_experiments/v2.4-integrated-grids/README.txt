@@ -49,19 +49,19 @@ grids/lcd-grid-v2/
   LCD Grid v2 also owns cache_x.slang, cache_y.slang and integral.inc.
 
 grids/authentic_gbc_fast/
-  The effect compositors, geometry caches, grid input, integrated controls
-  and final grid blend live here. Integrated controls and placement share
-  parameters.inc. Only the original LCD's native colour
-  conversion, shared geometry and parameters remain in the external
-  authentic_gbc/ shader folder.
+  The geometry caches, grid input, integrated controls and final grid blend
+  live here. Both effect presets share compositor.inc. parameters.inc
+  declares the Authentic controls with upstream's names, defaults and ranges
+  and restyled labels. Only the original LCD's native colour conversion and
+  shared geometry remain in the external authentic_gbc/ shader folder.
 
 Line shade controls
   All six families support dark and light lines in both placements.
-  Authentic, LCD1x, LCD3x, LCD Grid v2 and zfast use Grid line brightness:
+  Authentic, LCD1x, LCD3x, LCD Grid v2 and zfast use Line brightness:
   0=Dark (the existing default), 1=Light, with intermediate shades.
   Simpletex keeps its existing DARKEN_GRID setting and light default:
-  Grid line shade is 0=Light, 1=Dark. Existing saved values still work.
-  Authentic also retains RGB line tint. LCD Grid v2's subpixel colours remain
+  Line shade is 0=Light, 1=Dark. Existing saved values still work.
+  LCD Grid v2's subpixel colours remain
   separate from line brightness. No passes or texture reads are added.
 
 Transparent paper lines
