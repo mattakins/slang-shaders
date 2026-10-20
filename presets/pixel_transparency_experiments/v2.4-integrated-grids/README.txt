@@ -6,9 +6,9 @@ Fast, LCD1x, LCD3x, LCD Grid v2, Simpletex LCD, and zfast LCD.
 
 Load a preset from this folder, then change this shader parameter:
 
-  Grid Placement: 0 Below / 1 Physical order
+  == GRID - <grid name> == (0=Soft, 1=Accurate)
 
-Both positions use the same preset and pass structure. No preset reload or
+0 is the Below placement and 1 is Physical order, described below. Both positions use the same preset and pass structure. No preset reload or
 reordering is required when changing the parameter. Below is the default.
 The production presets remain unchanged. See ../README.txt for the retained
 experiments and the records of retired routes.

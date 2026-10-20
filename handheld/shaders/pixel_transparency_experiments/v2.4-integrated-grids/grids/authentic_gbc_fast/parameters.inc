@@ -1,12 +1,16 @@
-// Shared controls for the optional Authentic GBC grid experiments.
-#include "../../../../authentic_gbc/parameters.inc"
-#pragma parameter PT_FUSED_SETTINGS "=== Integrated grid experiment ===" 0.0 0.0 1.0 1.0
-#pragma parameter PT_FUSED_STRENGTH "Grid strength" 1.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_BRIGHTNESS "Grid line brightness (0=Dark, 1=Light)" 0.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_RED "Grid tint: Red" 1.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_GREEN "Grid tint: Green" 1.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_BLUE "Grid tint: Blue" 1.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_BIAS "Grid brightness bias (protect dark pixels)" 0.0 0.0 1.0 0.05
+// Controls for the integrated Authentic GBC grid. The Authentic GBC controls
+// keep upstream's names, defaults and ranges; only their labels are restyled.
+#pragma parameter PT_FUSED_LAYER 	"== GRID - Authentic GBC == (0=Soft, 1=Accurate)" 0.0 0.0 1.0 1.0
+#pragma parameter AUTH_GBC_BRIG "      • Add brightness" 0.6 0.0 1.0 0.05
+#pragma parameter AUTH_GBC_BLUR "      • Anti-banding smoothing" 0.3 0.0 1.0 0.05
+#pragma parameter AUTH_GBC_SUBPX "      • Subpixel rendering (OFF/ON)" 0.0 0.0 1.0 1.0
+#pragma parameter AUTH_GBC_SUBPX_ORIENTATION "         ↳ Layout (0=RGB, 1=RGB vert., 2=BGR, 3=BGR vert.)" 0.0 0.0 3.0 1.0
+#pragma parameter PT_FUSED_STRENGTH "      • Strength" 1.0 0.0 1.0 0.05
+#pragma parameter PT_FUSED_BRIGHTNESS "      • Line brightness (0=Dark, 1=Light)" 0.0 0.0 1.0 0.05
+#pragma parameter PT_FUSED_RED "         ↳ Tint: Red" 1.0 0.0 1.0 0.05
+#pragma parameter PT_FUSED_GREEN "         ↳ Tint: Green" 1.0 0.0 1.0 0.05
+#pragma parameter PT_FUSED_BLUE "         ↳ Tint: Blue" 1.0 0.0 1.0 0.05
+#pragma parameter PT_FUSED_BIAS "      • Brightness bias (protect dark pixels)" 0.0 0.0 1.0 0.05
 
 #define PT_LCD_UNIFORMS \
     uint Rotation; \
@@ -21,4 +25,3 @@
     float PT_FUSED_GREEN; \
     float PT_FUSED_BLUE; \
     float PT_FUSED_BIAS;
-#pragma parameter PT_FUSED_LAYER "Grid placement (0=Below effects, 1=Physical order)" 0.0 0.0 1.0 1.0

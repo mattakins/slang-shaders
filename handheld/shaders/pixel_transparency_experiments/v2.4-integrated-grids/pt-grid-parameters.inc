@@ -18,7 +18,7 @@
 */
 
 // Preserve each LCD family's native controls and defaults.
-#pragma parameter PT_FUSED_LAYER "Grid Placement: 0 Below / 1 Physical order" 0.0 0.0 1.0 1.0
+// Each family declares PT_FUSED_LAYER first so it heads the grid section.
 #if defined(PT_GRID_LCD1X)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
