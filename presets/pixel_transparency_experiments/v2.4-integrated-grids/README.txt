@@ -23,6 +23,12 @@ drawn over the finished effects. Moving the grid also changes the LCD colour
 used by the transparency controls that mix grid brightness into pixel alpha.
 Physical order replaced the earlier "Above" placement (grid over everything,
 including glare) on 2026-10-19.
+Placement history (RPC, Authentic Sunlight Shimmer, GBC fit): offering
+Below, Above and physical order as three options cost about 4 FPS even in
+Below (66.6 -> 62.4) because the grid blend was compiled into the final
+pass twice, so physical order replaced Above instead. Evidence:
+/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-under-sunlight-rpc-t2w7atbm/
+and pixel-transparency-physical-order-rpc-zp0ph0b0/.
 
 Front polarizer tint: single pass (0.97, 1.0, 0.93), chosen for appearance
 over the physical double pass (0.94, 1.0, 0.865) used before 2026-10-19.
