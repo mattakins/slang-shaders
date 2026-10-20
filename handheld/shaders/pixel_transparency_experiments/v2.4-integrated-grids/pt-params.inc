@@ -28,7 +28,7 @@
 #pragma parameter PT_PALETTE_INTENSITY 	"         ↳ Intensity" 1.0 0.0 2.0 0.05
 #pragma parameter PT_BACKING_BRIGHTNESS "         ↳ Brightness" 0.48 0.20 0.65 0.01
 #pragma parameter PT_POLARIZER 			"      • Front polarizer tint (OFF/ON)" 1.0 0.0 1.0 1.0
-#pragma parameter PT_POLARIZER_TINT 	"         ↳ Intensity" 1.0 0.0 1.0 0.05
+#pragma parameter PT_POLARIZER_TINT 	"         ↳ Intensity" 1.0 0.0 2.0 0.05
 #pragma parameter PT_SATURATION 		"      • Color saturation" 1.0 0.5 1.5 0.05
 #pragma parameter PT_HIGHLIGHTS 		"      • Pixel brightness (0=OFF, -Dim / +Bright)" 0.05 -1.0 1.0 0.01
 #pragma parameter SECTION2 				"== TRANSPARENCY ==" 0.0 0.0 1.0 1.0

@@ -153,8 +153,8 @@ void main() {
     else if (global.PT_PALETTE < 3.5) backing_palette=vec3(0.766,0.73,0.763);
     else backing_palette=vec3(0.76);
     backing_palette*=0.675/max(backing_palette.r,max(backing_palette.g,backing_palette.b));
-    // Single-pass front polarizer tint, chosen over the physical double pass
-    // (0.94, 1.0, 0.865) for appearance.
+    // Single-pass front polarizer tint (0.97, 1.0, 0.93). Intensity 2.0
+    // approximates the physical double pass (0.94, 1.0, 0.865).
     polarizer_color=mix(vec3(1.0),vec3(0.97,1.0,0.93),global.PT_POLARIZER_TINT);
 
     vTexCoord = TexCoord;
