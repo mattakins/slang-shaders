@@ -38,8 +38,6 @@
 #pragma parameter PT_WHITE_BOOST 		"      • Boost white pixel transparency (OFF/ON)" 0.0 0.0 1.0 1.0
 #pragma parameter PT_WHITE_TRANSPARENCY "         ↳ Boost amount" 0.50 0.0 1.0 0.01
 #pragma parameter PT_BRIGHTNESS_MODE 	"      • Brightness mode (Simple / Natural)" 1.0 0.0 1.0 1.0
-#pragma parameter PT_GRID_COLOR_MIX 	"      • Grid visibility on color pixels" 0.0 0.0 1.0 0.05
-#pragma parameter PT_GRID_WHITE_MIX 	"      • Grid visibility on white pixels" 0.0 0.0 1.0 0.05
 #pragma parameter PT_SHADOW_ENABLE 		"== SHADOWS == (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_SHADOW_EDGE_ENABLE "      • Screen edge shadow (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_SHADOW_MOTION 		"      • Motion (OFF/ON) " 1.0 0.0 1.0 1.0

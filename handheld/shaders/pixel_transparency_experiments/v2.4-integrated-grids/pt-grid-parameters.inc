@@ -13,12 +13,23 @@
     PT | GRID PARAMETERS
     v2.4 integrated grid pipeline
 
-    Shared placement control and uniform layouts for the five non-Authentic grids.
-    Each family supplies its original LCD control declarations.
+    Shared grid controls for all six grids, and uniform layouts for the five
+    non-Authentic grids. Each family supplies its original LCD control
+    declarations.
 */
 
-// Preserve each LCD family's native controls and defaults.
-// Each family declares PT_FUSED_LAYER first so it heads the grid section.
+#ifndef PT_GRID_PARAMETERS
+#define PT_GRID_PARAMETERS
+// Each family declares PT_FUSED_LAYER first so it heads the grid section, and
+// includes this file after its own controls so these close the section. They
+// mix grid brightness into pixel transparency. In Accurate placement the LCD
+// input is grid-free, so they have no effect there.
+#pragma parameter PT_GRID_COLOR_MIX 	"      • Line visibility on color pixels (Soft only)" 0.0 0.0 1.0 0.05
+#pragma parameter PT_GRID_WHITE_MIX 	"      • Line visibility on white pixels (Soft only)" 0.0 0.0 1.0 0.05
+
+// Preserve each LCD family's native controls and defaults. Authentic defines
+// its own layout before including this file.
+#ifndef PT_LCD_UNIFORMS
 #if defined(PT_GRID_LCD1X)
 #define PT_LCD_UNIFORMS \
     float PT_FUSED_LAYER; \
@@ -66,4 +77,6 @@
     float PT_FUSED_BRIGHTNESS;
 #else
 #error Select an integrated grid family
+#endif
+#endif
 #endif

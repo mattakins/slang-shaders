@@ -17,3 +17,4 @@
     float PT_FUSED_LAYER; \
     float PT_FUSED_STRENGTH; \
     float PT_FUSED_BRIGHTNESS;
+#include "../../pt-grid-parameters.inc"

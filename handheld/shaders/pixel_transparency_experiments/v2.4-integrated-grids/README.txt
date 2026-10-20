@@ -22,7 +22,7 @@ Shared includes: unnumbered .inc files
   pt-shadow-kernel.inc            Shared cache and fallback sampling.
   pt-grid-input.inc               Reconstruct pixels and render Below grids.
   pt-grid.inc                     Shared vertex setup, LCD coverage and colour.
-  pt-grid-parameters.inc          Placement control and grid uniform layouts.
+  pt-grid-parameters.inc          Shared grid controls and uniform layouts.
   pt-params-sunlight.inc          Sunlight controls shared with compositing.
   pt-compositor.inc               Final composition for non-Authentic grids.
   pixel_transparency.inc          Paper, alpha, shadow lookup and tint effects.
