@@ -20,7 +20,6 @@ layout(location = 0) out vec4 FragColor;
 layout(set = 0, binding = 2) uniform sampler2D PTNativeColour;
 layout(set = 0, binding = 3) uniform sampler2D PTGridX;
 layout(set = 0, binding = 4) uniform sampler2D PTGridY;
-float getPerceptualBrightness(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 vec4 sampleLCD();
 void main() { FragColor = sampleLCD(); }
 #include "grid.inc"

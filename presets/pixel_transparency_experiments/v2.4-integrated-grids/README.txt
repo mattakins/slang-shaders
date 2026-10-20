@@ -40,8 +40,9 @@ Each preset retains its LCD's parameter names, defaults, ranges and saved
 values. Simpletex retains its paper texture, bias and white/black lines;
 zfast retains its gamma adjustment; LCD Grid v2 retains its colour matrix
 and BGR setting. Authentic retains native colour conversion, optional
-screen subpixels in all four orientations, and the integrated line-colour,
-strength and bias controls from the axis-cache experiment.
+screen subpixels in all four orientations, and the integrated line
+brightness and strength controls from the axis-cache experiment. Its grid
+tint and brightness bias controls were removed on 2026-10-19.
 
 For LCD1x, LCD3x, Simpletex and zfast, native pixels are reconstructed before
 the effects. Physical order then applies that family's LCD operation to the finished

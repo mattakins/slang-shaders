@@ -7,10 +7,6 @@
 #pragma parameter AUTH_GBC_SUBPX_ORIENTATION "         ↳ Layout (0=RGB, 1=RGB vert., 2=BGR, 3=BGR vert.)" 0.0 0.0 3.0 1.0
 #pragma parameter PT_FUSED_STRENGTH "      • Strength" 1.0 0.0 1.0 0.05
 #pragma parameter PT_FUSED_BRIGHTNESS "      • Line brightness (0=Dark, 1=Light)" 0.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_RED "         ↳ Tint: Red" 1.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_GREEN "         ↳ Tint: Green" 1.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_BLUE "         ↳ Tint: Blue" 1.0 0.0 1.0 0.05
-#pragma parameter PT_FUSED_BIAS "      • Brightness bias (protect dark pixels)" 0.0 0.0 1.0 0.05
 
 #define PT_LCD_UNIFORMS \
     uint Rotation; \
@@ -20,8 +16,4 @@
     float AUTH_GBC_SUBPX_ORIENTATION; \
     float PT_FUSED_LAYER; \
     float PT_FUSED_STRENGTH; \
-    float PT_FUSED_BRIGHTNESS; \
-    float PT_FUSED_RED; \
-    float PT_FUSED_GREEN; \
-    float PT_FUSED_BLUE; \
-    float PT_FUSED_BIAS;
+    float PT_FUSED_BRIGHTNESS;

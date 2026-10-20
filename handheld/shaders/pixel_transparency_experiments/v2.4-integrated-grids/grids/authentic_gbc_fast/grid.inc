@@ -120,7 +120,7 @@ vec4 sampleLCD() {
     bool above = global.PT_FUSED_LAYER > 0.5 && param.PT_ENABLE > 0.5;
 #endif
     if (!above && global.PT_FUSED_STRENGTH == 1.0 &&
-        global.PT_FUSED_BRIGHTNESS == 0.0 && global.PT_FUSED_BIAS == 0.0)
+        global.PT_FUSED_BRIGHTNESS == 0.0)
         return vec4(quantizeLCD(sqrt(res)), 1.0);
 
     vec3 coverage = clamp((w0 + w1 + w2 + w3) / area, 0.0, 1.0);
@@ -132,10 +132,8 @@ vec4 sampleLCD() {
         return vec4(sqrt(max(native_color, vec3(0.0))), 1.0);
 #endif
     float strength = global.PT_FUSED_STRENGTH;
-    if (global.PT_FUSED_BIAS > 0.0)
-        strength *= mix(1.0, getPerceptualBrightness(sqrt(max(native_color, vec3(0.0)))), global.PT_FUSED_BIAS);
     lcd_coverage = mix(vec3(1.0), coverage, strength);
-    vec3 line = global.PT_FUSED_BRIGHTNESS * vec3(global.PT_FUSED_RED, global.PT_FUSED_GREEN, global.PT_FUSED_BLUE);
+    vec3 line = vec3(global.PT_FUSED_BRIGHTNESS);
     lcd_line_color = line * line;
     if (above)
         return vec4(quantizeLCD(sqrt(max(native_color, vec3(0.0)))), 1.0);

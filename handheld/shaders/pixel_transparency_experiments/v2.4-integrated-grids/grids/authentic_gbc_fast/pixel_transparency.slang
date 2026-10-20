@@ -7,11 +7,7 @@
 #define PT_COMPOSITOR_UNIFORMS \
     float PT_FUSED_LAYER; \
     float PT_FUSED_STRENGTH; \
-    float PT_FUSED_BIAS; \
-    float PT_FUSED_BRIGHTNESS; \
-    float PT_FUSED_RED; \
-    float PT_FUSED_GREEN; \
-    float PT_FUSED_BLUE;
+    float PT_FUSED_BRIGHTNESS;
 #include "parameters.inc"
 #include "../../pixel_transparency.inc"
 
