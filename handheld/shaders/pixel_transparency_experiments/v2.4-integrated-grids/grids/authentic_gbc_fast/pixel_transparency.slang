@@ -1,2 +1,4 @@
 #version 450
-#include "compositor.inc"
+#define PT_GRID_AUTHENTIC_GBC_FAST
+#include "parameters.inc"
+#include "../../pt-compositor.inc"

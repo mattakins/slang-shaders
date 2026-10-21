@@ -22,9 +22,9 @@ Shared includes: unnumbered .inc files
   pt-shadow-kernel.inc            Shared cache and fallback sampling.
   pt-grid-input.inc               Reconstruct pixels and render Below grids.
   pt-grid.inc                     Shared vertex setup, LCD coverage and colour.
-  pt-grid-parameters.inc          Shared grid controls and uniform layouts.
+  pt-grid-parameters.inc          Grid controls shared by all six families.
   pt-params-sunlight.inc          Sunlight controls shared with compositing.
-  pt-compositor.inc               Final composition for non-Authentic grids.
+  pt-compositor.inc               Final composition for all six grids.
   pixel_transparency.inc          Paper, alpha, shadow lookup and tint effects.
   pt-params.inc                   Transparency controls shared across stages.
   sunlight_shimmer.inc            Apply sunlight to full-resolution output.
@@ -43,14 +43,16 @@ grids/zfast_lcd/
 grids/lcd-grid-v2/
   Each family has input.slang, pixel_transparency.slang, sunlight_shimmer.slang
   and parameters.inc. The small .slang entries select the family at compile
-  time and include rendering code from the root. One parameters.inc supplies the
-  same control declarations to every stage that needs them.
+  time and include rendering code from the root. Each parameters.inc holds the
+  family's controls and uniform layout for every stage that needs them, then
+  includes pt-grid-parameters.inc.
 
   LCD Grid v2 also owns cache_x.slang, cache_y.slang and integral.inc.
 
 grids/authentic_gbc_fast/
-  The geometry caches, grid input, integrated controls and final grid blend
-  live here. Both effect presets share compositor.inc. parameters.inc
+  The geometry caches, grid input and integrated controls live here. Its
+  final passes use the shared pt-compositor.inc, which holds Authentic's grid
+  blend behind PT_GRID_AUTHENTIC_GBC_FAST. parameters.inc
   declares the Authentic controls with upstream's names, defaults and ranges
   and restyled labels. Only the original LCD's native colour conversion and
   shared geometry remain in the external authentic_gbc/ shader folder.

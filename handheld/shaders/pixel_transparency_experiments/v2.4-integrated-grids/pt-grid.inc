@@ -18,6 +18,7 @@
 */
 
 #pragma stage vertex
+#ifndef PT_GRID_AUTHENTIC_GBC_FAST
 #ifdef PT_GRID_LCD_GRID_V2
 layout(location = 12) flat out vec3 grid_red;
 layout(location = 13) flat out vec3 grid_green;
@@ -32,7 +33,9 @@ void prepareLCD() {
     grid_line_linear = pow(global.PT_FUSED_BRIGHTNESS, 2.2);
 #endif
 }
+#endif
 #pragma stage fragment
+#ifndef PT_GRID_AUTHENTIC_GBC_FAST
 #ifdef PT_GRID_LCD_GRID_V2
 layout(location = 12) flat in vec3 grid_red;
 layout(location = 13) flat in vec3 grid_green;
@@ -128,3 +131,4 @@ vec3 applyGrid(vec3 color, vec2 uv, vec2 outputSize) {
     return gridEncodeLines(weighted, left, right, vertical);
 #endif
 }
+#endif

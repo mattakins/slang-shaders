@@ -14,3 +14,22 @@
 #pragma parameter ambient    "      • Ambient"                 0.0 0.0 0.5 0.01
 #pragma parameter BGR        "      • BGR subpixel order (OFF/ON)"                     0 0 1 1
 #pragma parameter PT_FUSED_BRIGHTNESS "      • Line brightness (0=Dark, 1=Light)" 0.0 0.0 1.0 0.05
+
+#define PT_LCD_UNIFORMS \
+    float PT_FUSED_LAYER; \
+    float RSUBPIX_R; \
+    float RSUBPIX_G; \
+    float RSUBPIX_B; \
+    float GSUBPIX_R; \
+    float GSUBPIX_G; \
+    float GSUBPIX_B; \
+    float BSUBPIX_R; \
+    float BSUBPIX_G; \
+    float BSUBPIX_B; \
+    float gain; \
+    float gamma; \
+    float blacklevel; \
+    float ambient; \
+    float BGR; \
+    float PT_FUSED_BRIGHTNESS;
+#include "../../pt-grid-parameters.inc"
