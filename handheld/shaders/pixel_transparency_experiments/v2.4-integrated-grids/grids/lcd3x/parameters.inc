@@ -1,3 +1,4 @@
+// Controls from handheld/shaders/lcd3x.slang (Gigaherz, public domain).
 #pragma parameter PT_FUSED_LAYER 	"== GRID - LCD3x == (0=Soft, 1=Accurate)" 0.0 0.0 1.0 1.0
 #pragma parameter brighten_scanlines "      • Brighten scanlines" 16.0 1.0 32.0 0.5
 #pragma parameter brighten_lcd "      • Brighten LCD" 4.0 1.0 12.0 0.1

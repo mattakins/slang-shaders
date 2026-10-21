@@ -1,3 +1,4 @@
+// Controls from handheld/shaders/zfast_lcd.slang (Copyright (C) 2017 Greg Hogan).
 #pragma parameter PT_FUSED_LAYER 	"== GRID - zfast LCD == (0=Soft, 1=Accurate)" 0.0 0.0 1.0 1.0
 #pragma parameter BORDERMULT "      • Border multiplier" 14.0 -40.0 40.0 1.0
 #pragma parameter GBAGAMMA "      • GBA gamma hack (OFF/ON)" 1.0 0.0 1.0 1.0

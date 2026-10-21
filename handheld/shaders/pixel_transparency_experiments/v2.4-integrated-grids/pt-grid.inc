@@ -43,11 +43,35 @@ layout(location = 14) flat in vec3 grid_blue;
 layout(location = 15) flat in float grid_line_linear;
 #endif
 
-// LCD1x: jdgleaver, adapted from Gigaherz's public-domain LCD3x.
-// Simpletex: jdgleaver, using Greg Hogan's line-weight equation.
-// zfast_lcd: Copyright (C) 2017 Greg Hogan (SoltanGris42).
-// These adaptations are licensed under GPL version 2 or later.
-// LCD Grid v2 geometry and colour reconstruction follow lcd-cgwg/lcd-grid-v2.slang.
+/*
+   Grid code adapted from these shaders in handheld/shaders/:
+
+   lcd3x.slang
+     Author: Gigaherz
+     License: Public domain
+
+   lcd1x.slang
+     A slightly tweaked version of lcd3x, original code written by Gigaherz
+     and released into the public domain. Edited by jdgleaver.
+
+   zfast_lcd.slang (zfast_lcd_standard)
+     Copyright (C) 2017 Greg Hogan (SoltanGris42)
+
+   simpletex_lcd/simpletex_lcd.slang
+     Makes use of the 'line weighting' equation from zfast_lcd_standard
+     [original zfast_lcd_standard code copyright (C) 2017 Greg Hogan
+     (SoltanGris42)]. Other code by jdgleaver.
+
+   lcd1x, zfast_lcd and simpletex_lcd carry this notice:
+     This program is free software; you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published by the
+     Free Software Foundation; either version 2 of the License, or (at your
+     option) any later version.
+
+   lcd-cgwg/lcd-grid-v2.slang
+     Geometry and colour reconstruction follow this shader. The original
+     carries no author or licence notice.
+*/
 
 #ifdef PT_GRID_SIMPLETEX_LCD
 layout(set = 0, binding = 6) uniform sampler2D BACKGROUND;

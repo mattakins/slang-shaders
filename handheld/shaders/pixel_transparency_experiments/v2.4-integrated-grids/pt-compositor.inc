@@ -36,6 +36,7 @@
 #pragma stage fragment
 
 #ifdef PT_GRID_AUTHENTIC_GBC_FAST
+// Authentic GBC by fishku, Copyright (C) 2024-2025, public domain (CC0).
 // Coverage was rendered separately; only the layer blend runs here.
 layout(set = 0, binding = 6) uniform sampler2D PTGridX;
 layout(set = 0, binding = 7) uniform sampler2D PTGridY;
