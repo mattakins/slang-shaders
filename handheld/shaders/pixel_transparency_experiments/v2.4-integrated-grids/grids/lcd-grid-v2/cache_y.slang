@@ -1,4 +1,8 @@
 #version 450
+
+// LCD Grid v2 – Y Integral Cache
+// Adapted from lcd-cgwg/lcd-grid-v2.slang.
+
 #pragma name PTIntegratedY
 #pragma format R32G32B32A32_SFLOAT
 #define PT_GRID_LCD_GRID_V2

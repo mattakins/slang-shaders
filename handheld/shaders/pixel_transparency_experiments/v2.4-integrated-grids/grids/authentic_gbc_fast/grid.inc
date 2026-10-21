@@ -1,4 +1,6 @@
-// Authentic GBC by fishku, Copyright (C) 2024-2025, CC0.
+// Authentic GBC – Coverage Functions
+// Adapted from authentic_gbc/authentic_gbc_fast.slang by fishku.
+
 // Coverage adapted from authentic_gbc_fast.slang for reusable grid stages.
 // Keep the standalone LCD shader and its native colour-conversion pass intact.
 

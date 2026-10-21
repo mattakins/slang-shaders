@@ -1,4 +1,5 @@
-// Controls from handheld/shaders/simpletex_lcd/simpletex_lcd.slang (jdgleaver).
+// Simpletex LCD – Parameters
+
 #pragma parameter PT_FUSED_LAYER 	"== GRID - Simpletex LCD == (0=Soft, 1=Accurate)" 0.0 0.0 1.0 1.0
 #pragma parameter GRID_INTENSITY "      • Intensity" 1.0 0.0 1.0 0.05
 #pragma parameter GRID_WIDTH "      • Width" 1.0 0.0 1.0 0.05

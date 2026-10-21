@@ -1,6 +1,7 @@
+// Authentic GBC – Parameters
+
 // Controls for the integrated Authentic GBC grid. The Authentic GBC controls
 // keep upstream's names, defaults and ranges; only their labels are restyled.
-// Authentic GBC by fishku, Copyright (C) 2024-2025, public domain (CC0).
 #pragma parameter PT_FUSED_LAYER 	"== GRID - Authentic GBC == (0=Soft, 1=Accurate)" 0.0 0.0 1.0 1.0
 #pragma parameter AUTH_GBC_BRIG "      • Add brightness" 0.6 0.0 1.0 0.05
 #pragma parameter AUTH_GBC_BLUR "      • Anti-banding smoothing" 0.3 0.0 1.0 0.05

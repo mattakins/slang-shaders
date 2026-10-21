@@ -1,5 +1,6 @@
-// Adapted from handheld/shaders/lcd-cgwg/lcd-grid-v2.slang (no author or
-// licence notice in the original).
+// LCD Grid v2 – Integral Coefficients
+// Adapted from lcd-cgwg/lcd-grid-v2.slang.
+
 // integral of (1 - x^2 - x^4 + x^6)^2
 float coeffs_x[7] = float[](1.0, -2.0/3.0, -1.0/5.0, 4.0/7.0, -1.0/9.0, -2.0/11.0, 1.0/13.0);
 // integral of (1 - 2x^4 + x^6)^2

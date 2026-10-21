@@ -1,4 +1,7 @@
 #version 450
+
+// Authentic GBC – Grid Input Pass
+
 // Authentic's integrated controls in a separate LCD pass.
 #include "parameters.inc"
 #define PT_GRID_INPUT_ONLY

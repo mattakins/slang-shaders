@@ -1,4 +1,5 @@
-// Controls from handheld/shaders/lcd-cgwg/lcd-grid-v2.slang.
+// LCD Grid v2 – Parameters
+
 #pragma parameter PT_FUSED_LAYER 	"== GRID - LCD Grid v2 == (0=Soft, 1=Accurate)" 0.0 0.0 1.0 1.0
 #pragma parameter RSUBPIX_R  "      • Red subpixel color: R" 1.0 0.0 1.0 0.01
 #pragma parameter RSUBPIX_G  "         ↳ G" 0.0 0.0 1.0 0.01

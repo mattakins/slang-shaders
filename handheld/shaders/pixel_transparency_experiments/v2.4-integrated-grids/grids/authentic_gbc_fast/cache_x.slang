@@ -1,4 +1,8 @@
 #version 450
+
+// Authentic GBC – X Coverage Cache
+// Adapted from authentic_gbc/authentic_gbc_fast.slang by fishku.
+
 // Cache one-dimensional grid overlap at the final viewport's pixel spacing.
 #pragma name PTGridX
 #pragma format R32G32B32A32_SFLOAT
