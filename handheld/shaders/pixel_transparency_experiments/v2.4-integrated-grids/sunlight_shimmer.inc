@@ -8,16 +8,14 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT | SUNLIGHT COMPOSITING
-    v2.4 integrated grid pipeline
+                          |_|         SUNLIGHT COMPOSITING  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Applies the cached optical field to the full-resolution transparency result.
     Keeps reflection handling and final-dither hooks in the output stage.
-*/
 
-// Copyright (C) 2025-2026 Matt Akins.
+*/
 
 // Apply optical tint to full-resolution game pixels and LCD detail.
 // Screen order: the rainbow tints light that passes through the pixels, the

@@ -8,14 +8,14 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT | FINAL COMPOSITOR
-    v2.4 integrated grid pipeline
+                          |_|             FINAL COMPOSITOR  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Final-pass entry logic for all six grid families. Combines transparency,
     optional sunlight, Accurate placement and final dither. Authentic's grid
     geometry stays in separate cache passes; it only blends here.
+
 */
 
 #define PT_ADAPTIVE_CACHE

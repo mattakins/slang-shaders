@@ -1,4 +1,5 @@
 #version 450
+
 /*
   ____  _          _
  |  _ \(_)_  _____| |
@@ -9,16 +10,15 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT 4 | LIGHT CACHE
-    v2.4 integrated grid pipeline
+                          |_|                  LIGHT CACHE  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Generates the smooth sunlight rainbow and glare field.
     Sunlight Shimmer only; the preset uses a 256 x 256 floating-point texture.
+
 */
 
-// Copyright (C) 2025-2026 Matt Akins.
 // Interpolate the optical field; game and LCD detail remain at output resolution.
 #include "pt-params.inc"
 #include "pt-params-sunlight.inc"

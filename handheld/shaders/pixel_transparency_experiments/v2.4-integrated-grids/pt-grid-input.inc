@@ -8,13 +8,13 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT | GRID INPUT
-    v2.4 integrated grid pipeline
+                          |_|                   GRID INPUT  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Shared input pass for the five non-Authentic grid families.
     Reconstructs game pixels and applies the grid when placement is Below.
+
 */
 
 layout(std140, set = 0, binding = 0) uniform UBO {

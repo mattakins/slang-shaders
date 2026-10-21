@@ -8,15 +8,14 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT | SHADOW KERNEL
-    v2.4 integrated grid pipeline
+                          |_|                SHADOW KERNEL  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Shared nearest-filtered shadow kernel for the cache and compositor fallbacks.
+
 */
 
-// Copyright (C) 2025-2026 Matt Akins.
 // Shared nearest-filtered kernel for cached cells and samples outside the image.
 float adaptiveShadowCaster(ivec2 cell, ivec2 size) {
     if (any(lessThan(cell, ivec2(0))) || any(greaterThanEqual(cell, size)))

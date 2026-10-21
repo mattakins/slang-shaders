@@ -8,27 +8,19 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT | TRANSPARENCY COMPOSITOR
-    v2.4 integrated grid pipeline
+                          |_|      TRANSPARENCY COMPOSITOR  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Shared transparency rendering: paper backing, pixel alpha, shadows and tint.
-    Used by every integrated grid family, including Authentic GBC Fast.
+
 */
 
-// Copyright (C) 2025-2026 Matt Akins.
 // Shared compositor for the paired native-cache presets.
 // Source sampling stays nearest; optional hooks supply a fused LCD renderer.
 
 #pragma name Pixel_Transparency
 #include "pt-params.inc"
-
-
-
-
-
-
 
 layout(push_constant) uniform Push {
     vec4 SourceSize;

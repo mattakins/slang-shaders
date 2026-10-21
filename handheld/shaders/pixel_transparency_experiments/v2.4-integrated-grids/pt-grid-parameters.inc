@@ -8,13 +8,13 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT | GRID PARAMETERS
-    v2.4 integrated grid pipeline
+                          |_|              GRID PARAMETERS  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Grid controls shared by all six grids. Each family's parameters.inc holds
     its own controls and uniform layout, then includes this file.
+
 */
 
 #ifndef PT_GRID_PARAMETERS

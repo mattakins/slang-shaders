@@ -8,16 +8,14 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT | TRANSPARENCY PARAMETERS
-    v2.4 integrated grid pipeline
+                          |_|      TRANSPARENCY PARAMETERS  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Shared Pixel Transparency controls used by the cache and compositor stages.
     Preserves parameter identifiers, ordering, defaults and ranges.
-*/
 
-// Copyright (C) 2025-2026 Matt Akins.
+*/
 
 #pragma parameter PT_ENABLE 			"=== Pixel Transparency v2.4 === (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_HIDE_CONTENT 		" *  Append to any LCD shader as last pass. Try with GBC & GBA." 0.0 0.0 2.0 1.0

@@ -1,4 +1,5 @@
 #version 450
+
 /*
   ____  _          _
  |  _ \(_)_  _____| |
@@ -9,15 +10,14 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT 0 | SHADOW CACHE
-    v2.4 integrated grid pipeline
+                          |_|                 SHADOW CACHE  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Builds the source-cell shadow cache before LCD rendering.
+
 */
 
-// Copyright (C) 2025-2026 Matt Akins.
 #include "pt-params.inc"
 // Cache a source-cell window around the current offset, including screen edges.
 #pragma name PixelShadowCache

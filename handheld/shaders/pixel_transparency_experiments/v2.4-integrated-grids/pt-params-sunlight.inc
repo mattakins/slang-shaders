@@ -8,16 +8,14 @@
    | || '__/ _` | '_ \/ __| '_ \ / _` | '__/ _ \ '_ \ / __| | | |
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
-                          |_|                               |___/
-
-    PT | LIGHT PARAMETERS
-    v2.4 integrated grid pipeline
+                          |_|             LIGHT PARAMETERS  |___/
+    v2.4 by mattakins
+    Copyright (C) 2025-2026 Matt Akins.
 
     Shared Sunlight Shimmer controls for the lighting cache and compositor.
     Preserves parameter identifiers, ordering, defaults and ranges.
-*/
 
-// Copyright (C) 2025-2026 Matt Akins.
+*/
 
 #pragma parameter PT_SUNLIGHT_ENABLE 	"== SUNLIGHT SHIMMER == (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_GLARE_ENABLE 		"      • Glare (OFF/ON)" 1.0 0.0 1.0 1.0
