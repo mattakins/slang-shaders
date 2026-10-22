@@ -39,6 +39,20 @@
 - On a 120 Hz Mac display that counter reads roughly 100–119 Hz for every Pixel Transparency preset, so it cannot resolve shader cost. For Mac A/B timing, attach `xcrun xctrace record --template 'Metal System Trace' --attach <pid>` to a background run, export the `metal-gpu-intervals` table and report RetroArch GPU busy time per frame (union of depth-0 intervals / distinct frames). Metal HUD logging redacts GPU time without elevated privileges. Reference scripts: `/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-colour-cache-uf6ylcdh/gpu-trace.py`, `gpu-parse.py`, `gpu-bench.py`.
 - Interleave baseline/candidate runs and repeat when variability or a possible regression warrants it. Report noisy or presentation-limited results as inconclusive about small GPU costs. Fewer passes or no extra texture reads alone do not establish zero performance impact.
 
+## RPC benchmark protocol
+
+1. Check `adb devices` and record the RPC's normal `retroarch.cfg` sha256. Verify it is unchanged after the run.
+2. Copy the newest harness folder's `setup.py` and `run.py` into the scratchpad. Edit `plan` (profile name, source, preset, parameter overrides) and the description, then run `setup.py`; it creates a fresh evidence folder and pushes everything to `/sdcard/RetroArch/temp/<folder>`.
+   - Source `WORKTREE` uses the working tree; a commit id uses `git archive`. For a variant, patch the copied tree inside `setup.py` (as the `HARD` block in `pixel-transparency-rainbow-toggle-rpc-9lige9_h/setup.py` does), never the repo.
+   - Parameter overrides go in the profile's `parameters`; `PT_FUSED_LAYER` 0 = Soft, 1 = Accurate.
+3. Content: Mario Tennis title (Gambatte slot 9, the default) and the New Awakening village (Mac slot 1, staged as `The Legend of Zelda - New Awakening.state.auto`; see `pixel-transparency-na-placement-rpc-0v_xtfj9/setup.py`). Mode `fit` = screen fit 1200x1080, `integer` = 7x integer 1120x1008.
+4. Run uncapped (audio, VSync, frameskip and runahead off) over emulated frames 128–384, three rounds with the profile order reversed in the middle round. Report the median of the three run medians and the spread.
+5. Run it in the background; a 2-profile x 3-round run takes about 8 minutes. Report only measured numbers, and say when a result comes from older data.
+
+Latest harnesses: `/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-rainbow-toggle-rpc-9lige9_h/` (code variant vs committed) and `pixel-transparency-na-placement-rpc-0v_xtfj9/` (New Awakening state, fit and integer).
+
+Structural refactors need no benchmark: prove them with byte-identical SPIR-V across every Pixel Transparency preset using `/Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-promotion/check-presets.py`.
+
 ## Local restart references
 
 - Evidence lives under `/Volumes/Ensemble/Screenshots/Reviews/`. It moved there from `/Volumes/Ensemble/Retro/Screenshots/Reviews/` on 2026-10-19. Harness files inside older evidence folders (`context.json`, `templates/*.cfg`, scripts) still contain the old prefix; rewrite it to the new location before replaying them.
