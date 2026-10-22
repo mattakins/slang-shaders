@@ -69,8 +69,7 @@ layout(location = 15) flat in float grid_line_linear;
      option) any later version.
 
    lcd-cgwg/lcd-grid-v2.slang
-     Geometry and colour reconstruction follow this shader. The original
-     carries no author or licence notice.
+     Geometry and colour reconstruction follow this shader.
 */
 
 #ifdef PT_GRID_SIMPLETEX_LCD

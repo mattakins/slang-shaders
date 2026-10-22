@@ -25,11 +25,6 @@
 #pragma name LightField
 #pragma format R16G16B16A16_SFLOAT
 
-
-
-
-
-
 layout(push_constant) uniform Push {
     vec4 SourceSize;
     vec4 OutputSize;

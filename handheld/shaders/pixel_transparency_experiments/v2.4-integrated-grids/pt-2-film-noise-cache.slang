@@ -19,9 +19,6 @@
 
 */
 
-
-
-
 #pragma name FilmNoiseCache
 
 // Store noise corners as 32-bit floats, avoiding 8-bit color quantization.

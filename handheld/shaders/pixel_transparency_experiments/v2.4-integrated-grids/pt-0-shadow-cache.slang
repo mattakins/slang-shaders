@@ -19,6 +19,7 @@
 */
 
 #include "pt-params.inc"
+
 // Cache a source-cell window around the current offset, including screen edges.
 #pragma name PixelShadowCache
 #pragma format R32G32B32A32_SFLOAT
