@@ -12,6 +12,15 @@
     v2.4 by mattakins
     Copyright (C) 2025-2026 Matt Akins.
 
+    Grid shaders look great on Game Boy Color games - except for one glaring issue.
+
+    With no backlight, the original devices didn't render white pixels. Light pixels
+    appeared as transparent areas where the backing material of the screen showed through.
+    Many games relied on this effect for transparent backgrounds that now render on modern
+    displays as eye-searing white pixels. No more! Pixel Transparency simulates this unique effect.
+
+    Load a preset from presets/pixel_transparency/ to get the effect with your favourite grid built in.
+
     Shared transparency rendering: paper backing, pixel alpha, shadows and tint.
 
 */

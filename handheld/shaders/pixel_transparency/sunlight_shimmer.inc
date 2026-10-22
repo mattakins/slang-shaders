@@ -12,6 +12,19 @@
     v2.4 by mattakins
     Copyright (C) 2025-2026 Matt Akins.
 
+    Grid shaders look great on Game Boy Color games - except for one glaring issue.
+
+    With no backlight, the original devices didn't render white pixels. Light pixels
+    appeared as transparent areas where the backing material of the screen showed through.
+    Many games relied on this effect for transparent backgrounds that now render on modern
+    displays as eye-searing white pixels. No more! Pixel Transparency simulates this unique effect.
+
+    SUNLIGHT SHIMMER EDITION: Light and shadows move with your device!
+    Tilt your device and shadows shift with it. Glare sweeps across your screen. And just like the
+    Game Boy Color in sunlight, you see a brilliant rainbow shimmer in the background.
+
+    Load a preset from presets/pixel_transparency/ to get the effect with your favourite grid built in.
+
     Applies the cached optical field to the full-resolution transparency result.
     Keeps reflection handling and final-dither hooks in the output stage.
 
