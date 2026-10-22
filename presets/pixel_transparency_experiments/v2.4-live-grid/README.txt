@@ -66,7 +66,8 @@ integrated-style presets at full-quality screen fit. Authentic measured
 LCD1x, LCD3x, Simpletex and zfast stayed around 62-64 FPS in this short test;
 Authentic and Grid v2 did not reach 60. See VALIDATION.txt for exact scope.
 
-For RPC performance, prefer ../v2.4-integrated-grids/ and choose the style
+For RPC performance, prefer the production presets in ../../pixel_transparency/
+and choose the style
 by preset. Those presets retain the live above/below control. Use this
 experiment when live style selection is worth the measured overhead.
 All 22 RPC image pairs matched exactly, including Authentic subpixel cases.

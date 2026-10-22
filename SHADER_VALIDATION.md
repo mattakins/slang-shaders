@@ -2,7 +2,7 @@
 
 ## Establish the baseline
 
-- Read the relevant pipeline README and inspect its actual preset/include chain before editing. Production `handheld/shaders/pixel_transparency/`, dedicated `v2.4-integrated-grids`, and universal `v2.4-live-grid` are distinct pipelines; name which one is under test.
+- Read the relevant pipeline README and inspect its actual preset/include chain before editing. Production `handheld/shaders/pixel_transparency/` (integrated grids), the former external-LCD production `v2.4-external-lcd`, and universal `v2.4-live-grid` are distinct pipelines; name which one is under test.
 - Freeze the working baseline before changing shared includes. Two presets pointing at the same edited include are not a before/after comparison. Snapshot sources and dependencies, or expand the original shaders into owned temporary files inside the repo.
 - Resolve each inherited shader, include and texture path relative to the file that declares it. A texture inherited through `#reference` must not be resolved relative to the child preset.
 - Save preset contents, source/dependency hashes and parameter values with the evidence. Invalidate cached captures whenever any input changes; archive superseded runs instead of silently reusing them.

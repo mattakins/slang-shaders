@@ -13,7 +13,7 @@
     float PT_FUSED_GREEN; \
     float PT_FUSED_BLUE;
 #include "grid_parameters.inc"
-#include "../../pixel_transparency/cached_common.inc"
+#include "../v2.4-external-lcd/cached_common.inc"
 
 #pragma stage fragment
 #include "composite_grid.inc"

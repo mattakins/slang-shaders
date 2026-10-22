@@ -10,15 +10,15 @@
 #define PT_CUSTOM_LCD
 #define PT_LIGHT_FIELD
 #include "parameters.inc"
-#include "../../pixel_transparency/cached_common.inc"
-#include "../../pixel_transparency/cached_light_parameters.inc"
+#include "../v2.4-external-lcd/cached_common.inc"
+#include "../v2.4-external-lcd/cached_light_parameters.inc"
 #include "matrix.inc"
 #pragma stage vertex
 void prepareLCD() { prepareGridMatrix(); }
 #pragma stage fragment
 #include "../v2.4-grid-axis-cache/composite_grid.inc"
 #include "grid.inc"
-#include "../../pixel_transparency/cached_sunlight.inc"
+#include "../v2.4-external-lcd/cached_sunlight.inc"
 vec4 sampleLCD() { return texture(LCDInput, vTexCoord); }
 void main() {
     vec3 original_pixel;

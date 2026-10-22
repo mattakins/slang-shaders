@@ -1,13 +1,16 @@
 Pixel Transparency experiments
 =============================
 
-The production fast presets remain in ../pixel_transparency/.
+Production presets are in ../pixel_transparency/: six grid styles with the
+grid built in and live Soft/Accurate placement. They were promoted from the
+v2.4-integrated-grids experiment on 2026-10-21.
 
 Retained grid experiments
 -------------------------
-v2.4-integrated-grids/
-  Dedicated presets for six grid styles, each with live above/below placement.
-  Prefer these when performance matters more than switching grid styles live.
+v2.4-external-lcd/
+  The former production pipeline: the original LCD shader as its own pass,
+  fixed grid-before/ and grid-after/ placement sets, append presets for
+  stacking on any LCD shader, and the former frontlit preset.
 
 v2.4-grid-axis-cache/
   Authentic GBC Fast's dedicated live-placement presets and shared grid caches.
@@ -18,8 +21,8 @@ v2.4-live-grid/
   Retained as an option; it is slower than the dedicated-style presets on RPC.
 
 See each folder's VALIDATION.txt for measured performance and image results.
-Fixed placement variants remain in ../pixel_transparency/grid-before/ and
-../pixel_transparency/grid-after/. The original v2.3 archive and other earlier
+Fixed placement variants remain in v2.4-external-lcd/grid-before/ and
+v2.4-external-lcd/grid-after/. The original v2.3 archive and other earlier
 experiments remain available in their existing folders.
 
 Retired routes

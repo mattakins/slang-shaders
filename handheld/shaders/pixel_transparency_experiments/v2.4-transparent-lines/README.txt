@@ -3,7 +3,7 @@ Transparent paper lines (experiment)
 
 Snapshot of the integrated grids with "Grid lines: reveal paper"
 (PT_FUSED_TRANSPARENCY), taken 2026-10-19 when the feature was removed from
-../v2.4-integrated-grids/. Presets: presets/pixel_transparency_experiments/
+the integrated grids, now production in ../../pixel_transparency/. Presets: presets/pixel_transparency_experiments/
 v2.4-transparent-lines/. Later integrated-grid changes do not propagate here.
 
 Why it was split out: the paper-line code makes the final pass slower on the
