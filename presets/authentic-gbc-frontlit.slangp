@@ -1,4 +1,4 @@
-# Pixel Transparency v2.4: Authentic GBC with motion blur and a frontlit screen.
+# Pixel Transparency v3.0: Authentic GBC with motion blur and a frontlit screen.
 shaders = 8
 
 shader0 = ../handheld/shaders/motionblur-feedback.slang

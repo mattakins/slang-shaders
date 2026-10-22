@@ -9,7 +9,7 @@
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
                           |_|          SUNLIGHT PARAMETERS  |___/
-    v2.4 by mattakins
+    v3.0 by mattakins
     Copyright (C) 2025-2026 Matt Akins.
 
     Shared Sunlight Shimmer controls for the lighting cache and compositor.

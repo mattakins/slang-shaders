@@ -9,7 +9,7 @@
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
                           |_|             FINAL COMPOSITOR  |___/
-    v2.4 by mattakins
+    v3.0 by mattakins
     Copyright (C) 2025-2026 Matt Akins.
 
     Final-pass entry logic for all six grid families. Combines transparency,

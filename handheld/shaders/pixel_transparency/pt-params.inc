@@ -9,7 +9,7 @@
    | || | | (_| | | | \__ \ |_) | (_| | | |  __/ | | | (__| |_| |
    |_||_|  \__,_|_| |_|___/ .__/ \__,_|_|  \___|_| |_|\___|\__, |
                           |_|      TRANSPARENCY PARAMETERS  |___/
-    v2.4 by mattakins
+    v3.0 by mattakins
     Copyright (C) 2025-2026 Matt Akins.
 
     Shared Pixel Transparency controls used by the cache and compositor stages.
@@ -17,7 +17,7 @@
 
 */
 
-#pragma parameter PT_ENABLE 			"=== Pixel Transparency v2.4 === (OFF/ON)" 1.0 0.0 1.0 1.0
+#pragma parameter PT_ENABLE 			"=== Pixel Transparency v3.0 === (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_HIDE_CONTENT 		" *  More grid styles in presets/pixel_transparency/" 0.0 0.0 2.0 1.0
 #pragma parameter PT_DEFER_DITHER 		" *  Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE3 				" *  Motion enabled on latest RetroArch nightly build." 0.0 0.0 1.0 1.0

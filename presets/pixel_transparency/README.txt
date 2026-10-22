@@ -1,4 +1,4 @@
-Pixel Transparency v2.4
+Pixel Transparency v3.0
 =======================
 
 Twelve presets: Pixel Transparency and Sunlight Shimmer for Authentic GBC
