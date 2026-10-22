@@ -144,7 +144,8 @@ void main() {
     if (global.PT_PALETTE < 1.5) backing_palette=vec3(0.651,0.675,0.518);
     else if (global.PT_PALETTE < 2.5) backing_palette=vec3(0.72,0.73,0.66);
     else if (global.PT_PALETTE < 3.5) backing_palette=vec3(0.766,0.73,0.763);
-    else backing_palette=vec3(0.76);
+    else backing_palette=vec3(0.76); // Aluminum (spectrally neutral)
+    // Normalize brightness across palette modes (match Warm1's max channel).
     backing_palette*=0.675/max(backing_palette.r,max(backing_palette.g,backing_palette.b));
     // Front polarizer tint for light crossing it twice: the single-pass tint
     // (0.97, 1.0, 0.93) squared. Intensity 0.5 approximates a single pass.

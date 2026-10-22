@@ -103,12 +103,14 @@ float shadowPhase(ivec2 cell, ivec2 phase, ivec2 size) {
         + ivec2(equal(phase, ivec2(1))) * (ivec2(1) - ivec2(lower_first));
     ivec2 low = cell - whole - ivec2(1) + lower_cross;
     ivec2 high = cell + whole + upper_cross;
+    // Fast blur: 5-tap cross, Gaussian weights center=4, cardinal=2 (total 12).
     float value = adaptiveShadowCaster(cell, size) * 4.0;
     value += adaptiveShadowCaster(ivec2(low.x, cell.y), size) * 2.0;
     value += adaptiveShadowCaster(ivec2(high.x, cell.y), size) * 2.0;
     value += adaptiveShadowCaster(ivec2(cell.x, low.y), size) * 2.0;
     value += adaptiveShadowCaster(ivec2(cell.x, high.y), size) * 2.0;
     if (global.PT_SHADOW_FAST_BLUR < 0.5) return value / 12.0;
+    // Smooth blur: full 3x3 grid, center=4, edge=2, corner=1 (total 16).
     value += adaptiveShadowCaster(low, size);
     value += adaptiveShadowCaster(ivec2(high.x, low.y), size);
     value += adaptiveShadowCaster(ivec2(low.x, high.y), size);

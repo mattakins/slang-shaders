@@ -85,6 +85,7 @@ void main() {
 #else
     FragColor = finishGrid(FragColor);
 #endif
+    // Dither whenever Pixel Transparency runs, including with Sunlight off; nothing when it is disabled.
 #ifdef PT_LIGHT_FIELD
     if (effects_enabled)
 #else

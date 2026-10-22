@@ -30,12 +30,14 @@ float adaptiveShadowCaster(ivec2 cell, ivec2 size) {
 float adaptiveShadowKernel(vec2 native, vec2 radius, ivec2 size) {
     if (PT_CACHE_BLUR <= 0.1)
         return adaptiveShadowCaster(ivec2(floor(native)), size);
+    // Fast blur: 5-tap cross, Gaussian weights center=4, cardinal=2 (total 12).
     float value = adaptiveShadowCaster(ivec2(floor(native)), size) * 4.0;
     value += adaptiveShadowCaster(ivec2(floor(native - vec2(radius.x, 0.0))), size) * 2.0;
     value += adaptiveShadowCaster(ivec2(floor(native + vec2(radius.x, 0.0))), size) * 2.0;
     value += adaptiveShadowCaster(ivec2(floor(native - vec2(0.0, radius.y))), size) * 2.0;
     value += adaptiveShadowCaster(ivec2(floor(native + vec2(0.0, radius.y))), size) * 2.0;
     if (PT_CACHE_SMOOTH < 0.5) return value / 12.0;
+    // Smooth blur: full 3x3 grid, center=4, edge=2, corner=1 (total 16).
     value += adaptiveShadowCaster(ivec2(floor(native - radius)), size);
     value += adaptiveShadowCaster(ivec2(floor(native + vec2(radius.x, -radius.y))), size);
     value += adaptiveShadowCaster(ivec2(floor(native + vec2(-radius.x, radius.y))), size);
