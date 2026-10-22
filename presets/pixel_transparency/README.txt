@@ -36,11 +36,12 @@ pass twice, so physical order replaced Above instead. Evidence:
 /Volumes/Ensemble/Screenshots/Reviews/pixel-transparency-under-sunlight-rpc-t2w7atbm/
 and pixel-transparency-physical-order-rpc-zp0ph0b0/.
 
-Front polarizer and rainbow use a single pass for appearance (light
-physically crosses the polarizer and each pixel's colour filter twice).
-  Polarizer tint: (0.97, 1.0, 0.93) at Intensity 1.0. Intensity now goes to
-    2.0, which approximates the physical double pass (0.94, 1.0, 0.865).
-  Rainbow: tinted by the pixel colour once rather than squared.
+Front polarizer and rainbow follow light crossing them twice, matching the
+former production look.
+  Polarizer tint: (0.94, 1.0, 0.865) at Intensity 1.0, the single-pass tint
+    squared. Intensity 0.5 approximates a single pass (0.97, 1.0, 0.93).
+  Rainbow: Pixel tint 1 (Warmer, default) tints by the pixel colour squared;
+    0 (Cooler) tints by it once.
 
 Each preset retains its LCD's parameter names, defaults, ranges and saved
 values. Simpletex retains its paper texture, bias and white/black lines;

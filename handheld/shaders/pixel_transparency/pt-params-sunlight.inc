@@ -23,6 +23,7 @@
 #pragma parameter PT_GLARE_SIZE			"         ↳ Spread" 0.25 0.05 1.0 0.05
 #pragma parameter PT_RAINBOW_ENABLE 	"      • Rainbow shimmer (OFF/ON)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_RAINBOW_INTENSITY 	"         ↳ Intensity" 0.18 0.0 1.0 0.01
+#pragma parameter PT_RAINBOW_WARM 		"         ↳ Pixel tint (0=Cooler, 1=Warmer)" 1.0 0.0 1.0 1.0
 #pragma parameter PT_FILM_TUNING 		"         ↳ Color shift" 1.0 0.5 2.0 0.05
 #pragma parameter PT_LIGHT_SPREAD 		"         ↳ Band density" 1.8 0.5 4.0 0.1
 #pragma parameter PT_FILM_NOISE 		"         ↳ Film splotchiness" 0.5 0.0 1.0 0.05
