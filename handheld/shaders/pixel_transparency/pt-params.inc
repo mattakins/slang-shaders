@@ -18,7 +18,7 @@
 */
 
 #pragma parameter PT_ENABLE 			"=== Pixel Transparency v2.4 === (OFF/ON)" 1.0 0.0 1.0 1.0
-#pragma parameter PT_HIDE_CONTENT 		" *  Append to any LCD shader as last pass. Try with GBC & GBA." 0.0 0.0 2.0 1.0
+#pragma parameter PT_HIDE_CONTENT 		" *  More grid styles in presets/pixel_transparency/" 0.0 0.0 2.0 1.0
 #pragma parameter PT_DEFER_DITHER 		" *  Turn ON Core > Color Correction & Interframe Blending" 0.0 0.0 1.0 1.0
 #pragma parameter NOTE3 				" *  Motion enabled on latest RetroArch nightly build." 0.0 0.0 1.0 1.0
 #pragma parameter SECTION1 				"== COLOR ==" 0.0 0.0 1.0 1.0
