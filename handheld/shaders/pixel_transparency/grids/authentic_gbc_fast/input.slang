@@ -4,7 +4,6 @@
 
 // Authentic's integrated controls in a separate LCD pass.
 #include "parameters.inc"
-#define PT_GRID_INPUT_ONLY
 #define LCDInput PTNativeColour
 layout(std140, set = 0, binding = 0) uniform UBO {
     mat4 MVP;

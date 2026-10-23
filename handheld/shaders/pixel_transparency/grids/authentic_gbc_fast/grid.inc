@@ -100,11 +100,7 @@ vec3 nativeSample(ivec2 cell) {
 
 vec3 quantizeLCD(vec3 color) {
     // Preserve the removed R8G8B8A8_UNORM framebuffer's clipping and rounding.
-#ifdef PT_GRID_INPUT_ONLY
     return color; // The separate framebuffer performs the quantization.
-#else
-    return roundEven(clamp(color, 0.0, 1.0) * 255.0) / 255.0;
-#endif
 }
 
 vec4 sampleLCD() {
@@ -116,11 +112,7 @@ vec4 sampleLCD() {
                       nativeSample(cell + ivec2(0, offset.y)), nativeSample(cell + offset)};
     vec3 res = (w0 * samples[0] + w1 * samples[1] + w2 * samples[2] + w3 * samples[3]) / area;
 
-#ifdef PT_GRID_INPUT_ONLY
     bool above = global.PT_FUSED_LAYER > 0.5;
-#else
-    bool above = global.PT_FUSED_LAYER > 0.5 && param.PT_ENABLE > 0.5;
-#endif
     if (!above && global.PT_FUSED_STRENGTH == 1.0 &&
         global.PT_FUSED_BRIGHTNESS == 0.0)
         return vec4(quantizeLCD(sqrt(res)), 1.0);
@@ -128,11 +120,9 @@ vec4 sampleLCD() {
     vec3 coverage = clamp((w0 + w1 + w2 + w3) / area, 0.0, 1.0);
     vec3 native_color = mix(samples[0], res / max(coverage, vec3(0.000001)),
                            greaterThan(coverage, vec3(0.000001)));
-#ifdef PT_GRID_INPUT_ONLY
     // The output stage owns grid styling when it is above the effects.
     if (above)
         return vec4(sqrt(max(native_color, vec3(0.0))), 1.0);
-#endif
     float strength = global.PT_FUSED_STRENGTH;
     lcd_coverage = mix(vec3(1.0), coverage, strength);
     vec3 line = vec3(global.PT_FUSED_BRIGHTNESS);
@@ -143,16 +133,4 @@ vec4 sampleLCD() {
     return vec4(quantizeLCD(sqrt(max(colored, vec3(0.0)))), 1.0);
 }
 
-#ifndef PT_GRID_INPUT_ONLY
-vec4 finishLCD(vec4 color) {
-    if (global.PT_FUSED_LAYER > 0.5 && global.PT_HIDE_CONTENT < 0.5) {
-        // Apply coverage at the output pixel; paper and light never pass through
-        // native-resolution sampling. Dither is added once after this blend.
-        vec3 linear = max(color.rgb, vec3(0.0));
-        color.rgb = sqrt(linear * linear * lcd_coverage + lcd_line_color * (vec3(1.0) - lcd_coverage));
-    }
-    return color;
-}
-
-#endif
 #endif

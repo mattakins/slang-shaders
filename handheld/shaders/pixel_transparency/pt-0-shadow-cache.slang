@@ -87,10 +87,34 @@ layout(location = 1) flat in ivec2 shadow_origin;
 layout(location = 2) flat in vec2 native_radius;
 layout(location = 0) out vec4 FragColor;
 layout(set = 0, binding = 2) uniform sampler2D Original;
-#define PT_CACHE_BRIGHTNESS global.PT_BRIGHTNESS_MODE
-#define PT_CACHE_BLUR global.PT_SHADOW_BLUR
-#define PT_CACHE_SMOOTH global.PT_SHADOW_FAST_BLUR
-#include "pt-shadow-kernel.inc"
+// Shared nearest-filtered kernel for cached cells and samples outside the image.
+float adaptiveShadowCaster(ivec2 cell, ivec2 size) {
+    if (any(lessThan(cell, ivec2(0))) || any(greaterThanEqual(cell, size)))
+        return global.PT_SHADOW_EDGE_ENABLE > 0.5 ? 1.0 : 0.0;
+    vec3 color = texelFetch(Original, cell, 0).rgb;
+    float brightness = global.PT_BRIGHTNESS_MODE < 0.5
+        ? (color.r + color.g + color.b) / 3.0
+        : (0.2126 * color.r) + (0.7152 * color.g) + (0.0722 * color.b);
+    return 1.0 - brightness;
+}
+
+float adaptiveShadowKernel(vec2 native, vec2 radius, ivec2 size) {
+    if (global.PT_SHADOW_BLUR <= 0.1)
+        return adaptiveShadowCaster(ivec2(floor(native)), size);
+    // Fast blur: 5-tap cross, Gaussian weights center=4, cardinal=2 (total 12).
+    float value = adaptiveShadowCaster(ivec2(floor(native)), size) * 4.0;
+    value += adaptiveShadowCaster(ivec2(floor(native - vec2(radius.x, 0.0))), size) * 2.0;
+    value += adaptiveShadowCaster(ivec2(floor(native + vec2(radius.x, 0.0))), size) * 2.0;
+    value += adaptiveShadowCaster(ivec2(floor(native - vec2(0.0, radius.y))), size) * 2.0;
+    value += adaptiveShadowCaster(ivec2(floor(native + vec2(0.0, radius.y))), size) * 2.0;
+    if (global.PT_SHADOW_FAST_BLUR < 0.5) return value / 12.0;
+    // Smooth blur: full 3x3 grid, center=4, edge=2, corner=1 (total 16).
+    value += adaptiveShadowCaster(ivec2(floor(native - radius)), size);
+    value += adaptiveShadowCaster(ivec2(floor(native + vec2(radius.x, -radius.y))), size);
+    value += adaptiveShadowCaster(ivec2(floor(native + vec2(-radius.x, radius.y))), size);
+    value += adaptiveShadowCaster(ivec2(floor(native + radius)), size);
+    return value / 16.0;
+}
 
 
 // Integer tap positions keep very narrow phase intervals stable at large sizes.

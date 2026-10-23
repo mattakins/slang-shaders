@@ -42,9 +42,7 @@ layout(push_constant) uniform Push {
 } param;
 
 // Paired presets use the LCD framebuffer; fused presets use the final viewport.
-#ifndef PT_LIGHT_VIEWPORT
 #define PT_LIGHT_VIEWPORT LCDInputSize
-#endif
 
 layout(std140, set = 0, binding = 0) uniform UBO {
     mat4 MVP;

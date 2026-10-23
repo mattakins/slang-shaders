@@ -105,23 +105,16 @@ layout(std140, set = 0, binding = 0) uniform UBO {
 } global;
 
 #pragma stage vertex
-#ifdef PT_SHIFTED_SHADOW_CACHE
 layout(location = 8) flat out ivec2 shadow_origin;
-#ifdef PT_VERTEX_SHADOW_OFFSET
 layout(location = 11) flat out vec2 shadow_offset_uv;
-#endif
 layout(location = 9) flat out vec2 shadow_phase_low;
 layout(location = 10) flat out vec2 shadow_phase_high;
-#endif
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec2 TexCoord;
 layout(location = 0) out vec2 vTexCoord;
 layout(location = 1) flat out vec2 texel;
 layout(location = 2) flat out float shadow_scale_factor;
 layout(location = 3) flat out vec2 shadow_offset_raw;
-#ifndef PT_ADAPTIVE_CACHE
-layout(location = 8) flat out float cache_supported;
-#endif
 #ifdef PT_LIGHT_FIELD
 layout(location = 4) flat out vec2 light_pos;
 layout(location = 7) out vec2 light_coord;
@@ -146,9 +139,6 @@ void main() {
     gl_Position = global.MVP * Position;
 #ifdef PT_CUSTOM_LCD
     prepareLCD();
-#endif
-#ifndef PT_ADAPTIVE_CACHE
-    cache_supported=float(all(lessThanEqual(global.OriginalSize.xy,vec2(160.0,144.0))));
 #endif
     if (global.PT_PALETTE < 1.5) backing_palette=vec3(0.651,0.675,0.518);
     else if (global.PT_PALETTE < 2.5) backing_palette=vec3(0.72,0.73,0.66);
@@ -191,19 +181,15 @@ void main() {
     } else {
         shadow_offset_raw = vec2(param.PT_SHADOW_OFFSET_X, param.PT_SHADOW_OFFSET_Y);
     }
-#ifdef PT_SHIFTED_SHADOW_CACHE
     vec2 native_offset = -shadow_offset_raw * shadow_scale_factor * texel * global.OriginalSize.xy;
     precise vec2 native_radius = param.PT_SHADOW_BLUR > 0.1
         ? param.PT_SHADOW_BLUR * shadow_scale_factor * texel * global.OriginalSize.xy : vec2(0.0);
     shadow_origin = ivec2(floor(native_offset));
-#ifdef PT_VERTEX_SHADOW_OFFSET
     // The viewport-scaled offset is uniform across output pixels.
     shadow_offset_uv = -shadow_offset_raw * shadow_scale_factor * texel;
-#endif
     vec2 fraction = fract(native_radius);
     shadow_phase_low = min(fraction, vec2(1.0) - fraction);
     shadow_phase_high = max(fraction, vec2(1.0) - fraction);
-#endif
 #ifdef PT_LIGHT_FIELD
     light_pos=vec2(param.PT_LIGHT_X,param.PT_LIGHT_Y)
         +vec2(gravity.x,-gravity.y)*param.PT_LIGHT_RANGE;
@@ -212,14 +198,10 @@ void main() {
 }
 
 #pragma stage fragment
-#ifdef PT_SHIFTED_SHADOW_CACHE
 layout(location = 8) flat in ivec2 shadow_origin;
-#ifdef PT_VERTEX_SHADOW_OFFSET
 layout(location = 11) flat in vec2 shadow_offset_uv;
-#endif
 layout(location = 9) flat in vec2 shadow_phase_low;
 layout(location = 10) flat in vec2 shadow_phase_high;
-#endif
 layout(location = 5) flat in vec3 backing_palette;
 layout(location = 6) flat in vec3 polarizer_color;
 
@@ -227,9 +209,6 @@ layout(location = 0) in vec2 vTexCoord;
 layout(location = 1) flat in vec2 texel;
 layout(location = 2) flat in float shadow_scale_factor;
 layout(location = 3) flat in vec2 shadow_offset_raw;
-#ifndef PT_ADAPTIVE_CACHE
-layout(location = 8) flat in float cache_supported;
-#endif
 #ifdef PT_LIGHT_FIELD
 layout(location = 4) flat in vec2 light_pos;
 layout(location = 7) in vec2 light_coord;
@@ -293,26 +272,11 @@ vec3 generateProceduralBackground(vec2 uv) {
     return baseColor + vec3(grainOffset);
 }
 
-#ifdef PT_SHIFTED_SHADOW_CACHE
 // The cache window includes every shifted source cell, even beyond screen edges.
-#ifdef PT_BOUNDED_CACHE
-#define PT_CACHE_BRIGHTNESS param.PT_BRIGHTNESS_MODE
-#define PT_CACHE_BLUR param.PT_SHADOW_BLUR
-#define PT_CACHE_SMOOTH param.PT_SHADOW_FAST_BLUR
-#include "pt-shadow-kernel.inc"
-#endif
 
 float cachedShadow(vec2 center) {
     ivec2 size = ivec2(global.OriginalSize.xy);
     vec2 native = center * global.OriginalSize.xy;
-#ifdef PT_BOUNDED_CACHE
-    ivec2 capacity = textureSize(PixelShadowCache, 0);
-    if (capacity.x < 3 * (size.x + 1) || capacity.y < size.y + 1) {
-        vec2 radius = param.PT_SHADOW_BLUR > 0.1
-            ? param.PT_SHADOW_BLUR * shadow_scale_factor * texel * vec2(size) : vec2(0.0);
-        return adaptiveShadowKernel(native, radius, size);
-    }
-#endif
     ivec2 cell = clamp(ivec2(floor(native)) - shadow_origin, ivec2(0), size);
     vec2 position = fract(native);
     ivec2 phase = ivec2(greaterThanEqual(position, shadow_phase_low))
@@ -320,52 +284,6 @@ float cachedShadow(vec2 center) {
     vec4 values = texelFetch(PixelShadowCache, ivec2(3 * cell.x + phase.x, cell.y), 0);
     return values[phase.y];
 }
-#elif defined(PT_ADAPTIVE_CACHE)
-#define PT_CACHE_BRIGHTNESS param.PT_BRIGHTNESS_MODE
-#define PT_CACHE_BLUR param.PT_SHADOW_BLUR
-#define PT_CACHE_SMOOTH param.PT_SHADOW_FAST_BLUR
-#include "pt-shadow-kernel.inc"
-
-float cachedShadow(vec2 center) {
-    ivec2 size = textureSize(Original, 0);
-    vec2 native = center * vec2(size);
-    ivec2 cell = ivec2(floor(native));
-    vec2 radius = param.PT_SHADOW_BLUR > 0.1
-        ? param.PT_SHADOW_BLUR * shadow_scale_factor * texel * vec2(size) : vec2(0.0);
-
-    // Outside cells still need the full kernel: blur can reach back into the image.
-    if (any(lessThan(cell, ivec2(0))) || any(greaterThanEqual(cell, size)))
-        return adaptiveShadowKernel(native, radius, size);
-
-    vec2 fraction = fract(radius);
-    vec2 low = min(fraction, vec2(1.0) - fraction);
-    vec2 high = max(fraction, vec2(1.0) - fraction);
-    vec2 position = fract(native);
-    ivec2 phase = ivec2(greaterThanEqual(position, low))
-        + ivec2(greaterThanEqual(position, high));
-    vec4 values = texelFetch(PixelShadowCache, ivec2(3 * cell.x + phase.x, cell.y), 0);
-    return values[phase.y];
-}
-#else
-// X packs three horizontal phases per native cell; RGB holds the vertical phases.
-// The paired cache includes a three-cell border for the supported handheld sizes.
-float cachedShadow(vec2 center) {
-    ivec2 source_size=textureSize(Original,0);
-    vec2 native=center*vec2(source_size);
-    ivec2 cell=ivec2(floor(native));
-    if (any(lessThan(cell,ivec2(-3))) || any(greaterThanEqual(cell,source_size+ivec2(3))))
-        return global.PT_SHADOW_EDGE_ENABLE>0.5 ? 1.0 : 0.0;
-    vec2 radius=param.PT_SHADOW_BLUR>0.1
-        ? param.PT_SHADOW_BLUR*shadow_scale_factor*texel*vec2(source_size) : vec2(0.0);
-    vec2 fraction=fract(radius);
-    vec2 low=min(fraction,vec2(1.0)-fraction);
-    vec2 high=max(fraction,vec2(1.0)-fraction);
-    vec2 position=fract(native);
-    ivec2 phase=ivec2(greaterThanEqual(position,low))+ivec2(greaterThanEqual(position,high));
-    vec4 values=texelFetch(PixelShadowCache,ivec2(3*(cell.x+3)+phase.x,cell.y+3),0);
-    return values[phase.y];
-}
-#endif
 
 #ifdef PT_CUSTOM_LCD
 vec4 sampleLCD();
@@ -383,9 +301,6 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
     vec4 output_color = lcd_color;
 
     if (param.PT_ENABLE < 0.5
-#ifndef PT_ADAPTIVE_CACHE
-        || cache_supported < 0.5
-#endif
     ) {
         FragColor = output_color;
         return false;
@@ -456,11 +371,7 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
 
     // Drop shadows (suppressed in debug mode 2)
     if (should_apply && pixel_alpha > 0.0 && param.PT_SHADOW_OPACITY > 0.0 && param.PT_SHADOW_ENABLE > 0.5 && global.PT_HIDE_CONTENT < 1.5) {
-#ifdef PT_VERTEX_SHADOW_OFFSET
         vec2 shadow_offset = shadow_offset_uv;
-#else
-        vec2 shadow_offset = -shadow_offset_raw * shadow_scale_factor * texel;
-#endif
 
         float shadow_strength=cachedShadow(vTexCoord+shadow_offset)*param.PT_SHADOW_OPACITY;
 
@@ -515,12 +426,6 @@ bool renderPixelTransparency(out vec3 original_pixel, out float original_brightn
 
     // Anti-banding dither — breaks up 8-bit quantization artifacts in smooth gradients
     // Leave dither to the final light pass when used in the split Shimmer pipeline.
-#ifndef PT_CUSTOM_FINAL_DITHER
-    if (param.PT_DEFER_DITHER < 0.5) {
-        output_color.rgb += (hash(floor(vTexCoord*param.OutputSize.xy)+vec2(0.5)) - 0.5) / 255.0;
-    }
-
-#endif
 
     FragColor = output_color;
     return true;

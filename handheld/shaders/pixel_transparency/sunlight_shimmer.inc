@@ -95,10 +95,5 @@ vec4 applyCachedSunlight(vec4 output_color, vec3 original_pixel, float original_
         }
     }
 
-    // Anti-banding dither runs after light optics, before quantization.
-#ifndef PT_CUSTOM_FINAL_DITHER
-    output_color.rgb += (hash(floor(vTexCoord*param.OutputSize.xy)+vec2(0.5)) - 0.5) / 255.0;
-#endif
-
     return output_color;
 }
