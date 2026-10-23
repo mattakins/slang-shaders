@@ -120,7 +120,7 @@ vec4 sampleLCD() {
     vec3 coverage = clamp((w0 + w1 + w2 + w3) / area, 0.0, 1.0);
     vec3 native_color = mix(samples[0], res / max(coverage, vec3(0.000001)),
                            greaterThan(coverage, vec3(0.000001)));
-    // The output stage owns grid styling when it is above the effects.
+    // In Accurate placement the final pass applies the grid, so pass the native colour through.
     if (above)
         return vec4(sqrt(max(native_color, vec3(0.0))), 1.0);
     float strength = global.PT_FUSED_STRENGTH;

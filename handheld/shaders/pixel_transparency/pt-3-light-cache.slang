@@ -41,7 +41,7 @@ layout(push_constant) uniform Push {
     float PT_ACCEL_SENSITIVITY;
 } param;
 
-// Paired presets use the LCD framebuffer; fused presets use the final viewport.
+// The light field is sized to the LCD framebuffer, which matches the final viewport.
 #define PT_LIGHT_VIEWPORT LCDInputSize
 
 layout(std140, set = 0, binding = 0) uniform UBO {

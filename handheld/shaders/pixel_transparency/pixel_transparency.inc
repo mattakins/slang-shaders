@@ -25,8 +25,8 @@
 
 */
 
-// Shared compositor for the paired native-cache presets.
-// Source sampling stays nearest; optional hooks supply a fused LCD renderer.
+// Final-pass transparency shared by all six grids. Source sampling stays nearest.
+// The five non-Authentic grids supply their LCD sample through sampleLCD().
 
 #pragma name Pixel_Transparency
 #include "pt-params.inc"
