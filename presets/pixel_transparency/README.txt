@@ -40,8 +40,8 @@ Front polarizer and rainbow follow light crossing them twice, matching the
 former production look.
   Polarizer tint: (0.94, 1.0, 0.865) at Intensity 1.0, the single-pass tint
     squared. Intensity 0.5 approximates a single pass (0.97, 1.0, 0.93).
-  Rainbow: Pixel tint 1 (Warmer, default) tints by the pixel colour squared;
-    0 (Cooler) tints by it once.
+  Rainbow: tinted by the pixel colour squared (light crosses each colour
+    filter twice).
 
 Each preset retains its LCD's parameter names, defaults, ranges and saved
 values. Simpletex retains its paper texture, bias and white/black lines;

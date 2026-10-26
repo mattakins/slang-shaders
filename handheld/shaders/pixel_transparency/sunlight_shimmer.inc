@@ -59,8 +59,8 @@ vec4 applyCachedSunlight(vec4 output_color, vec3 original_pixel, float original_
             tint_strength *= reflectivity;
 
             // Color filter: the rainbow light crosses the pixel's colour filter
-            // twice (Warmer, the default), or once (Cooler).
-            tint *= global.PT_RAINBOW_WARM > 0.5 ? original_pixel * original_pixel : original_pixel;
+            // twice, in and out.
+            tint *= original_pixel * original_pixel;
 
             // Luminance-preserving tint blend:
             // Multiply by the spectral tint (shifts color), then restore original luminance.

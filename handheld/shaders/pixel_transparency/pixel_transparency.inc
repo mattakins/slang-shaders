@@ -94,7 +94,6 @@ layout(std140, set = 0, binding = 0) uniform UBO {
 #ifdef PT_LIGHT_FIELD
     float PT_SUNLIGHT_ENABLE;
     float PT_RAINBOW_INTENSITY;
-    float PT_RAINBOW_WARM;
     float PT_GLARE_INTENSITY;
     float PT_REFLECT_ENABLE;
     float PT_REFLECT_INTENSITY;
